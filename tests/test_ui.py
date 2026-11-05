@@ -214,3 +214,62 @@ def test_search_page(app, tmp_path):
     iterate()
     assert window.nav.get_visible_page().task_id == row.task_id
     window.close()
+
+
+def _navigation_views(widget):
+    found = [widget] if isinstance(widget, Adw.NavigationView) else []
+    child = widget.get_first_child()
+    while child is not None:
+        found += _navigation_views(child)
+        child = child.get_next_sibling()
+    return found
+
+
+def test_one_navigation_view_and_swipe_back_stack(app, tmp_path):
+    """A nested AdwNavigationView broke the back swipe on the phone; the
+    window has one, the lists are its first page on narrow windows and
+    every page above can pop (phosh-toolkit adaptive rule 9)."""
+    window = new_window(app, tmp_path, demo.create())
+    window._set_wide(False)
+    iterate()
+    assert _navigation_views(window) == [window.nav]
+    stack = window._pages()
+    assert stack[:2] == [window.lists_page, window.list_page]
+    window.show_task(window.ds.current_task_id())
+    iterate()
+    assert all(p.get_can_pop() for p in window._pages()[1:])
+    window.nav.pop()
+    window.nav.pop()
+    iterate()
+    assert window.nav.get_visible_page() is window.lists_page
+    window._set_wide(True)
+    iterate()
+    assert window.lists_page not in window._pages()
+    assert window.split.get_sidebar() is window.sidebar
+    assert _navigation_views(window) == [window.nav]
+    window._set_wide(False)
+    iterate()
+    assert window._pages()[0] is window.lists_page
+    window.close()
+
+
+def test_delete_with_undo(app, tmp_path):
+    window = new_window(app, tmp_path, demo.create())
+    task_id = window.ds.top_level_ids(Context("project", "demo-garden"))[0]
+    window.show_task(task_id)
+    iterate()
+    window.nav.get_visible_page()._on_delete()
+    iterate()
+    assert task_id not in window.ds.tasks
+    window.show_list(Context("project", "demo-garden"))
+    window.list_page._on_delete()
+    assert "demo-garden" not in window.ds.project_entities
+    from pensum.store import contexts
+    toast = window.undoable("deleted", lambda: contexts.delete_project(
+        window.ds, "demo-website"))
+    assert "demo-website" not in window.ds.project_entities
+    toast.emit("button-clicked")
+    iterate()
+    assert "demo-website" in window.ds.project_entities
+    assert validate.problems(window.ds.data) == []
+    window.close()

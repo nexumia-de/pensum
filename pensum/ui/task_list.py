@@ -34,13 +34,20 @@ class TaskListPage(Adw.NavigationPage):
 
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=18,
                       margin_top=12, margin_bottom=24, margin_start=12, margin_end=12)
-        add_list = boxed_list()
-        self.entry = Adw.EntryRow(title="Add Task")
-        self.entry.set_show_apply_button(True)
-        self.entry.connect("entry-activated", self._on_add)
-        self.entry.connect("apply", self._on_add)
-        add_list.append(self.entry)
-        box.append(add_list)
+        # The add field sits at the bottom, within thumb reach and right
+        # above the on-screen keyboard (phosh-toolkit adaptive rule 10).
+        add_bar = Gtk.Box(spacing=6, margin_top=6, margin_bottom=6,
+                          margin_start=12, margin_end=12)
+        self.entry = Gtk.Entry(hexpand=True, placeholder_text="Add Task")
+        self.entry.update_property([Gtk.AccessibleProperty.LABEL], ["Add Task"])
+        self.entry.connect("activate", self._on_add)
+        add_bar.append(self.entry)
+        add_button = Gtk.Button(icon_name="list-add-symbolic", tooltip_text="Add Task")
+        add_button.add_css_class("suggested-action")
+        add_button.update_property([Gtk.AccessibleProperty.LABEL], ["Add Task"])
+        add_button.connect("clicked", lambda *_: self._on_add(self.entry))
+        add_bar.append(add_button)
+        toolbar.add_bottom_bar(Adw.Clamp(child=add_bar, maximum_size=720))
         overdue_header = Gtk.Box(spacing=12)
         self.overdue_title = Gtk.Label(xalign=0, hexpand=True)
         self.overdue_title.add_css_class("heading")
@@ -108,7 +115,7 @@ class TaskListPage(Adw.NavigationPage):
             menu.append("Unarchive Project" if archived else "Archive Project",
                         "list.archive")
         if self.context.id != "INBOX_PROJECT":
-            menu.append("Delete…", "list.delete")
+            menu.append("Delete", "list.delete")
         return menu
 
     def _kind_name(self):
@@ -137,23 +144,19 @@ class TaskListPage(Adw.NavigationPage):
         self.window.changed()
 
     def _on_delete(self, *_):
-        from pensum.ui.dialogs import confirm_dialog
+        """Delete at once and offer Undo (GNOME HIG)."""
         ds = self.window.ds
-        name = ds.context_title(self.context)
-        if self.context.kind == "project":
-            body = "The project's tasks, notes and archived tasks are deleted too."
-        else:
-            body = "The tasks stay; they only lose the tag."
+        context = self.context
+        name = ds.context_title(context)
 
-        def done():
-            if self.context.kind == "project":
-                contexts.delete_project(ds, self.context.id)
+        def delete():
+            if context.kind == "project":
+                contexts.delete_project(ds, context.id)
             else:
-                contexts.delete_tag(ds, self.context.id)
-            self.window.show_list(Context.today())
-            self.window.changed()
+                contexts.delete_tag(ds, context.id)
 
-        confirm_dialog(self.window, f"Delete “{name}”?", body, "Delete", done)
+        self.window.show_list(Context.today())
+        self.window.undoable(f"“{name}” deleted", delete)
 
     # --- tasks -------------------------------------------------------------
 
@@ -181,13 +184,11 @@ class TaskListPage(Adw.NavigationPage):
     def _on_finish(self, *_):
         from pensum.store import archive
         ds = self.window.ds
-        if self.window.timer.task_id:
-            self.window.timer.book()
-        done = archive.finishable(ds, self.context)
-        count = archive.archive_tasks(ds, [t["id"] for t in done])
-        self.window.toast(f"{count} done tasks archived" if count != 1
-                          else "1 done task archived")
-        self.window.changed()
+        done = [t["id"] for t in archive.finishable(ds, self.context)]
+        count = sum(1 + len(ds.task(i).get("subTaskIds", ())) for i in done)
+        self.window.undoable(f"{count} done tasks archived" if count != 1
+                             else "1 done task archived",
+                             lambda: archive.archive_tasks(ds, done))
 
     def _on_move_overdue(self, *_):
         ds = self.window.ds
@@ -224,8 +225,8 @@ class TaskListPage(Adw.NavigationPage):
         model = self._menu_model()
         self.menu.set_menu_model(model)
         self.menu.set_visible(model is not None)
-        self.entry.set_title("Add Task to Today" if self.context.kind == "today"
-                             else "Add Task")
+        self.entry.set_placeholder_text("Add Task to Today" if self.context.kind == "today"
+                                        else f"Add Task to {title}")
         open_tasks, done_tasks = ds.list_tasks(self.context, today)
         self.rows = []
         overdue = ds.overdue_tasks(today) if self.context.kind == "today" else []

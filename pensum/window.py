@@ -1,6 +1,10 @@
-"""The window: the lists in a sidebar, the open list and its task pages in
-a navigation view next to it (swipe back everywhere), the timer bar, and
-saving the dataset shortly after each change."""
+"""The window: one navigation view for every page (swipe back everywhere),
+the lists as its first page on the phone or as a sidebar on wide windows,
+the timer bar, and saving the dataset shortly after each change.
+
+There is exactly one AdwNavigationView: a second one nested in a split
+view's content kept the back swipe from working on the phone (phosh-toolkit
+docs/adaptive-libadwaita.md, rule 9)."""
 import logging
 
 from gi.repository import Adw, Gio, GLib, Gtk
@@ -42,24 +46,33 @@ class Window(Adw.ApplicationWindow):
         from pensum.ui.task_list import TaskListPage
         from pensum.ui.tracker_bar import TrackerBar
         self.sidebar = Sidebar(self)
-        sidebar_page = Adw.NavigationPage(title=NAME, tag="lists",
-                                          child=self.sidebar)
+        # Phone: the lists are the first page and a list is pushed on it.
+        self.lists_page = Adw.NavigationPage(title=NAME, tag="lists",
+                                             child=self.sidebar)
         self.nav = Adw.NavigationView()
         self.tracker_bar = TrackerBar(self)
+        self.nav.connect("notify::visible-page", lambda *_: self.tracker_bar.refresh())
         content = Adw.ToolbarView(content=self.nav)
         content.add_bottom_bar(self.tracker_bar)
         self.list_page = TaskListPage(self, parse_context_key(self.settings.last_list))
-        self.nav.add(self.list_page)
-        self.split = Adw.NavigationSplitView(
-            sidebar=sidebar_page,
-            content=Adw.NavigationPage(title="Tasks", tag="content", child=content),
-            show_content=True)
+        self.nav.add(self.lists_page)
+        self.nav.push(self.list_page)
+        self.wide = False
+        # Wide windows: the same sidebar widget moves into this split view
+        # and the list becomes the navigation view's first page.
+        self.split = Adw.OverlaySplitView(content=content, show_sidebar=False,
+                                          collapsed=True, enable_show_gesture=False,
+                                          enable_hide_gesture=False)
         self.toasts = Adw.ToastOverlay(child=self.split)
         self.set_content(self.toasts)
 
         breakpoint = Adw.Breakpoint.new(
-            Adw.BreakpointCondition.parse("max-width: 600sp"))
-        breakpoint.add_setter(self.split, "collapsed", True)
+            Adw.BreakpointCondition.parse("min-width: 600sp"))
+        # Breakpoints apply during size allocation; moving widgets then
+        # crashed the Broadway server in CI, so the move waits for idle.
+        breakpoint.connect("apply", lambda *_: self._queue_wide(True))
+        breakpoint.connect("unapply", lambda *_: self._queue_wide(False))
+        self._wide_source = None
         self.add_breakpoint(breakpoint)
 
         action = Gio.SimpleAction.new("add-task", None)
@@ -133,13 +146,66 @@ class Window(Adw.ApplicationWindow):
         self.set_focus(None)
         return GLib.SOURCE_REMOVE
 
+    def _queue_wide(self, wide):
+        if self._wide_source is not None:
+            GLib.source_remove(self._wide_source)
+
+        def run():
+            self._wide_source = None
+            self._set_wide(wide)
+            return GLib.SOURCE_REMOVE
+
+        self._wide_source = GLib.idle_add(run)
+
+    def _set_wide(self, wide):
+        """Move the lists between the first page (phone) and the sidebar."""
+        if wide == self.wide:
+            return
+        self.wide = wide
+        pages = [p for p in self._pages() if p is not self.lists_page]
+        if wide:
+            self.lists_page.set_child(None)
+            self.nav.replace(pages or [self.list_page])
+            self.split.set_sidebar(self.sidebar)
+            self.split.set_collapsed(False)
+            self.split.set_show_sidebar(True)
+        else:
+            self.split.set_show_sidebar(False)
+            self.split.set_collapsed(True)
+            self.split.set_sidebar(None)
+            self.lists_page.set_child(self.sidebar)
+            self.nav.replace([self.lists_page] + pages)
+
     def show_lists(self):
-        """The sidebar; on the phone it replaces the open list."""
-        self.split.set_show_content(False)
+        """The lists: on the phone the first page, on wide windows the
+        sidebar, which is always shown."""
+        if not self.wide:
+            self.nav.pop_to_page(self.lists_page)
 
     def _on_close(self, *_):
         self.flush()
         return False
+
+    def undoable(self, message, change):
+        """Make a change now and show a toast whose Undo puts the whole
+        dataset back as it was before."""
+        import copy
+        self.timer.book()
+        before = copy.deepcopy(self.ds.data)
+        change()
+        self.changed()
+        toast = Adw.Toast(title=GLib.markup_escape_text(message), button_label="Undo",
+                          priority=Adw.ToastPriority.HIGH)
+
+        def undo(*_):
+            self.ds.data.clear()
+            self.ds.data.update(before)
+            self.timer.resume()
+            self.changed()
+
+        toast.connect("button-clicked", undo)
+        self.toasts.add_toast(toast)
+        return toast
 
     def toast(self, message):
         self.toasts.add_toast(Adw.Toast(title=GLib.markup_escape_text(message)))
@@ -152,10 +218,11 @@ class Window(Adw.ApplicationWindow):
     def show_list(self, context):
         if not self.ds.context_exists(context):
             context = Context.today()
-        if self.nav.get_visible_page() is not self.list_page:
-            self.nav.pop_to_page(self.list_page)
         self.list_page.set_context(context)
-        self.split.set_show_content(True)
+        if self.list_page in self._pages():
+            self.nav.pop_to_page(self.list_page)
+        else:
+            self.nav.push(self.list_page)
         self.sidebar.select(context)
         self.settings.last_list = context_key(context)
         self.save_settings()
@@ -167,18 +234,16 @@ class Window(Adw.ApplicationWindow):
         from pensum.ui.search_page import SearchPage
         if isinstance(self.nav.get_visible_page(), SearchPage):
             return
-        self.split.set_show_content(True)
         self.nav.push(SearchPage(self))
 
     def show_archived(self):
         from pensum.ui.archived_page import ArchivedPage
-        self.nav.pop_to_page(self.list_page)
-        self.split.set_show_content(True)
+        if self.list_page in self._pages():
+            self.nav.pop_to_page(self.list_page)
         self.nav.push(ArchivedPage(self))
 
     def show_task(self, task_id):
         if task_id not in self.ds.tasks:
             return
         from pensum.ui.task_page import TaskPage
-        self.split.set_show_content(True)
         self.nav.push(TaskPage(self, task_id))

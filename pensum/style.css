@@ -21,3 +21,10 @@
 .pensum-notes {
   background: none;
 }
+
+/* Buttons in bottom bars: at least 44 px high for the thumb
+   (phosh-toolkit adaptive rule 11). Not "pill": pill buttons in a bottom
+   bar crashed gtk4-broadwayd in the screenshots. */
+.pensum-bar-button {
+  min-height: 44px;
+}

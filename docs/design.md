@@ -22,24 +22,40 @@ offers Follow System / Light / Dark. Metainfo branding colours:
 
 # Screens
 
-- **Lists** (sidebar; on the phone the first page): Today, the projects
-  and the tags with their open task counts; add buttons and the main
-  menu (import, export, preferences, about) in the header.
-- **List**: an entry row "Add Task" on top (new tasks go to the top, as
-  in Super Productivity), the open tasks, then "Done". Each row: check
-  button, title, a subtitle with time spent / estimate, subtask count
-  and (in Today and tag lists) the project, and a play button.
-- **Task** (pushed, swipe back): title, done, time spent with the timer
-  button, estimate, Today switch, planned day (calendar popover), project,
-  tags (dialog), notes, subtasks (each opens its own page), delete.
+Frequent actions sit in bottom bars, within thumb reach; header bars
+keep the title, back and the menu ([adaptive rule 10](../../phosh-toolkit/docs/adaptive-libadwaita.md)).
+
+- **Lists** (on the phone the first page, on wide windows the sidebar):
+  Today, the projects and the tags with their open task counts; main
+  menu (import, export, archived projects, preferences, about) in the
+  header; Search and Add List in a bottom bar.
+- **List**: overdue, open and done tasks, backlog; the add field with
+  its button in a bottom bar (new tasks go to the top, as in Super
+  Productivity). Each row: check button, title, a subtitle with time,
+  estimate, deadline, planned day and project, and a play button on the
+  right.
+- **Task** (pushed, swipe back): title, time spent (opens the time
+  editor), estimate, Today, planned day and time, deadline, priority,
+  project, tags, notes, subtasks, and Delete at the end (out of easy
+  reach on purpose). Mark as Done and Start/Stop Timer in a bottom bar, as normal buttons at least 44 px high (`.pensum-bar-button`); `pill` buttons there made gtk4-broadwayd crash in about half of the CI screenshots (checked locally with the GNOME 51 Flatpak, 2026-11-05).
 - **Row menu**: long press or right click on a task row opens Move to
   Top / Up / Down / to Bottom; Alt+↑/↓ does the same from the keyboard.
-- **Archived Projects** (main menu): open or unarchive them.
-- **Timer bar** at the bottom while a task runs: title, time today,
-  stop button; tapping it opens the task.
+- **Timer bar** at the very bottom while a task runs: title, time today,
+  stop button; tapping it opens the task. Hidden on that task's own page, without the reveal animation (animating it while the page slid in crashed gtk4-broadwayd).
+- **Undo**: deleting a task or a list and Finish Day act at once and
+  show a toast with Undo (GNOME HIG: undo instead of confirmation).
+  Import still asks first; it replaces everything.
 
-At 600 sp and below the split view collapses: the lists page is the
-root, a list and its task pages are pushed on it.
+# Navigation
+
+One `AdwNavigationView` holds every page. Below 600 sp the lists are its
+first page and a list is pushed on it, so a swipe from the left goes
+back from a task to its list and from a list to the lists. From 600 sp
+the same sidebar widget moves into an `AdwOverlaySplitView` and the list
+becomes the first page. Before 2026-11-05 the list and its pages sat in
+a second navigation view inside an `AdwNavigationSplitView`'s content;
+the owner found that the back swipe did not work on the phone. To be
+re-checked on the phone (#5).
 
 # Not yet done
 
