@@ -36,9 +36,6 @@ modules:
           tag-pattern: ^v([\d.]+)$
   - name: pensum
     buildsystem: meson
-    post-install:
-      # Super Productivity's default values ship with Pensum (MIT).
-      - install -Dm644 LICENSES/MIT.txt /app/share/licenses/$FLATPAK_ID/super-productivity-defaults/LICENSE
     sources:
       - type: dir
         path: .

@@ -60,6 +60,9 @@ python.install_sources(
 # Loaded next to the Python files, also from the source tree.
 install_data('pensum/style.css', install_dir: pythondir / 'pensum')
 install_data('pensum/store/sp-defaults.json', install_dir: pythondir / 'pensum' / 'store')
+# Their licence: Super Productivity's default values are MIT (docs/dependencies.md).
+install_data('LICENSES/MIT.txt', rename: 'LICENSE',
+  install_dir: get_option('datadir') / 'licenses' / app_id / 'super-productivity-defaults')
 
 conf = configuration_data()
 conf.set('PYTHON', python.full_path())
