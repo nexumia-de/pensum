@@ -16,6 +16,9 @@ def summary(ds, task, today, running_ms=0):
     level = priority_level(task)
     if level:
         parts.append(PRIORITY_NAMES[level] + " priority")
+    planned = ds.planned_day(task) if not task.get("isDone") else None
+    if planned and planned > today:
+        parts.append("Planned " + dates.parse_day(planned).strftime("%a, %-d %b"))
     from pensum.store.tasks import deadline_day
     deadline = deadline_day(ds, task) if not task.get("isDone") else None
     if deadline:
@@ -47,7 +50,7 @@ MOVES = (("Move to Top", "top", -10_000), ("Move Up", "up", -1),
 class TaskRow(Adw.ActionRow):
     def __init__(self, window, task_id, context_label=None, context=None):
         """`context` is the list the row is in; None for a subtask row."""
-        super().__init__(activatable=True, title_lines=2, subtitle_lines=1)
+        super().__init__(activatable=True, title_lines=2, subtitle_lines=2)
         self.window = window
         self.task_id = task_id
         self.context_label = context_label
