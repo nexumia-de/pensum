@@ -2,7 +2,7 @@
 project and tags, notes, subtasks, and deleting it."""
 from datetime import datetime
 
-from gi.repository import Adw, GLib, Gtk
+from gi.repository import Adw, GLib, Gtk, Pango
 
 from pensum import duration
 from pensum.store import dates, tasks
@@ -22,11 +22,14 @@ class TaskPage(Adw.NavigationPage):
         # (phosh-toolkit adaptive rule 10).
         actions = Gtk.Box(spacing=12, homogeneous=True, margin_top=6, margin_bottom=6,
                           margin_start=12, margin_end=12)
-        self.done_button = Gtk.ToggleButton()
+        # Labels may shorten: two pill buttons must fit 360 px with any font.
+        self.done_label = Gtk.Label(ellipsize=Pango.EllipsizeMode.END)
+        self.done_button = Gtk.ToggleButton(child=self.done_label)
         self.done_button.add_css_class("pill")
         self._done_handler = self.done_button.connect("toggled", self._on_done)
         actions.append(self.done_button)
-        self.play = Gtk.Button()
+        self.play_label = Gtk.Label(ellipsize=Pango.EllipsizeMode.END)
+        self.play = Gtk.Button(child=self.play_label)
         self.play.add_css_class("pill")
         self.play.connect("clicked", lambda *_: window.timer.toggle(self.task_id))
         actions.append(self.play)
@@ -159,7 +162,7 @@ class TaskPage(Adw.NavigationPage):
         done = bool(task.get("isDone"))
         with self._blocked(self.done_button, self._done_handler):
             self.done_button.set_active(done)
-        self.done_button.set_label("Done" if done else "Mark as Done")
+        self.done_label.set_label("Done" if done else "Mark as Done")
 
         if initial:
             estimate = task.get("timeEstimate", 0)
@@ -232,7 +235,7 @@ class TaskPage(Adw.NavigationPage):
                                     f"{duration.format_short(today)} today")
         trackable = not task.get("subTaskIds") and not task.get("isDone")
         self.play.set_visible(trackable or running)
-        self.play.set_label("Stop Timer" if running else "Start Timer")
+        self.play_label.set_label("Stop Timer" if running else "Start Timer")
         if running:
             self.play.add_css_class("suggested-action")
         else:
