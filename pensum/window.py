@@ -68,8 +68,11 @@ class Window(Adw.ApplicationWindow):
 
         breakpoint = Adw.Breakpoint.new(
             Adw.BreakpointCondition.parse("min-width: 600sp"))
-        breakpoint.connect("apply", lambda *_: self._set_wide(True))
-        breakpoint.connect("unapply", lambda *_: self._set_wide(False))
+        # Breakpoints apply during size allocation; moving widgets then
+        # crashed the Broadway server in CI, so the move waits for idle.
+        breakpoint.connect("apply", lambda *_: self._queue_wide(True))
+        breakpoint.connect("unapply", lambda *_: self._queue_wide(False))
+        self._wide_source = None
         self.add_breakpoint(breakpoint)
 
         action = Gio.SimpleAction.new("add-task", None)
@@ -142,6 +145,17 @@ class Window(Adw.ApplicationWindow):
     def _unfocus(self):
         self.set_focus(None)
         return GLib.SOURCE_REMOVE
+
+    def _queue_wide(self, wide):
+        if self._wide_source is not None:
+            GLib.source_remove(self._wide_source)
+
+        def run():
+            self._wide_source = None
+            self._set_wide(wide)
+            return GLib.SOURCE_REMOVE
+
+        self._wide_source = GLib.idle_add(run)
 
     def _set_wide(self, wide):
         """Move the lists between the first page (phone) and the sidebar."""
