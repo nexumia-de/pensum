@@ -167,3 +167,14 @@ def test_priority_reads_words_and_writes_numbers(ds):
     tasks.set_priority(ds, task["id"], 0)
     assert task["priority"] is None
     valid(ds)
+
+
+def test_set_time_on_day(ds):
+    parent = tasks.add_task(ds, "P", Context.today(), NOW)
+    sub = tasks.add_subtask(ds, parent["id"], "S", NOW)
+    assert tracking.set_time_on_day(ds, sub["id"], "2026-05-01", 3_600_000)
+    assert parent["timeSpent"] == 3_600_000
+    assert not tracking.set_time_on_day(ds, parent["id"], "2026-05-01", 1)
+    tracking.set_time_on_day(ds, sub["id"], "2026-05-01", 0)
+    assert sub["timeSpentOnDay"] == {} and parent["timeSpent"] == 0
+    valid(ds)

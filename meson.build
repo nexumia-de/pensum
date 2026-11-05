@@ -47,6 +47,7 @@ python.install_sources(
   'pensum/ui/dialogs.py',
   'pensum/ui/sidebar.py',
   'pensum/ui/tags_dialog.py',
+  'pensum/ui/time_dialog.py',
   'pensum/ui/task_list.py',
   'pensum/ui/task_page.py',
   'pensum/ui/task_row.py',

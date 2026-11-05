@@ -32,7 +32,8 @@ class TaskPage(Adw.NavigationPage):
         page.add(main)
 
         time = Adw.PreferencesGroup(title="Time")
-        self.timer_row = Adw.ActionRow(title="Time Spent")
+        self.timer_row = Adw.ActionRow(title="Time Spent", activatable=True)
+        self.timer_row.connect("activated", self._on_edit_time)
         self.play = Gtk.Button(valign=Gtk.Align.CENTER)
         self.play.add_css_class("circular")
         self.play.connect("clicked", lambda *_: window.timer.toggle(self.task_id))
@@ -240,6 +241,14 @@ class TaskPage(Adw.NavigationPage):
     def _on_done(self, row, *_):
         tasks.set_done(self.window.ds, self.task_id, row.get_active())
         self._change()
+
+    def _on_edit_time(self, *_):
+        task = self.task
+        if task is None or task.get("subTaskIds"):
+            self.window.toast("A parent's time is the sum of its subtasks'")
+            return
+        from pensum.ui.time_dialog import TimeDialog
+        TimeDialog(self.window, self.task_id).present(self.window)
 
     def _on_estimate(self, row):
         ms = duration.parse(row.get_text())

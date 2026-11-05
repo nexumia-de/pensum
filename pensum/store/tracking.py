@@ -40,6 +40,25 @@ def add_time(ds, task_id, ms, now=None):
             tasks.schedule_day(ds, top["id"], day, now)
 
 
+def set_time_on_day(ds, task_id, day, ms, now=None):
+    """Correct the time of one day (0 removes the day). Parents are sums
+    of their subtasks and can't be set themselves."""
+    task = ds.tasks.get(task_id)
+    if not task or task.get("subTaskIds"):
+        return False
+    per_day = dict(task.get("timeSpentOnDay") or {})
+    if ms > 0:
+        per_day[day] = int(ms)
+    else:
+        per_day.pop(day, None)
+    task["timeSpentOnDay"] = per_day
+    task["timeSpent"] = sum(per_day.values())
+    task["modified"] = now or dates.now_ms()
+    if task.get("parentId"):
+        tasks.recalc_parent(ds, task["parentId"])
+    return True
+
+
 def _work_span(ds, kind, context_id, day, start, end):
     if not context_id:
         return

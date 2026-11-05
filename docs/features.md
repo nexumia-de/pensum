@@ -55,7 +55,7 @@ lost when the same backup goes back to Super Productivity.
 |---|---|---|
 | Timer on the current task, booked per day | `task.currentTaskId`, `timeSpentOnDay`, `timeTracking` | **M1, done** |
 | Work start and end per day | `timeTracking.*[id][day].s/e` | **M1, done** (written) |
-| Edit time spent per day | `timeSpentOnDay` | M2 |
+| Edit time spent per day | `timeSpentOnDay` | **M2, done** (#17) |
 | Worklog: time sheet by day, week, month, export | `task`, archives, `advancedCfg.worklogExportSettings` | M3 |
 | Daily summary and evaluation | `metric` | M3 |
 | Focus mode: Pomodoro, Flowtime, countdown | `globalConfig.pomodoro`, `focusMode`, `flowtime` | M3 |

@@ -157,3 +157,17 @@ def test_overdue_section(app, tmp_path):
     assert not page.overdue_header.get_visible()
     assert [r.task_id for r in page.rows] == [task["id"]]
     window.close()
+
+
+def test_time_dialog(app, tmp_path):
+    from pensum.store import tasks
+    from pensum.ui.time_dialog import TimeDialog
+    window = new_window(app, tmp_path)
+    task = tasks.add_task(window.ds, "T", Context.today())
+    dialog = TimeDialog(window, task["id"])
+    dialog.present(window)
+    iterate()
+    row = Adw.EntryRow(text="1h 5m")
+    dialog._on_apply(row, window.ds.today())
+    assert window.ds.task(task["id"])["timeSpent"] == 3_900_000
+    window.close()
