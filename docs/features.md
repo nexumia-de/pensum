@@ -26,11 +26,11 @@ lost when the same backup goes back to Super Productivity.
 | Subtasks with summed time and estimate | `task.subTaskIds`, `parentId` | **M1, done** |
 | Notes per task (Markdown) | `task.notes` | **M1, done** (plain text editing; Markdown rendering M2) |
 | Time estimate | `task.timeEstimate` | **M1, done** |
-| Inbox and projects: create, rename, archive, delete | `project`, `menuTree.projectTree` | **M1, done** (unarchive M2) |
+| Inbox and projects: create, rename, archive, delete | `project`, `menuTree.projectTree` | **M1, done** (incl. archived projects page) |
 | Tags: create, rename, delete, tag tasks | `tag`, `task.tagIds`, `menuTree.tagTree` | **M1, done** |
 | Today list (virtual tag, logical day) | `task.dueDay`/`dueWithTime`, `TODAY.taskIds` | **M1, done** |
 | Plan a task for a day | `task.dueDay`, `planner.days` | **M1, done** |
-| Reorder tasks | `project/tag.taskIds` | M1 (store done; drag in the UI open) |
+| Reorder tasks | `project/tag.taskIds`, `subTaskIds` | **M1**: menu (long press, right click, Alt+↑/↓) done; drag open (#3) |
 | Move a task to another project | `task.projectId` | **M1, done** |
 | Overdue tasks in Today | `dueDay` < today | M2 |
 | Plan with time of day, schedule timeline | `dueWithTime`, `hasPlannedTime`, `globalConfig.schedule` | M2 |

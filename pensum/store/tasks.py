@@ -170,26 +170,45 @@ def set_tags(ds, task_id, tag_ids, now=None):
     _touch(task, now or dates.now_ms())
 
 
-def move(ds, task_id, context, offset, today=None):
-    """Move a top-level task up (-1) or down (+1) in a list's order."""
+def _order_list(ds, context, today):
+    """The stored order a list's moves change, with every shown task in it."""
     if context.kind == "project":
-        order = ds.project_entities[context.id]["taskIds"]
-    elif context.kind == "tag":
+        return ds.project_entities[context.id]["taskIds"]
+    if context.kind == "tag":
         order = ds.tag_entities[context.id]["taskIds"]
     else:
         order = _today_order(ds)
-        for i in ds.top_level_ids(context, today):
-            if i not in order:
-                order.append(i)
-    visible = ds.top_level_ids(context, today)
+    for i in ds.top_level_ids(context, today):
+        if i not in order:
+            order.append(i)
+    return order
+
+
+def move(ds, task_id, context, offset, today=None):
+    """Move a task by `offset` places among the tasks a list shows (or, for
+    a subtask, among its parent's subtasks); a large offset moves it to the
+    top or the bottom. Returns True when it moved."""
+    task = ds.tasks.get(task_id)
+    if not task:
+        return False
+    parent = ds.tasks.get(task.get("parentId"))
+    if parent:
+        order = parent["subTaskIds"]
+        visible = list(order)
+    else:
+        order = _order_list(ds, context, today)
+        visible = ds.top_level_ids(context, today)
     if task_id not in visible:
-        return
-    index = visible.index(task_id) + offset
-    if not 0 <= index < len(visible):
-        return
-    neighbour = visible[index]
-    a, b = order.index(task_id), order.index(neighbour)
-    order[a], order[b] = order[b], order[a]
+        return False
+    index = visible.index(task_id)
+    target = max(0, min(len(visible) - 1, index + offset))
+    if target == index:
+        return False
+    neighbour = visible[target]
+    order.remove(task_id)
+    position = order.index(neighbour)
+    order.insert(position + (1 if offset > 0 else 0), task_id)
+    return True
 
 
 def delete(ds, task_id):

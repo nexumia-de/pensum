@@ -77,7 +77,9 @@ class TaskListPage(Adw.NavigationPage):
         menu = Gio.Menu()
         menu.append("Rename…", "list.rename")
         if self.context.kind == "project" and self.context.id != "INBOX_PROJECT":
-            menu.append("Archive Project", "list.archive")
+            archived = self.window.ds.project_entities[self.context.id].get("isArchived")
+            menu.append("Unarchive Project" if archived else "Archive Project",
+                        "list.archive")
         if self.context.id != "INBOX_PROJECT":
             menu.append("Delete…", "list.delete")
         return menu
@@ -97,9 +99,14 @@ class TaskListPage(Adw.NavigationPage):
                     ds.context_title(self.context), "Rename", done)
 
     def _on_archive(self, *_):
-        contexts.set_archived(self.window.ds, self.context.id, True)
-        self.window.toast("Project archived")
-        self.window.show_list(Context.today())
+        ds = self.window.ds
+        archived = not ds.project_entities[self.context.id].get("isArchived")
+        contexts.set_archived(ds, self.context.id, archived)
+        if archived:
+            self.window.toast("Project archived")
+            self.window.show_list(Context.today())
+        else:
+            self.window.toast("Project back in the sidebar")
         self.window.changed()
 
     def _on_delete(self, *_):
@@ -170,7 +177,7 @@ class TaskListPage(Adw.NavigationPage):
                                (self.done_list, done_tasks)):
             listbox.remove_all()
             for task in items:
-                row = TaskRow(self.window, task["id"], self._context_label)
+                row = TaskRow(self.window, task["id"], self._context_label, self.context)
                 self.rows.append(row)
                 listbox.append(row)
             listbox.set_visible(bool(items))
@@ -180,6 +187,13 @@ class TaskListPage(Adw.NavigationPage):
             else None)
         self.done_title.set_visible(bool(done_tasks))
         self.done_title.set_label(f"Done ({len(done_tasks)})")
+
+    def focus_row(self, task_id):
+        for row in self.rows:
+            if row.task_id == task_id:
+                row.grab_focus()
+                return True
+        return False
 
     def tick(self):
         running = self.window.timer.task_id

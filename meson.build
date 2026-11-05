@@ -42,6 +42,7 @@ python.install_sources(
 )
 python.install_sources(
   'pensum/ui/__init__.py',
+  'pensum/ui/archived_page.py',
   'pensum/ui/backup_actions.py',
   'pensum/ui/dialogs.py',
   'pensum/ui/sidebar.py',

@@ -163,6 +163,13 @@ class TaskPage(Adw.NavigationPage):
             self.sub_list.append(row)
         self.sub_list.append(self.sub_entry)
 
+    def focus_row(self, task_id):
+        for row in self.sub_rows:
+            if row.task_id == task_id:
+                row.grab_focus()
+                return True
+        return False
+
     def tick(self):
         task = self.task
         if task is None:

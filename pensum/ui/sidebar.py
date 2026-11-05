@@ -13,6 +13,7 @@ def main_menu():
     backup.append("Export Backup…", "app.export-backup")
     menu.append_section(None, backup)
     rest = Gio.Menu()
+    rest.append("Archived Projects", "app.show-archived")
     rest.append("Preferences", "app.preferences")
     rest.append("About Pensum", "app.about")
     menu.append_section(None, rest)

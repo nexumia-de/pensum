@@ -113,6 +113,12 @@ class Window(Adw.ApplicationWindow):
                 page.refresh()
         self.tracker_bar.refresh()
 
+    def focus_task_row(self, task_id):
+        """Keep the keyboard focus on a row after a move rebuilt the list."""
+        page = self.nav.get_visible_page()
+        if hasattr(page, "focus_row"):
+            page.focus_row(task_id)
+
     def _on_tick(self):
         self.tracker_bar.refresh()
         for page in self._pages():
@@ -146,7 +152,8 @@ class Window(Adw.ApplicationWindow):
     def show_list(self, context):
         if not self.ds.context_exists(context):
             context = Context.today()
-        self.nav.pop_to_page(self.list_page)
+        if self.nav.get_visible_page() is not self.list_page:
+            self.nav.pop_to_page(self.list_page)
         self.list_page.set_context(context)
         self.split.set_show_content(True)
         self.sidebar.select(context)
@@ -155,6 +162,12 @@ class Window(Adw.ApplicationWindow):
 
     def show_list_key(self, key):
         self.show_list(parse_context_key(key))
+
+    def show_archived(self):
+        from pensum.ui.archived_page import ArchivedPage
+        self.nav.pop_to_page(self.list_page)
+        self.split.set_show_content(True)
+        self.nav.push(ArchivedPage(self))
 
     def show_task(self, task_id):
         if task_id not in self.ds.tasks:

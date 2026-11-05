@@ -1,6 +1,6 @@
 """One task in a list: a check button to mark it done, the title with its
 time and subtask summary, and a button to start or stop its timer."""
-from gi.repository import Adw, GLib, Gtk
+from gi.repository import Adw, Gdk, Gio, GLib, Gtk
 
 from pensum import duration
 
@@ -23,12 +23,19 @@ def summary(ds, task, today, running_ms=0):
     return " · ".join(parts)
 
 
+MOVES = (("Move to Top", "top", -10_000), ("Move Up", "up", -1),
+         ("Move Down", "down", 1), ("Move to Bottom", "bottom", 10_000))
+
+
 class TaskRow(Adw.ActionRow):
-    def __init__(self, window, task_id, context_label=None):
+    def __init__(self, window, task_id, context_label=None, context=None):
+        """`context` is the list the row is in; None for a subtask row."""
         super().__init__(activatable=True, title_lines=2, subtitle_lines=1)
         self.window = window
         self.task_id = task_id
         self.context_label = context_label
+        self.context = context
+        self._add_move_menu()
         self.check = Gtk.CheckButton(valign=Gtk.Align.CENTER)
         self.check.add_css_class("selection-mode")
         self._check_handler = self.check.connect("toggled", self._on_done)
@@ -40,6 +47,45 @@ class TaskRow(Adw.ActionRow):
         self.add_suffix(self.play)
         self.connect("activated", lambda *_: window.show_task(task_id))
         self.refresh()
+
+    def _add_move_menu(self):
+        """Long press, right click or Alt+Up/Down reorder the task."""
+        group = Gio.SimpleActionGroup()
+        menu = Gio.Menu()
+        for label, name, offset in MOVES:
+            action = Gio.SimpleAction.new(name, None)
+            action.connect("activate", lambda *_, o=offset: self.move(o))
+            group.add_action(action)
+            menu.append(label, f"row.{name}")
+        self.insert_action_group("row", group)
+        self.popover = Gtk.PopoverMenu(menu_model=menu, has_arrow=True)
+        self.popover.set_parent(self)
+        self.connect("destroy", lambda *_: self.popover.unparent())
+        press = Gtk.GestureLongPress(touch_only=False)
+        press.connect("pressed", self._on_menu)
+        self.add_controller(press)
+        click = Gtk.GestureClick(button=Gdk.BUTTON_SECONDARY)
+        click.connect("pressed", self._on_menu)
+        self.add_controller(click)
+        keys = Gtk.ShortcutController()
+        for key, offset in (("<Alt>Up", -1), ("<Alt>Down", 1)):
+            keys.add_shortcut(Gtk.Shortcut.new(
+                Gtk.ShortcutTrigger.parse_string(key),
+                Gtk.CallbackAction.new(lambda *_, o=offset: self.move(o) or True)))
+        self.add_controller(keys)
+
+    def _on_menu(self, gesture, x, y):
+        gesture.set_state(Gtk.EventSequenceState.CLAIMED)
+        rect = Gdk.Rectangle()
+        rect.x, rect.y, rect.width, rect.height = int(x), int(y), 1, 1
+        self.popover.set_pointing_to(rect)
+        self.popover.popup()
+
+    def move(self, offset):
+        from pensum.store import tasks
+        if tasks.move(self.window.ds, self.task_id, self.context, offset):
+            self.window.changed()
+            self.window.focus_task_row(self.task_id)
 
     @property
     def task(self):

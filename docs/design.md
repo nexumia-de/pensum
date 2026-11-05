@@ -32,6 +32,9 @@ offers Follow System / Light / Dark. Metainfo branding colours:
 - **Task** (pushed, swipe back): title, done, time spent with the timer
   button, estimate, Today switch, planned day (calendar popover), project,
   tags (dialog), notes, subtasks (each opens its own page), delete.
+- **Row menu**: long press or right click on a task row opens Move to
+  Top / Up / Down / to Bottom; Alt+↑/↓ does the same from the keyboard.
+- **Archived Projects** (main menu): open or unarchive them.
 - **Timer bar** at the bottom while a task runs: title, time today,
   stop button; tapping it opens the task.
 
@@ -40,5 +43,5 @@ root, a list and its task pages are pushed on it.
 
 # Not yet done
 
-Drag to reorder (the store can move tasks), swipe actions on rows,
+Drag to reorder, swipe actions on rows,
 Markdown rendering of notes.

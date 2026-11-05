@@ -119,3 +119,25 @@ def test_demo_lists_menus_and_preferences(app, tmp_path):
     TagsDialog(window, current).present(window)
     iterate()
     window.close()
+
+
+def test_reorder_menu_and_archived_projects(app, tmp_path):
+    window = new_window(app, tmp_path, demo.create())
+    window.show_list(Context("project", "demo-garden"))
+    iterate()
+    first, second = (r.task_id for r in window.list_page.rows[:2])
+    window.list_page.rows[1].activate_action("row.top", None)
+    iterate()
+    assert [r.task_id for r in window.list_page.rows[:2]] == [second, first]
+    window.list_page.activate_action("list.archive", None)
+    iterate()
+    assert window.ds.project_entities["demo-garden"]["isArchived"]
+    assert "demo-garden" not in [p["id"] for p in window.ds.projects()]
+    window.show_archived()
+    iterate()
+    archived = window.nav.get_visible_page()
+    assert archived.stack.get_visible_child_name() == "list"
+    archived._on_unarchive(None, "demo-garden")
+    iterate()
+    assert not window.ds.project_entities["demo-garden"]["isArchived"]
+    window.close()

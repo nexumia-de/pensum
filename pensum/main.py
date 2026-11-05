@@ -39,6 +39,7 @@ class Application(Adw.Application):
                                ("export-backup", self._on_export),
                                ("show-current-task", self._on_show_current),
                                ("show-lists", self._on_show_lists),
+                               ("show-archived", self._on_show_archived),
                                ("quit", self._on_quit)):
             action = Gio.SimpleAction.new(name, None)
             action.connect("activate", callback)
@@ -97,6 +98,10 @@ class Application(Adw.Application):
     def _on_show_task(self, action, value):
         if self._window():
             self._window().show_task(value.unpack())
+
+    def _on_show_archived(self, *_):
+        if self._window():
+            self._window().show_archived()
 
     def _on_show_lists(self, *_):
         if self._window():

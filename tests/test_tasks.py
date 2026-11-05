@@ -123,3 +123,20 @@ def test_changes_on_real_backup_stay_valid(sp_backup):
     tasks.add_subtask(ds, task["id"], "Sub", NOW)
     tasks.delete(ds, "active-task-1")
     valid(ds)
+
+
+def test_move_to_edges_and_subtasks(ds):
+    a, b, c = (tasks.add_task(ds, n, Context.today(), NOW, top=False) for n in "abc")
+    day = ds.today(NOW)
+    assert tasks.move(ds, c["id"], Context.today(), -100, day)
+    assert ds.top_level_ids(Context.today(), day) == [c["id"], a["id"], b["id"]]
+    assert tasks.move(ds, c["id"], Context.today(), 100, day)
+    assert ds.top_level_ids(Context.today(), day) == [a["id"], b["id"], c["id"]]
+    assert not tasks.move(ds, c["id"], Context.today(), 1, day)
+    s1 = tasks.add_subtask(ds, a["id"], "s1", NOW)
+    s2 = tasks.add_subtask(ds, a["id"], "s2", NOW)
+    assert tasks.move(ds, s2["id"], None, -1)
+    assert a["subTaskIds"] == [s2["id"], s1["id"]]
+    project = Context("project", defaults.INBOX_ID)
+    assert tasks.move(ds, a["id"], project, 1, day)
+    valid(ds)
