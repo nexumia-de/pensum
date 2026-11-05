@@ -66,6 +66,9 @@ class TaskPage(Adw.NavigationPage):
         self.day_row.add_suffix(self.clear_day)
         self.day_row.add_suffix(day_button)
         plan.add(self.day_row)
+        self.time_row = Adw.EntryRow(title="Time, e.g. 14:30", show_apply_button=True)
+        self.time_row.connect("apply", self._on_time)
+        plan.add(self.time_row)
         self.deadline_row = Adw.ActionRow(title="Deadline")
         self.deadline_calendar = Gtk.Calendar()
         self.deadline_calendar.connect("day-selected", self._on_deadline)
@@ -165,6 +168,10 @@ class TaskPage(Adw.NavigationPage):
             day = dates.day_str(task["dueWithTime"])
         self.day_row.set_subtitle(self._day_label(day, today) if day else "Not planned")
         self.clear_day.set_visible(bool(day))
+        if initial or not self.time_row.has_focus():
+            due = task.get("dueWithTime")
+            self.time_row.set_text(datetime.fromtimestamp(due / 1000).strftime("%H:%M")
+                                   if due else "")
 
         deadline = tasks.deadline_day(ds, task)
         self.deadline_row.set_subtitle(self._day_label(deadline, today) if deadline
@@ -292,6 +299,22 @@ class TaskPage(Adw.NavigationPage):
         day = datetime(value.get_year(), value.get_month(),
                        value.get_day_of_month()).strftime("%Y-%m-%d")
         tasks.schedule_day(self.window.ds, self.task_id, day)
+        self._change()
+
+    def _on_time(self, row):
+        text = row.get_text().strip()
+        ds = self.window.ds
+        if not text:
+            tasks.clear_time(ds, self.task_id)
+            self._change()
+            return
+        try:
+            moment = datetime.strptime(text.replace(".", ":"), "%H:%M")
+        except ValueError:
+            self.window.toast("Write the time like 14:30")
+            return
+        day = ds.planned_day(self.task) or ds.today()
+        tasks.schedule_time(ds, self.task_id, day, moment.hour, moment.minute)
         self._change()
 
     def _on_clear_day(self, *_):

@@ -258,3 +258,15 @@ def test_deadline(ds):
     tasks.set_deadline(ds, task["id"], None)
     assert tasks.deadline_day(ds, task) is None
     valid(ds)
+
+
+def test_schedule_time(ds):
+    task = tasks.add_task(ds, "t", Context.today(), NOW)
+    day = ds.today(NOW)
+    tasks.schedule_time(ds, task["id"], day, 14, 30, NOW)
+    assert "dueDay" not in task and task["hasPlannedTime"]
+    assert ds.planned_day(task) == day and ds.is_due_today(task, day)
+    assert task["id"] in ds.top_level_ids(Context.today(), day)
+    tasks.clear_time(ds, task["id"], NOW)
+    assert task["dueDay"] == day and "dueWithTime" not in task
+    valid(ds)

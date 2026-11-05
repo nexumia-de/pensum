@@ -16,6 +16,10 @@ def summary(ds, task, today, running_ms=0):
     level = priority_level(task)
     if level:
         parts.append(PRIORITY_NAMES[level] + " priority")
+    if task.get("dueWithTime") and not task.get("isDone"):
+        from datetime import datetime
+        clock = datetime.fromtimestamp(task["dueWithTime"] / 1000).strftime("%H:%M")
+        parts.append(f"At {clock}")
     planned = ds.planned_day(task) if not task.get("isDone") else None
     if planned and planned > today:
         parts.append("Planned " + dates.parse_day(planned).strftime("%a, %-d %b"))

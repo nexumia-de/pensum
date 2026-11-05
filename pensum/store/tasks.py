@@ -142,6 +142,31 @@ def schedule_day(ds, task_id, day, now=None):
     _touch(task, now)
 
 
+def schedule_time(ds, task_id, day, hours, minutes, now=None):
+    """Plan a task at a time of day: dueWithTime replaces dueDay
+    (ARCHITECTURE-DECISIONS #1); Today's and the planner's lists follow."""
+    from datetime import datetime
+    now = now or dates.now_ms()
+    schedule_day(ds, task_id, day, now)
+    task = ds.tasks[task_id]
+    moment = datetime.combine(dates.parse_day(day), datetime.min.time()).replace(
+        hour=hours, minute=minutes)
+    task["dueWithTime"] = int(moment.timestamp() * 1000)
+    task.pop("dueDay", None)
+    task["hasPlannedTime"] = True
+    _touch(task, now)
+
+
+def clear_time(ds, task_id, now=None):
+    """Keep the planned day, drop the time."""
+    task = ds.tasks[task_id]
+    if not task.get("dueWithTime"):
+        return
+    day = ds.today(task["dueWithTime"])
+    schedule_day(ds, task_id, day, now)
+    task["hasPlannedTime"] = False
+
+
 def move_to_project(ds, task_id, project_id, now=None):
     task = ds.tasks[task_id]
     if task.get("parentId") or task.get("projectId") == project_id:

@@ -10,3 +10,4 @@
 * **Backlog**: a project's backlog tasks (hidden before, though kept) show in a collapsible Backlog section; the row menu moves tasks between list and backlog and reorders inside the backlog (#10). 52 tests.
 * **Search**: search button in the sidebar header (Ctrl+F); titles and notes of open and archived tasks, all words must match; open tasks open their page (#15). 54 tests.
 * **Deadlines**: a Deadline row with calendar on the task page and "Deadline …/today/passed" in the row subtitle; reads deadlineWithTime, writes deadlineDay (#8). 55 tests.
+* **Time of day**: a Time row on the task page sets dueWithTime (dueDay removed, hasPlannedTime), empty clears it back to the day; rows show "At 14:30" and a later planned day (#7). 56 tests.
