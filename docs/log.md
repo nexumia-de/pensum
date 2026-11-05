@@ -12,3 +12,6 @@
 * **Deadlines**: a Deadline row with calendar on the task page and "Deadline …/today/passed" in the row subtitle; reads deadlineWithTime, writes deadlineDay (#8). 55 tests.
 * **Time of day**: a Time row on the task page sets dueWithTime (dueDay removed, hasPlannedTime), empty clears it back to the day; rows show "At 14:30" and a later planned day (#7). 56 tests.
 * **Short syntax**: the add field understands `+project`, `#tag` (new tags are created, numbers are not tags), `1h 30m`, `10m/1h`, `p1`–`p3` (p1 high), `@today`, `@tomorrow`, `@fri`, with `14:30`, following Super Productivity's characters and switches (#14). 71 tests.
+
+## 2026-11-05 (later)
+* **Swipe back and thumb reach**: the owner reported that swiping back did not work on the phone and asked for the controls at the bottom. One navigation view now holds every page (lists as first page on the phone, sidebar from 600 sp) instead of a navigation view nested in a split view's content; Search/Add List, the add field, Mark as Done and the timer moved into bottom bars; deleting and Finish Day offer Undo instead of a confirmation ([design](design.md)). Tests check that the window has exactly one `AdwNavigationView`. The gesture itself still has to be checked on the phone.

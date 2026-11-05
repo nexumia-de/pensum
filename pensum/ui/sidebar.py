@@ -34,19 +34,22 @@ class Sidebar(Adw.Bin):
         toolbar = Adw.ToolbarView()
         self.set_child(toolbar)
         header = Adw.HeaderBar(title_widget=Adw.WindowTitle(title=NAME))
-        add = Gtk.MenuButton(icon_name="list-add-symbolic", menu_model=add_menu(),
-                             tooltip_text="Add List")
-        add.update_property([Gtk.AccessibleProperty.LABEL], ["Add List"])
-        header.pack_start(add)
         menu = Gtk.MenuButton(icon_name="open-menu-symbolic", primary=True,
                               menu_model=main_menu(), tooltip_text="Main Menu")
         menu.update_property([Gtk.AccessibleProperty.LABEL], ["Main Menu"])
         header.pack_end(menu)
+        toolbar.add_top_bar(header)
+        # Frequent actions within thumb reach (phosh-toolkit adaptive rule 10).
+        bar = Gtk.ActionBar()
         find = Gtk.Button(icon_name="system-search-symbolic", tooltip_text="Search",
                           action_name="app.search")
         find.update_property([Gtk.AccessibleProperty.LABEL], ["Search"])
-        header.pack_end(find)
-        toolbar.add_top_bar(header)
+        bar.pack_start(find)
+        add = Gtk.MenuButton(icon_name="list-add-symbolic", menu_model=add_menu(),
+                             tooltip_text="Add List", direction=Gtk.ArrowType.UP)
+        add.update_property([Gtk.AccessibleProperty.LABEL], ["Add List"])
+        bar.pack_end(add)
+        toolbar.add_bottom_bar(bar)
         for name, kind in (("new-project", "project"), ("new-tag", "tag")):
             action = Gio.SimpleAction.new(name, None)
             action.connect("activate", self._on_new, kind)

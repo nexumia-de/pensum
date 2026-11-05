@@ -18,6 +18,19 @@ class TaskPage(Adw.NavigationPage):
         self._notes_source = None
         toolbar = Adw.ToolbarView()
         toolbar.add_top_bar(Adw.HeaderBar())
+        # The two things done most with a task, within thumb reach
+        # (phosh-toolkit adaptive rule 10).
+        actions = Gtk.Box(spacing=12, homogeneous=True, margin_top=6, margin_bottom=6,
+                          margin_start=12, margin_end=12)
+        self.done_button = Gtk.ToggleButton()
+        self.done_button.add_css_class("pill")
+        self._done_handler = self.done_button.connect("toggled", self._on_done)
+        actions.append(self.done_button)
+        self.play = Gtk.Button()
+        self.play.add_css_class("pill")
+        self.play.connect("clicked", lambda *_: window.timer.toggle(self.task_id))
+        actions.append(self.play)
+        toolbar.add_bottom_bar(Adw.Clamp(child=actions, maximum_size=480))
         page = Adw.PreferencesPage()
         toolbar.set_content(page)
         self.set_child(toolbar)
@@ -26,18 +39,12 @@ class TaskPage(Adw.NavigationPage):
         self.title_row = Adw.EntryRow(title="Title", show_apply_button=True)
         self.title_row.connect("apply", self._on_title)
         main.add(self.title_row)
-        self.done_row = Adw.SwitchRow(title="Done")
-        self._done_handler = self.done_row.connect("notify::active", self._on_done)
-        main.add(self.done_row)
         page.add(main)
 
         time = Adw.PreferencesGroup(title="Time")
         self.timer_row = Adw.ActionRow(title="Time Spent", activatable=True)
         self.timer_row.connect("activated", self._on_edit_time)
-        self.play = Gtk.Button(valign=Gtk.Align.CENTER)
-        self.play.add_css_class("circular")
-        self.play.connect("clicked", lambda *_: window.timer.toggle(self.task_id))
-        self.timer_row.add_suffix(self.play)
+        self.timer_row.add_suffix(Gtk.Image(icon_name="go-next-symbolic"))
         time.add(self.timer_row)
         self.estimate_row = Adw.EntryRow(title="Estimate, e.g. 1h 30m",
                                          show_apply_button=True)
@@ -149,8 +156,11 @@ class TaskPage(Adw.NavigationPage):
         if initial or not self.title_row.has_focus():
             self.title_row.set_text(task.get("title") or "")
         self.set_title(task.get("title") or "Task")
-        with self._blocked(self.done_row, self._done_handler):
-            self.done_row.set_active(bool(task.get("isDone")))
+        done = bool(task.get("isDone"))
+        with self._blocked(self.done_button, self._done_handler):
+            self.done_button.set_active(done)
+        self.done_button.set_label("Done" if done else "Mark as Done")
+
         if initial:
             estimate = task.get("timeEstimate", 0)
             self.estimate_row.set_text(duration.format_short(estimate) if estimate else "")
@@ -222,11 +232,7 @@ class TaskPage(Adw.NavigationPage):
                                     f"{duration.format_short(today)} today")
         trackable = not task.get("subTaskIds") and not task.get("isDone")
         self.play.set_visible(trackable or running)
-        tip = "Stop Timer" if running else "Start Timer"
-        self.play.set_icon_name("media-playback-pause-symbolic" if running
-                                else "media-playback-start-symbolic")
-        self.play.set_tooltip_text(tip)
-        self.play.update_property([Gtk.AccessibleProperty.LABEL], [tip])
+        self.play.set_label("Stop Timer" if running else "Start Timer")
         if running:
             self.play.add_css_class("suggested-action")
         else:
@@ -374,18 +380,14 @@ class TaskPage(Adw.NavigationPage):
         entry.grab_focus()
 
     def _on_delete(self, *_):
-        from pensum.ui.dialogs import confirm_dialog
+        """Delete at once and offer Undo, instead of asking first (GNOME
+        HIG: undo is better than a confirmation dialog)."""
         task = self.task
-        count = len(task.get("subTaskIds", ()))
-        body = (f"Its {count} subtasks and the time tracked on them are deleted too."
-                if count else "The time tracked on it is deleted too.")
-
-        def done():
-            if self.window.timer.task_id in [self.task_id] + task.get("subTaskIds", []):
-                self.window.timer.stop()
-            self.window.nav.pop()
-            tasks.delete(self.window.ds, self.task_id)
-            self.window.changed()
-
-        confirm_dialog(self.window, f"Delete “{task.get('title') or 'Untitled'}”?",
-                       body, "Delete", done)
+        if task is None:
+            return
+        if self.window.timer.task_id in [self.task_id] + task.get("subTaskIds", []):
+            self.window.timer.stop()
+        title = task.get("title") or "Untitled"
+        self.window.nav.pop()
+        self.window.undoable(f"“{title}” deleted",
+                             lambda: tasks.delete(self.window.ds, self.task_id))

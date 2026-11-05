@@ -36,7 +36,10 @@ class TrackerBar(Gtk.ActionBar):
         ds = self.window.ds
         task_id = self.window.timer.task_id
         task = ds.task(task_id) if task_id else None
-        self.set_revealed(task is not None)
+        # The running task's own page has the timer button already.
+        visible = self.window.nav.get_visible_page()
+        on_own_page = task is not None and getattr(visible, "task_id", None) == task_id
+        self.set_revealed(task is not None and not on_own_page)
         if task is None:
             return
         self.title.set_label(task.get("title") or "Untitled")
