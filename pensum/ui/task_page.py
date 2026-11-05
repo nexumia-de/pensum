@@ -46,7 +46,7 @@ class TaskPage(Adw.NavigationPage):
         self.timer_row.connect("activated", self._on_edit_time)
         self.timer_row.add_suffix(Gtk.Image(icon_name="go-next-symbolic"))
         time.add(self.timer_row)
-        self.estimate_row = Adw.EntryRow(title="Estimate, e.g. 1h 30m",
+        self.estimate_row = Adw.EntryRow(title="Estimate (like 1h 30m)",
                                          show_apply_button=True)
         self.estimate_row.connect("apply", self._on_estimate)
         time.add(self.estimate_row)
@@ -73,7 +73,7 @@ class TaskPage(Adw.NavigationPage):
         self.day_row.add_suffix(self.clear_day)
         self.day_row.add_suffix(day_button)
         plan.add(self.day_row)
-        self.time_row = Adw.EntryRow(title="Time, e.g. 14:30", show_apply_button=True)
+        self.time_row = Adw.EntryRow(title="Time (like 14:30)", show_apply_button=True)
         self.time_row.connect("apply", self._on_time)
         plan.add(self.time_row)
         self.deadline_row = Adw.ActionRow(title="Deadline")
