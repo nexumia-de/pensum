@@ -42,7 +42,7 @@ lost when the same backup goes back to Super Productivity.
 | Reminders as notifications | `task.remindAt`, `reminders`, `globalConfig.reminder` | M2 |
 | Short syntax when adding (`#tag +project 1h @tomorrow`) | `globalConfig.shortSyntax` | M2 |
 | Search | – | M2 |
-| Finish day: archive done tasks | `archiveYoung`, `archiveOld`, `task` | M2 |
+| Finish day: archive done tasks | `archiveYoung`, `archiveOld`, `task` | **M2, done** (#16) |
 | Project notes | `note`, `project.noteIds` | M3 |
 | Attachments and project bookmarks | `task.attachments` | M3 (show and open links) |
 | Menu folders for projects and tags | `menuTree` folders | M3 (shown; editing later) |

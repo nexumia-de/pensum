@@ -171,3 +171,14 @@ def test_time_dialog(app, tmp_path):
     dialog._on_apply(row, window.ds.today())
     assert window.ds.task(task["id"])["timeSpent"] == 3_900_000
     window.close()
+
+
+def test_finish_day(app, tmp_path):
+    window = new_window(app, tmp_path, demo.create())
+    page = window.list_page
+    assert page.done_header.get_visible()
+    page._on_finish()
+    iterate()
+    assert not page.done_header.get_visible()
+    assert validate.problems(window.ds.data) == []
+    window.close()

@@ -27,6 +27,7 @@ python.install_sources(
 # Folder modules, one file per job.
 python.install_sources(
   'pensum/store/__init__.py',
+  'pensum/store/archive.py',
   'pensum/store/autobackup.py',
   'pensum/store/backup.py',
   'pensum/store/contexts.py',

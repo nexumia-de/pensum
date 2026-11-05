@@ -137,7 +137,21 @@ flags `monday` … `sunday`, `monthlyWeekOfMonth`/`monthlyWeekday`/
 `lastTaskCreation`/`lastTaskCreationDay` (when an instance was last
 made). Instances are normal tasks with `repeatCfgId`.
 
-## Cross-model checks on import
+### Archive (`src/app/features/archive/archive.service.ts`)
+
+"Finish Day" moves done top-level tasks with their subtasks from `task`
+into `archiveYoung.task`. On the way it drops `reminderId`, `dueDay`,
+`dueWithTime` and `_hideSubTasksMode`, sets `isDone`, and keeps or sets
+`doneOn` (subtasks get their parent's). It removes the ids from every
+project, tag, section and planner day. Every work span except today's
+moves from `timeTracking` into `archiveYoung.timeTracking`, and
+`archiveYoung.lastFlush` is set. When `archiveOld.lastTimeTrackingFlush`
+is missing or older than 14 days, top-level tasks done more than 21 days
+ago move to `archiveOld`, all of `archiveYoung.timeTracking` merges into
+`archiveOld`, and both archives get `lastTimeTrackingFlush`. Pensum does
+the same (`pensum/store/archive.py`).
+
+# Cross-model checks on import
 
 From `is-related-model-data-valid.ts`, ported to
 `pensum/store/validate.py` and run by the tests after every kind of

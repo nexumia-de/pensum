@@ -59,9 +59,16 @@ class TaskListPage(Adw.NavigationPage):
         box.append(self.empty)
         self.open_list = boxed_list()
         box.append(self.open_list)
-        self.done_title = Gtk.Label(xalign=0, margin_top=6)
+        self.done_header = Gtk.Box(spacing=12, margin_top=6)
+        self.done_title = Gtk.Label(xalign=0, hexpand=True)
         self.done_title.add_css_class("heading")
-        box.append(self.done_title)
+        self.done_header.append(self.done_title)
+        self.finish = Gtk.Button(label="Finish Day")
+        self.finish.add_css_class("flat")
+        self.finish.set_tooltip_text("Move the done tasks into the archive")
+        self.finish.connect("clicked", self._on_finish)
+        self.done_header.append(self.finish)
+        box.append(self.done_header)
         self.done_list = boxed_list()
         box.append(self.done_list)
         clamp = Adw.Clamp(child=box, maximum_size=720)
@@ -159,6 +166,17 @@ class TaskListPage(Adw.NavigationPage):
         self.window.changed()
         entry.grab_focus()
 
+    def _on_finish(self, *_):
+        from pensum.store import archive
+        ds = self.window.ds
+        if self.window.timer.task_id:
+            self.window.timer.book()
+        done = archive.finishable(ds, self.context)
+        count = archive.archive_tasks(ds, [t["id"] for t in done])
+        self.window.toast(f"{count} done tasks archived" if count != 1
+                          else "1 done task archived")
+        self.window.changed()
+
     def _on_move_overdue(self, *_):
         ds = self.window.ds
         today = ds.today()
@@ -219,7 +237,8 @@ class TaskListPage(Adw.NavigationPage):
         self.empty.set_description(
             "Tasks you plan for today show here." if self.context.kind == "today"
             else None)
-        self.done_title.set_visible(bool(done_tasks))
+        self.done_header.set_visible(bool(done_tasks))
+        self.finish.set_label("Finish Day" if self.context.kind == "today" else "Archive Done")
         self.done_title.set_label(f"Done ({len(done_tasks)})")
 
     def focus_row(self, task_id):

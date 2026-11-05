@@ -178,3 +178,39 @@ def test_set_time_on_day(ds):
     tracking.set_time_on_day(ds, sub["id"], "2026-05-01", 0)
     assert sub["timeSpentOnDay"] == {} and parent["timeSpent"] == 0
     valid(ds)
+
+
+def test_finish_day_archives_done_tasks(ds):
+    from pensum.store import archive
+    day = ds.today(NOW)
+    parent = tasks.add_task(ds, "P", Context.today(), NOW)
+    sub = tasks.add_subtask(ds, parent["id"], "S", NOW)
+    tracking.add_time(ds, sub["id"], 60_000, NOW)
+    ds.data["timeTracking"]["project"][defaults.INBOX_ID]["2026-05-01"] = {"s": 1, "e": 2}
+    open_task = tasks.add_task(ds, "open", Context.today(), NOW)
+    tasks.set_done(ds, parent["id"], True, NOW)
+    done = archive.finishable(ds, Context.today(), day)
+    assert [t["id"] for t in done] == [parent["id"]]
+    assert archive.archive_tasks(ds, [parent["id"]], NOW) == 2
+    assert set(ds.tasks) == {open_task["id"]}
+    young = ds.data["archiveYoung"]
+    # The first flush moves everything to archiveOld at once.
+    old = ds.data["archiveOld"]
+    archived = {**young["task"]["entities"], **old["task"]["entities"]}
+    assert archived[sub["id"]]["doneOn"] == NOW and "dueDay" not in archived[parent["id"]]
+    assert ds.data["timeTracking"]["project"][defaults.INBOX_ID] == {
+        day: {"s": NOW - 60_000, "e": NOW}}
+    assert "2026-05-01" in old["timeTracking"]["project"][defaults.INBOX_ID]
+    # Time worked today still counts.
+    assert tracking.day_total(ds, day) == 60_000
+    valid(ds)
+
+
+def test_young_archive_kept_until_flush_due(ds):
+    from pensum.store import archive
+    ds.data["archiveOld"]["lastTimeTrackingFlush"] = NOW - 86_400_000
+    task = tasks.add_task(ds, "x", Context.today(), NOW)
+    tasks.set_done(ds, task["id"], True, NOW)
+    archive.archive_tasks(ds, [task["id"]], NOW)
+    assert task["id"] in ds.data["archiveYoung"]["task"]["entities"]
+    valid(ds)
