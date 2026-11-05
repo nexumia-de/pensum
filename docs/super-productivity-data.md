@@ -190,5 +190,4 @@ e2e backups; Super Productivity accepts that.
 
 - An export of Pensum's has not been imported into a running Super
   Productivity yet; the cross-model checks are ported and tested, the
-  typia type check is not (#issue "Verify round trip in Super
-  Productivity" in M1).
+  typia type check is not ([#2](https://github.com/nexumia-de/pensum/issues/2)).
