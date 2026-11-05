@@ -65,6 +65,11 @@ class TaskPage(Adw.NavigationPage):
         self.day_row.add_suffix(self.clear_day)
         self.day_row.add_suffix(day_button)
         plan.add(self.day_row)
+        self.priority_row = Adw.ComboRow(title="Priority", model=Gtk.StringList.new(
+            ["None", "Low", "Medium", "High"]))
+        self._priority_handler = self.priority_row.connect("notify::selected",
+                                                           self._on_priority)
+        plan.add(self.priority_row)
         self.project_row = Adw.ComboRow(title="Project")
         self._project_ids = []
         self._project_handler = self.project_row.connect("notify::selected",
@@ -141,6 +146,8 @@ class TaskPage(Adw.NavigationPage):
         self.day_row.set_subtitle(self._day_label(day, today) if day else "Not planned")
         self.clear_day.set_visible(bool(day))
 
+        with self._blocked(self.priority_row, self._priority_handler):
+            self.priority_row.set_selected(tasks.priority_level(task))
         top_level = not task.get("parentId")
         self.project_row.set_visible(top_level)
         projects = ds.projects()
@@ -257,6 +264,10 @@ class TaskPage(Adw.NavigationPage):
 
     def _on_clear_day(self, *_):
         tasks.schedule_day(self.window.ds, self.task_id, None)
+        self._change()
+
+    def _on_priority(self, row, *_):
+        tasks.set_priority(self.window.ds, self.task_id, row.get_selected())
         self._change()
 
     def _on_project(self, row, *_):

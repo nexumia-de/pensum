@@ -237,3 +237,23 @@ def delete(ds, task_id):
     if parent:
         _drop(parent["subTaskIds"], task_id)
         recalc_parent(ds, parent["id"])
+
+
+# Priority: 3 high, 2 medium, 1 low; older data has the words. Writes are
+# numbers, null clears (Super Productivity's task-priority-compatibility).
+_PRIORITY_WORDS = {"high": 3, "medium": 2, "low": 1}
+
+
+def priority_level(task):
+    value = task.get("priority")
+    if isinstance(value, str):
+        return _PRIORITY_WORDS.get(value, 0)
+    return value if value in (1, 2, 3) else 0
+
+
+def set_priority(ds, task_id, level, now=None):
+    task = ds.tasks[task_id]
+    if priority_level(task) == level:
+        return  # same meaning: keep the stored form
+    task["priority"] = level if level in (1, 2, 3) else None
+    _touch(task, now or dates.now_ms())

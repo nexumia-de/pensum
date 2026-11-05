@@ -5,9 +5,16 @@ from gi.repository import Adw, Gdk, Gio, GLib, Gtk
 from pensum import duration
 
 
+PRIORITY_NAMES = {1: "Low", 2: "Medium", 3: "High"}
+
+
 def summary(ds, task, today, running_ms=0):
     """"25m / 1h · 2 of 3 subtasks · Garden": what the row's subtitle says."""
+    from pensum.store.tasks import priority_level
     parts = []
+    level = priority_level(task)
+    if level:
+        parts.append(PRIORITY_NAMES[level] + " priority")
     spent = task.get("timeSpent", 0) + running_ms
     estimate = task.get("timeEstimate", 0)
     if spent and estimate:

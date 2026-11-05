@@ -153,3 +153,17 @@ def test_overdue_tasks(ds):
     tasks.schedule_day(ds, old["id"], day, NOW)
     assert ds.overdue_tasks(day) == []
     assert ds.top_level_ids(Context.today(), day) == [old["id"]]
+
+
+def test_priority_reads_words_and_writes_numbers(ds):
+    task = tasks.add_task(ds, "p", Context.today(), NOW)
+    assert tasks.priority_level(task) == 0
+    task["priority"] = "high"
+    assert tasks.priority_level(task) == 3
+    tasks.set_priority(ds, task["id"], 3)
+    assert task["priority"] == "high"  # same meaning: stored form kept
+    tasks.set_priority(ds, task["id"], 1)
+    assert task["priority"] == 1
+    tasks.set_priority(ds, task["id"], 0)
+    assert task["priority"] is None
+    valid(ds)

@@ -38,6 +38,7 @@ def create(now=None):
     call = tasks.add_task(ds, "Call the plumber about the boiler", today, now, top=False)
     tasks.set_tags(ds, call["id"], [calls["id"]], now)
     tasks.set_estimate(ds, call["id"], ms(10), now)
+    tasks.set_priority(ds, call["id"], 3, now)
 
     seeds = tasks.add_task(ds, "Buy tomato seeds", today, now, top=False)
     tasks.move_to_project(ds, seeds["id"], garden["id"], now)
