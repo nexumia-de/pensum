@@ -169,7 +169,11 @@ class TaskListPage(Adw.NavigationPage):
         title = entry.get_text().strip()
         if not title:
             return
-        tasks.add_task(self.window.ds, title, self.context)
+        from pensum.store import short_syntax
+        ds = self.window.ds
+        parsed = short_syntax.parse(ds, title)
+        task = tasks.add_task(ds, parsed.title, self.context)
+        short_syntax.apply(ds, task, parsed)
         entry.set_text("")
         self.window.changed()
         entry.grab_focus()

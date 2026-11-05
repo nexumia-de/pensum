@@ -11,3 +11,4 @@
 * **Search**: search button in the sidebar header (Ctrl+F); titles and notes of open and archived tasks, all words must match; open tasks open their page (#15). 54 tests.
 * **Deadlines**: a Deadline row with calendar on the task page and "Deadline …/today/passed" in the row subtitle; reads deadlineWithTime, writes deadlineDay (#8). 55 tests.
 * **Time of day**: a Time row on the task page sets dueWithTime (dueDay removed, hasPlannedTime), empty clears it back to the day; rows show "At 14:30" and a later planned day (#7). 56 tests.
+* **Short syntax**: the add field understands `+project`, `#tag` (new tags are created, numbers are not tags), `1h 30m`, `10m/1h`, `p1`–`p3` (p1 high), `@today`, `@tomorrow`, `@fri`, with `14:30`, following Super Productivity's characters and switches (#14). 71 tests.
