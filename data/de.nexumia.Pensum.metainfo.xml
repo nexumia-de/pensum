@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>de.nexumia.Pensum</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>AGPL-3.0-or-later</project_license>
+  <name>Pensum</name>
+  <summary>Plan your day and track the time you spend on tasks</summary>
+  <description>
+    <p>
+      Pensum is a light task list with time tracking for Phosh phones and
+      the desktop. It keeps your tasks in the backup format of Super
+      Productivity, so a backup moves between both apps without changes.
+    </p>
+    <ul>
+      <li>Today's list, projects and tags</li>
+      <li>Tasks with subtasks, notes, estimates and a planned day</li>
+      <li>A timer per task that books the time on the day you worked</li>
+      <li>Import and export of Super Productivity backups, and automatic backups</li>
+      <li>Works offline; needs no account and no network</li>
+    </ul>
+    <p>
+      Pensum is an independent project and not affiliated with the Super
+      Productivity project.
+    </p>
+  </description>
+  <developer id="de.nexumia">
+    <name>suitably</name>
+  </developer>
+  <url type="homepage">https://github.com/nexumia-de/pensum</url>
+  <url type="bugtracker">https://github.com/nexumia-de/pensum/issues</url>
+  <url type="vcs-browser">https://github.com/nexumia-de/pensum</url>
+  <url type="donation">https://liberapay.com/suitably</url>
+  <launchable type="desktop-id">de.nexumia.Pensum.desktop</launchable>
+  <content_rating type="oars-1.1"/>
+  <branding>
+    <color type="primary" scheme_preference="light">#cdc8f2</color>
+    <color type="primary" scheme_preference="dark">#2e2666</color>
+  </branding>
+  <categories>
+    <category>Office</category>
+  </categories>
+  <recommends>
+    <display_length compare="ge">360</display_length>
+  </recommends>
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+    <control>touch</control>
+  </supports>
+  <releases>
+    <release version="0.1.0" date="2026-11-05">
+      <description>
+        <p>First version: Today, projects and tags, tasks with subtasks and a timer, in Super Productivity's backup format.</p>
+      </description>
+    </release>
+  </releases>
+</component>

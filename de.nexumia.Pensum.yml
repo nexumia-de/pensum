@@ -1,0 +1,46 @@
+id: de.nexumia.Pensum
+runtime: org.gnome.Platform
+runtime-version: '51'
+sdk: org.gnome.Sdk
+command: pensum
+finish-args:
+  - --share=ipc
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --device=dri
+  # No network and no file system access: the dataset lives in the
+  # app's own data directory; backups are opened and saved through the
+  # file chooser portal (docs/super-productivity-data.md).
+cleanup:
+  - /include
+  - /lib/pkgconfig
+  - '*.a'
+  - '*.la'
+# Everything else Pensum needs is in the GNOME runtime (GTK, libadwaita,
+# Python). Inventory: docs/dependencies.md.
+modules:
+  # Shared settings and style code (phosh-toolkit
+  # docs/shared-connection.md), next to Pensum's package in site-packages.
+  - name: phosh-toolkit
+    buildsystem: simple
+    build-commands:
+      - install -Dm644 -t "$(python3 -c 'import sysconfig; print(sysconfig.get_path("purelib", vars={"base":"/app"}))')/phosh_toolkit" lib/phosh_toolkit/*.py
+      - install -Dm644 -t /app/share/licenses/$FLATPAK_ID/phosh-toolkit LICENSE
+    sources:
+      - type: git
+        url: https://github.com/nexumia-de/phosh-toolkit.git
+        tag: v0.3.0
+        commit: c29a2a106dd2328c24d0201f1cc31f7da7c695f2
+        x-checker-data:
+          type: git
+          tag-pattern: ^v([\d.]+)$
+  - name: pensum
+    buildsystem: meson
+    sources:
+      - type: dir
+        path: .
+        skip:
+          - build-dir
+          - repo
+          - tests
+          - .phosh-toolkit

@@ -1,0 +1,30 @@
+# Release automation: changelog fragments, release pull request and
+# screenshots (phosh-toolkit docs/releases.md, docs/release-channels.md).
+metainfo = "data/de.nexumia.Pensum.metainfo.xml"
+version-files = ["meson.build", "pensum/__init__.py"]
+
+# Taken by CI from the built Flatpak at 360×720 and 1000×700, light and
+# dark, with the made-up dataset of pensum/demo.py (PENSUM_DEMO=1),
+# never real tasks. No network is used.
+[screenshots]
+env = { PENSUM_DEMO = "1", TZ = "Europe/Berlin" }
+delay = 6
+
+[[screenshots.shot]]
+name = "today"
+caption = "Today's tasks with their time and estimates"
+
+[[screenshots.shot]]
+name = "task"
+caption = "A task with its timer running"
+actions = ["app.show-current-task"]
+
+[[screenshots.shot]]
+name = "lists"
+caption = "Projects and tags"
+actions = ["app.show-lists"]
+
+[[screenshots.shot]]
+name = "project"
+caption = "A project's tasks"
+actions = ["app.show-list('project:demo-garden')"]
