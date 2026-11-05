@@ -163,6 +163,13 @@ class Window(Adw.ApplicationWindow):
     def show_list_key(self, key):
         self.show_list(parse_context_key(key))
 
+    def show_search(self):
+        from pensum.ui.search_page import SearchPage
+        if isinstance(self.nav.get_visible_page(), SearchPage):
+            return
+        self.split.set_show_content(True)
+        self.nav.push(SearchPage(self))
+
     def show_archived(self):
         from pensum.ui.archived_page import ArchivedPage
         self.nav.pop_to_page(self.list_page)

@@ -41,7 +41,7 @@ lost when the same backup goes back to Super Productivity.
 | Repeating tasks | `taskRepeatCfg`, `task.repeatCfgId` | M2 |
 | Reminders as notifications | `task.remindAt`, `reminders`, `globalConfig.reminder` | M2 |
 | Short syntax when adding (`#tag +project 1h @tomorrow`) | `globalConfig.shortSyntax` | M2 |
-| Search | – | M2 |
+| Search | titles and notes, archive included | **M2, done** (#15) |
 | Finish day: archive done tasks | `archiveYoung`, `archiveOld`, `task` | **M2, done** (#16) |
 | Project notes | `note`, `project.noteIds` | M3 |
 | Attachments and project bookmarks | `task.attachments` | M3 (show and open links) |

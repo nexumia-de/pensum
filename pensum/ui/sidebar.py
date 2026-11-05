@@ -42,6 +42,10 @@ class Sidebar(Adw.Bin):
                               menu_model=main_menu(), tooltip_text="Main Menu")
         menu.update_property([Gtk.AccessibleProperty.LABEL], ["Main Menu"])
         header.pack_end(menu)
+        find = Gtk.Button(icon_name="system-search-symbolic", tooltip_text="Search",
+                          action_name="app.search")
+        find.update_property([Gtk.AccessibleProperty.LABEL], ["Search"])
+        header.pack_end(find)
         toolbar.add_top_bar(header)
         for name, kind in (("new-project", "project"), ("new-tag", "tag")):
             action = Gio.SimpleAction.new(name, None)

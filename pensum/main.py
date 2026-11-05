@@ -40,6 +40,7 @@ class Application(Adw.Application):
                                ("show-current-task", self._on_show_current),
                                ("show-lists", self._on_show_lists),
                                ("show-archived", self._on_show_archived),
+                               ("search", self._on_search),
                                ("quit", self._on_quit)):
             action = Gio.SimpleAction.new(name, None)
             action.connect("activate", callback)
@@ -54,6 +55,7 @@ class Application(Adw.Application):
         self.set_accels_for_action("app.quit", ["<Control>q"])
         self.set_accels_for_action("app.preferences", ["<Control>comma"])
         self.set_accels_for_action("win.add-task", ["<Control>n"])
+        self.set_accels_for_action("app.search", ["<Control>f"])
 
     def do_startup(self):
         Adw.Application.do_startup(self)
@@ -98,6 +100,10 @@ class Application(Adw.Application):
     def _on_show_task(self, action, value):
         if self._window():
             self._window().show_task(value.unpack())
+
+    def _on_search(self, *_):
+        if self._window():
+            self._window().show_search()
 
     def _on_show_archived(self, *_):
         if self._window():

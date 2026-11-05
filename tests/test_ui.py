@@ -199,3 +199,18 @@ def test_backlog_section(app, tmp_path):
     iterate()
     assert not page.backlog.get_visible()
     window.close()
+
+
+def test_search_page(app, tmp_path):
+    window = new_window(app, tmp_path, demo.create())
+    window.show_search()
+    iterate()
+    page = window.nav.get_visible_page()
+    page.entry.set_text("plumber")
+    page.refresh()
+    row = page.results.get_row_at_index(0)
+    assert row is not None and row.task_id
+    page._on_activated(page.results, row)
+    iterate()
+    assert window.nav.get_visible_page().task_id == row.task_id
+    window.close()

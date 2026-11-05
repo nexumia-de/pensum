@@ -231,3 +231,19 @@ def test_backlog(ds):
     assert tasks.set_backlog(ds, a["id"], False)
     assert ds.top_level_ids(ctx) == [a["id"]]
     valid(ds)
+
+
+def test_search_open_and_archived(ds):
+    from pensum.store import archive
+    from pensum.store.search import search
+    a = tasks.add_task(ds, "Buy Tomato seeds", Context.today(), NOW)
+    b = tasks.add_task(ds, "Water", Context.today(), NOW)
+    tasks.update(ds, b["id"], notes="the tomatoes too")
+    c = tasks.add_task(ds, "tomato soup", Context.today(), NOW)
+    tasks.set_done(ds, c["id"], True, NOW)
+    archive.archive_tasks(ds, [c["id"]], NOW)
+    found = search(ds, "TOMATO")
+    assert {t["id"] for t, archived in found if not archived} == {a["id"], b["id"]}
+    assert [t["id"] for t, archived in found if archived] == [c["id"]]
+    assert search(ds, "tomato seeds")[0][0]["id"] == a["id"]
+    assert search(ds, "  ") == []
