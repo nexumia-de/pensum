@@ -247,3 +247,14 @@ def test_search_open_and_archived(ds):
     assert [t["id"] for t, archived in found if archived] == [c["id"]]
     assert search(ds, "tomato seeds")[0][0]["id"] == a["id"]
     assert search(ds, "  ") == []
+
+
+def test_deadline(ds):
+    task = tasks.add_task(ds, "d", Context.today(), NOW)
+    task["deadlineWithTime"] = NOW
+    assert tasks.deadline_day(ds, task) == ds.today(NOW)
+    tasks.set_deadline(ds, task["id"], "2026-06-01")
+    assert tasks.deadline_day(ds, task) == "2026-06-01" and task["deadlineWithTime"] is None
+    tasks.set_deadline(ds, task["id"], None)
+    assert tasks.deadline_day(ds, task) is None
+    valid(ds)

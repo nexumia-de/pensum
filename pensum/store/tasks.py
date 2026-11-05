@@ -280,3 +280,20 @@ def set_priority(ds, task_id, level, now=None):
         return  # same meaning: keep the stored form
     task["priority"] = level if level in (1, 2, 3) else None
     _touch(task, now or dates.now_ms())
+
+
+def deadline_day(ds, task):
+    """The deadline's day: deadlineWithTime's day wins over deadlineDay."""
+    if task.get("deadlineWithTime"):
+        return ds.today(task["deadlineWithTime"])
+    return task.get("deadlineDay") or None
+
+
+def set_deadline(ds, task_id, day, now=None):
+    """A deadline on a day (None clears it); a day replaces a time."""
+    task = ds.tasks[task_id]
+    task["deadlineDay"] = day
+    task["deadlineWithTime"] = None
+    if day is None:
+        task["deadlineRemindAt"] = None
+    _touch(task, now or dates.now_ms())

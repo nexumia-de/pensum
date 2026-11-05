@@ -49,6 +49,8 @@ def create(now=None):
     tracking.add_time(ds, mail["id"], ms(35), now - ms(90))
     tasks.set_done(ds, mail["id"], True, now - ms(55))
 
+    tasks.set_deadline(ds, review["id"], (datetime.fromtimestamp(now / 1000)
+                                          + timedelta(days=3)).strftime("%Y-%m-%d"), now)
     tasks.update(ds, review["id"], now,
                  notes="Focus on the phone layout first; the desktop "
                        "version was reviewed last week.")

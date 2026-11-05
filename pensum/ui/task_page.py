@@ -66,6 +66,25 @@ class TaskPage(Adw.NavigationPage):
         self.day_row.add_suffix(self.clear_day)
         self.day_row.add_suffix(day_button)
         plan.add(self.day_row)
+        self.deadline_row = Adw.ActionRow(title="Deadline")
+        self.deadline_calendar = Gtk.Calendar()
+        self.deadline_calendar.connect("day-selected", self._on_deadline)
+        deadline_button = Gtk.MenuButton(icon_name="x-office-calendar-symbolic",
+                                         popover=Gtk.Popover(child=self.deadline_calendar),
+                                         valign=Gtk.Align.CENTER,
+                                         tooltip_text="Choose Deadline")
+        deadline_button.add_css_class("flat")
+        deadline_button.update_property([Gtk.AccessibleProperty.LABEL], ["Choose Deadline"])
+        self.clear_deadline = Gtk.Button(icon_name="edit-clear-symbolic",
+                                         valign=Gtk.Align.CENTER,
+                                         tooltip_text="Remove Deadline")
+        self.clear_deadline.add_css_class("flat")
+        self.clear_deadline.update_property([Gtk.AccessibleProperty.LABEL],
+                                            ["Remove Deadline"])
+        self.clear_deadline.connect("clicked", self._on_clear_deadline)
+        self.deadline_row.add_suffix(self.clear_deadline)
+        self.deadline_row.add_suffix(deadline_button)
+        plan.add(self.deadline_row)
         self.priority_row = Adw.ComboRow(title="Priority", model=Gtk.StringList.new(
             ["None", "Low", "Medium", "High"]))
         self._priority_handler = self.priority_row.connect("notify::selected",
@@ -147,6 +166,10 @@ class TaskPage(Adw.NavigationPage):
         self.day_row.set_subtitle(self._day_label(day, today) if day else "Not planned")
         self.clear_day.set_visible(bool(day))
 
+        deadline = tasks.deadline_day(ds, task)
+        self.deadline_row.set_subtitle(self._day_label(deadline, today) if deadline
+                                       else "None")
+        self.clear_deadline.set_visible(bool(deadline))
         with self._blocked(self.priority_row, self._priority_handler):
             self.priority_row.set_selected(tasks.priority_level(task))
         top_level = not task.get("parentId")
@@ -273,6 +296,17 @@ class TaskPage(Adw.NavigationPage):
 
     def _on_clear_day(self, *_):
         tasks.schedule_day(self.window.ds, self.task_id, None)
+        self._change()
+
+    def _on_deadline(self, calendar):
+        value = calendar.get_date()
+        day = datetime(value.get_year(), value.get_month(),
+                       value.get_day_of_month()).strftime("%Y-%m-%d")
+        tasks.set_deadline(self.window.ds, self.task_id, day)
+        self._change()
+
+    def _on_clear_deadline(self, *_):
+        tasks.set_deadline(self.window.ds, self.task_id, None)
         self._change()
 
     def _on_priority(self, row, *_):

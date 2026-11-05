@@ -3,6 +3,7 @@ time and subtask summary, and a button to start or stop its timer."""
 from gi.repository import Adw, Gdk, Gio, GLib, Gtk
 
 from pensum import duration
+from pensum.store import dates
 
 
 PRIORITY_NAMES = {1: "Low", 2: "Medium", 3: "High"}
@@ -15,6 +16,15 @@ def summary(ds, task, today, running_ms=0):
     level = priority_level(task)
     if level:
         parts.append(PRIORITY_NAMES[level] + " priority")
+    from pensum.store.tasks import deadline_day
+    deadline = deadline_day(ds, task) if not task.get("isDone") else None
+    if deadline:
+        if deadline < today:
+            parts.append("Deadline passed")
+        elif deadline == today:
+            parts.append("Deadline today")
+        else:
+            parts.append("Deadline " + dates.parse_day(deadline).strftime("%a, %-d %b"))
     spent = task.get("timeSpent", 0) + running_ms
     estimate = task.get("timeEstimate", 0)
     if spent and estimate:

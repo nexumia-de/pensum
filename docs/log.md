@@ -9,3 +9,4 @@
 * **Finish day**: Finish Day (Today) or Archive Done (other lists) moves done tasks with their subtasks into the archive and older work spans with them, including the 14/21-day flush into archiveOld, following Super Productivity's ArchiveService (#16). 50 tests.
 * **Backlog**: a project's backlog tasks (hidden before, though kept) show in a collapsible Backlog section; the row menu moves tasks between list and backlog and reorders inside the backlog (#10). 52 tests.
 * **Search**: search button in the sidebar header (Ctrl+F); titles and notes of open and archived tasks, all words must match; open tasks open their page (#15). 54 tests.
+* **Deadlines**: a Deadline row with calendar on the task page and "Deadline …/today/passed" in the row subtitle; reads deadlineWithTime, writes deadlineDay (#8). 55 tests.
