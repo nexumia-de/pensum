@@ -37,11 +37,11 @@ keep the title, back and the menu ([adaptive rule 10](../../phosh-toolkit/docs/a
 - **Task** (pushed, swipe back): title, time spent (opens the time
   editor), estimate, Today, planned day and time, deadline, priority,
   project, tags, notes, subtasks, and Delete at the end (out of easy
-  reach on purpose). Mark as Done and Start/Stop Timer in a bottom bar.
+  reach on purpose). Mark as Done and Start/Stop Timer in a bottom bar, as normal buttons at least 44 px high (`.pensum-bar-button`); `pill` buttons there made gtk4-broadwayd crash in about half of the CI screenshots (checked locally with the GNOME 51 Flatpak, 2026-11-05).
 - **Row menu**: long press or right click on a task row opens Move to
   Top / Up / Down / to Bottom; Alt+↑/↓ does the same from the keyboard.
 - **Timer bar** at the very bottom while a task runs: title, time today,
-  stop button; tapping it opens the task. Hidden on that task's own page.
+  stop button; tapping it opens the task. Hidden on that task's own page, without the reveal animation (animating it while the page slid in crashed gtk4-broadwayd).
 - **Undo**: deleting a task or a list and Finish Day act at once and
   show a toast with Undo (GNOME HIG: undo instead of confirmation).
   Import still asks first; it replaces everything.
