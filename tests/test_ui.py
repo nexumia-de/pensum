@@ -182,3 +182,20 @@ def test_finish_day(app, tmp_path):
     assert not page.done_header.get_visible()
     assert validate.problems(window.ds.data) == []
     window.close()
+
+
+def test_backlog_section(app, tmp_path):
+    from pensum.store import tasks
+    window = new_window(app, tmp_path, demo.create())
+    garden = Context("project", "demo-garden")
+    first = window.ds.top_level_ids(garden)[0]
+    tasks.set_backlog(window.ds, first, True)
+    window.show_list(garden)
+    iterate()
+    page = window.list_page
+    assert page.backlog.get_visible()
+    backlog_row = [r for r in page.rows if r.task_id == first][0]
+    backlog_row.activate_action("row.backlog", None)
+    iterate()
+    assert not page.backlog.get_visible()
+    window.close()

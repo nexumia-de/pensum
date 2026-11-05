@@ -36,7 +36,7 @@ lost when the same backup goes back to Super Productivity.
 | Plan with time of day, schedule timeline | `dueWithTime`, `hasPlannedTime`, `globalConfig.schedule` | M2 |
 | Deadlines | `deadlineDay`, `deadlineWithTime`, `deadlineRemindAt` | M2 |
 | Priority | `task.priority` | **M2, done** (#9) |
-| Backlog of a project | `project.backlogTaskIds`, `isEnableBacklog` | M2 |
+| Backlog of a project | `project.backlogTaskIds`, `isEnableBacklog` | **M2, done** (#10) |
 | Sections in a list | `section` | M2 |
 | Repeating tasks | `taskRepeatCfg`, `task.repeatCfgId` | M2 |
 | Reminders as notifications | `task.remindAt`, `reminders`, `globalConfig.reminder` | M2 |

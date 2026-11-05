@@ -156,6 +156,24 @@ def move_to_project(ds, task_id, project_id, now=None):
         _touch(sub, now or dates.now_ms())
 
 
+def set_backlog(ds, task_id, in_backlog, now=None):
+    """Move a project's top-level task between its list and its backlog."""
+    task = ds.tasks[task_id]
+    project = ds.project_entities.get(task.get("projectId"))
+    if not project or task.get("parentId"):
+        return False
+    source, target = (("taskIds", "backlogTaskIds") if in_backlog
+                      else ("backlogTaskIds", "taskIds"))
+    if task_id not in project.get(source, []):
+        return False
+    _drop(project[source], task_id)
+    project.setdefault(target, []).insert(0, task_id)
+    if in_backlog:
+        project["isEnableBacklog"] = True
+    _touch(task, now or dates.now_ms())
+    return True
+
+
 def set_tags(ds, task_id, tag_ids, now=None):
     task = ds.tasks[task_id]
     tag_ids = [t for t in tag_ids if t in ds.tag_entities and t != TODAY_ID]
@@ -192,8 +210,13 @@ def move(ds, task_id, context, offset, today=None):
     if not task:
         return False
     parent = ds.tasks.get(task.get("parentId"))
+    backlog = (ds.project_entities.get(context.id, {}).get("backlogTaskIds", [])
+               if context is not None and context.kind == "project" else [])
     if parent:
         order = parent["subTaskIds"]
+        visible = list(order)
+    elif task_id in backlog:
+        order = backlog
         visible = list(order)
     else:
         order = _order_list(ds, context, today)

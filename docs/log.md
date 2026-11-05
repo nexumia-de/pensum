@@ -7,3 +7,4 @@
 * **Priority**: None/Low/Medium/High on the task page and in the row subtitle; reads Super Productivity's numbers and the older words, writes numbers, keeps the stored form when the meaning does not change (#9). 45 tests.
 * **Edit time spent**: tapping Time Spent opens a dialog with a field per worked day, today and days added from a calendar; parents stay sums of their subtasks (#17). 47 tests.
 * **Finish day**: Finish Day (Today) or Archive Done (other lists) moves done tasks with their subtasks into the archive and older work spans with them, including the 14/21-day flush into archiveOld, following Super Productivity's ArchiveService (#16). 50 tests.
+* **Backlog**: a project's backlog tasks (hidden before, though kept) show in a collapsible Backlog section; the row menu moves tasks between list and backlog and reorders inside the backlog (#10). 52 tests.

@@ -214,3 +214,20 @@ def test_young_archive_kept_until_flush_due(ds):
     archive.archive_tasks(ds, [task["id"]], NOW)
     assert task["id"] in ds.data["archiveYoung"]["task"]["entities"]
     valid(ds)
+
+
+def test_backlog(ds):
+    project = contexts.add_project(ds, "B")
+    ctx = Context("project", project["id"])
+    a = tasks.add_task(ds, "a", ctx, NOW)
+    b = tasks.add_task(ds, "b", ctx, NOW)
+    assert tasks.set_backlog(ds, a["id"], True)
+    assert project["isEnableBacklog"] and project["backlogTaskIds"] == [a["id"]]
+    assert ds.top_level_ids(ctx) == [b["id"]]
+    assert [t["id"] for t in ds.backlog_tasks(project["id"])] == [a["id"]]
+    tasks.set_backlog(ds, b["id"], True)
+    assert tasks.move(ds, a["id"], ctx, -1)
+    assert project["backlogTaskIds"] == [a["id"], b["id"]]
+    assert tasks.set_backlog(ds, a["id"], False)
+    assert ds.top_level_ids(ctx) == [a["id"]]
+    valid(ds)

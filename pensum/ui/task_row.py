@@ -64,6 +64,13 @@ class TaskRow(Adw.ActionRow):
             action.connect("activate", lambda *_, o=offset: self.move(o))
             group.add_action(action)
             menu.append(label, f"row.{name}")
+        self.backlog_action = Gio.SimpleAction.new("backlog", None)
+        self.backlog_action.connect("activate", self._on_backlog)
+        group.add_action(self.backlog_action)
+        if self.context is not None and self.context.kind == "project":
+            section = Gio.Menu()
+            section.append("Move to Backlog / List", "row.backlog")
+            menu.append_section(None, section)
         self.insert_action_group("row", group)
         self.popover = Gtk.PopoverMenu(menu_model=menu, has_arrow=True)
         self.popover.set_parent(self)
@@ -87,6 +94,14 @@ class TaskRow(Adw.ActionRow):
         rect.x, rect.y, rect.width, rect.height = int(x), int(y), 1, 1
         self.popover.set_pointing_to(rect)
         self.popover.popup()
+
+    def _on_backlog(self, *_):
+        from pensum.store import tasks
+        ds = self.window.ds
+        project = ds.project_entities.get((self.task or {}).get("projectId")) or {}
+        in_backlog = self.task_id in project.get("backlogTaskIds", [])
+        if tasks.set_backlog(ds, self.task_id, not in_backlog):
+            self.window.changed()
 
     def move(self, offset):
         from pensum.store import tasks

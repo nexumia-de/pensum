@@ -71,6 +71,14 @@ class TaskListPage(Adw.NavigationPage):
         box.append(self.done_header)
         self.done_list = boxed_list()
         box.append(self.done_list)
+        self.backlog = Gtk.Expander(margin_top=6)
+        self.backlog_title = Gtk.Label(xalign=0)
+        self.backlog_title.add_css_class("heading")
+        self.backlog.set_label_widget(self.backlog_title)
+        self.backlog_list = boxed_list()
+        self.backlog_list.set_margin_top(12)
+        self.backlog.set_child(self.backlog_list)
+        box.append(self.backlog)
         clamp = Adw.Clamp(child=box, maximum_size=720)
         self.scroller = Gtk.ScrolledWindow(child=clamp,
                                            hscrollbar_policy=Gtk.PolicyType.NEVER)
@@ -233,6 +241,15 @@ class TaskListPage(Adw.NavigationPage):
                 self.rows.append(row)
                 listbox.append(row)
             listbox.set_visible(bool(items))
+        backlog = (ds.backlog_tasks(self.context.id)
+                   if self.context.kind == "project" else [])
+        self.backlog_list.remove_all()
+        for task in backlog:
+            row = TaskRow(self.window, task["id"], None, self.context)
+            self.rows.append(row)
+            self.backlog_list.append(row)
+        self.backlog.set_visible(bool(backlog))
+        self.backlog_title.set_label(f"Backlog ({len(backlog)})")
         self.empty.set_visible(not open_tasks)
         self.empty.set_description(
             "Tasks you plan for today show here." if self.context.kind == "today"
