@@ -32,7 +32,7 @@ lost when the same backup goes back to Super Productivity.
 | Plan a task for a day | `task.dueDay`, `planner.days` | **M1, done** |
 | Reorder tasks | `project/tag.taskIds`, `subTaskIds` | **M1**: menu (long press, right click, Alt+↑/↓) done; drag open (#3) |
 | Move a task to another project | `task.projectId` | **M1, done** |
-| Overdue tasks in Today | `dueDay` < today | M2 |
+| Overdue tasks in Today | `dueDay` < today | **M2, done** (#6) |
 | Plan with time of day, schedule timeline | `dueWithTime`, `hasPlannedTime`, `globalConfig.schedule` | M2 |
 | Deadlines | `deadlineDay`, `deadlineWithTime`, `deadlineRemindAt` | M2 |
 | Priority | `task.priority` | M2 |

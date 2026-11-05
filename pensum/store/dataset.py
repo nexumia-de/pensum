@@ -127,6 +127,20 @@ class Dataset:
             ids += [i for i in self.data["task"]["ids"] if i in member and i not in ids]
         return [i for i in ids if i in self.tasks]
 
+    def planned_day(self, task):
+        """The day a task is planned for: dueWithTime's day wins over dueDay."""
+        if task.get("dueWithTime"):
+            return self.today(task["dueWithTime"])
+        return task.get("dueDay") or None
+
+    def overdue_tasks(self, today=None):
+        """Open top-level tasks planned for a day before today, oldest first."""
+        today = today or self.today()
+        found = [t for t in self.tasks.values()
+                 if not t.get("isDone") and not t.get("parentId")
+                 and (self.planned_day(t) or today) < today]
+        return sorted(found, key=lambda t: (self.planned_day(t), t.get("created", 0)))
+
     def _parent_due_today(self, task, today):
         parent = self.tasks.get(task.get("parentId"))
         return bool(parent) and self.is_due_today(parent, today)

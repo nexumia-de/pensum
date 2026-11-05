@@ -4,7 +4,7 @@ delete)."""
 from gi.repository import Adw, Gio, GLib, Gtk
 
 from pensum import duration
-from pensum.store import contexts, tasks, tracking
+from pensum.store import contexts, dates, tasks, tracking
 from pensum.store.dataset import Context
 from pensum.ui.task_row import TaskRow
 
@@ -41,6 +41,18 @@ class TaskListPage(Adw.NavigationPage):
         self.entry.connect("apply", self._on_add)
         add_list.append(self.entry)
         box.append(add_list)
+        overdue_header = Gtk.Box(spacing=12)
+        self.overdue_title = Gtk.Label(xalign=0, hexpand=True)
+        self.overdue_title.add_css_class("heading")
+        overdue_header.append(self.overdue_title)
+        move_all = Gtk.Button(label="Move All to Today")
+        move_all.add_css_class("flat")
+        move_all.connect("clicked", self._on_move_overdue)
+        overdue_header.append(move_all)
+        self.overdue_header = overdue_header
+        box.append(overdue_header)
+        self.overdue_list = boxed_list()
+        box.append(self.overdue_list)
         self.empty = Adw.StatusPage(icon_name="checkbox-checked-symbolic",
                                     title="No Open Tasks")
         self.empty.add_css_class("compact")
@@ -147,6 +159,19 @@ class TaskListPage(Adw.NavigationPage):
         self.window.changed()
         entry.grab_focus()
 
+    def _on_move_overdue(self, *_):
+        ds = self.window.ds
+        today = ds.today()
+        for task in ds.overdue_tasks(today):
+            tasks.schedule_day(ds, task["id"], today)
+        self.window.changed()
+
+    def _overdue_label(self, task):
+        day = self.window.ds.planned_day(task)
+        project = self._context_label(task)
+        label = dates.parse_day(day).strftime("%a, %-d %b") if day else ""
+        return " · ".join(p for p in (label, project) if p)
+
     def _context_label(self, task):
         """In Today and tag lists the row also names the task's project."""
         if self.context.kind == "project":
@@ -173,6 +198,15 @@ class TaskListPage(Adw.NavigationPage):
                              else "Add Task")
         open_tasks, done_tasks = ds.list_tasks(self.context, today)
         self.rows = []
+        overdue = ds.overdue_tasks(today) if self.context.kind == "today" else []
+        self.overdue_list.remove_all()
+        for task in overdue:
+            row = TaskRow(self.window, task["id"], self._overdue_label, self.context)
+            self.rows.append(row)
+            self.overdue_list.append(row)
+        self.overdue_list.set_visible(bool(overdue))
+        self.overdue_header.set_visible(bool(overdue))
+        self.overdue_title.set_label(f"Overdue ({len(overdue)})")
         for listbox, items in ((self.open_list, open_tasks),
                                (self.done_list, done_tasks)):
             listbox.remove_all()

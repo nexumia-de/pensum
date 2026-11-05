@@ -140,3 +140,16 @@ def test_move_to_edges_and_subtasks(ds):
     project = Context("project", defaults.INBOX_ID)
     assert tasks.move(ds, a["id"], project, 1, day)
     valid(ds)
+
+
+def test_overdue_tasks(ds):
+    day = ds.today(NOW)
+    old = tasks.add_task(ds, "old", Context.today(), NOW)
+    tasks.schedule_day(ds, old["id"], dates.shift_day(day, -2), NOW)
+    done = tasks.add_task(ds, "done", Context.today(), NOW)
+    tasks.schedule_day(ds, done["id"], dates.shift_day(day, -1), NOW)
+    tasks.set_done(ds, done["id"], True, NOW)
+    assert [t["id"] for t in ds.overdue_tasks(day)] == [old["id"]]
+    tasks.schedule_day(ds, old["id"], day, NOW)
+    assert ds.overdue_tasks(day) == []
+    assert ds.top_level_ids(Context.today(), day) == [old["id"]]

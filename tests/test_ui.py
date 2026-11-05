@@ -141,3 +141,19 @@ def test_reorder_menu_and_archived_projects(app, tmp_path):
     iterate()
     assert not window.ds.project_entities["demo-garden"]["isArchived"]
     window.close()
+
+
+def test_overdue_section(app, tmp_path):
+    from pensum.store import dates, tasks
+    window = new_window(app, tmp_path)
+    task = tasks.add_task(window.ds, "Late", Context.today())
+    tasks.schedule_day(window.ds, task["id"], dates.shift_day(window.ds.today(), -3))
+    window.changed()
+    iterate()
+    page = window.list_page
+    assert page.overdue_header.get_visible()
+    page._on_move_overdue()
+    iterate()
+    assert not page.overdue_header.get_visible()
+    assert [r.task_id for r in page.rows] == [task["id"]]
+    window.close()

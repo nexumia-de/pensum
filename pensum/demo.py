@@ -59,5 +59,9 @@ def create(now=None):
                           top=False)
     tasks.schedule_day(ds, plan["id"], (datetime.fromtimestamp(now / 1000)
                                         + timedelta(days=2)).strftime("%Y-%m-%d"), now)
+    books = tasks.add_task(ds, "Return the library books", today, now, top=False)
+    tasks.set_tags(ds, books["id"], [errands["id"]], now)
+    tasks.schedule_day(ds, books["id"], (datetime.fromtimestamp(now / 1000)
+                                         - timedelta(days=1)).strftime("%Y-%m-%d"), now)
     tracking.set_current(ds, review["subTaskIds"][1])
     return ds
