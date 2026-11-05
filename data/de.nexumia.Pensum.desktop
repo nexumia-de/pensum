@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Pensum
+GenericName=Tasks and Time Tracking
+Comment=Plan your day and track the time you spend on tasks
+Exec=pensum
+Icon=de.nexumia.Pensum
+Terminal=false
+Categories=GTK;Office;ProjectManagement;
+Keywords=todo;to-do;tasks;time tracking;timer;projects;planner;super productivity;
+StartupNotify=true
+X-Purism-FormFactor=Workstation;Mobile;

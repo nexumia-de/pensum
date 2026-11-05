@@ -1,0 +1,23 @@
+/* Pensum's look on top of stock libadwaita (docs/design.md). Colours only
+   through libadwaita's variables; the accent is Pensum's indigo. */
+
+/* libadwaita 1.5 (host previews) reads named colours. */
+@define-color accent_bg_color #5b4fc7;
+@define-color accent_fg_color #ffffff;
+@define-color accent_color #5b4fc7;
+
+/* libadwaita 1.6+ derives the accent text colour from these. */
+:root {
+  --accent-bg-color: #5b4fc7;
+  --accent-fg-color: #ffffff;
+}
+
+/* The task whose timer runs: its play button in the accent colour. */
+.pensum-running button.circular {
+  color: @accent_color;
+}
+
+/* Room for the notes. */
+.pensum-notes {
+  background: none;
+}

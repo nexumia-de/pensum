@@ -1,0 +1,194 @@
+"""A list of tasks (Today, a project or a tag): the field that adds a task,
+the open tasks, the done ones, and the list's menu (rename, archive,
+delete)."""
+from gi.repository import Adw, Gio, GLib, Gtk
+
+from pensum import duration
+from pensum.store import contexts, tasks, tracking
+from pensum.store.dataset import Context
+from pensum.ui.task_row import TaskRow
+
+
+def boxed_list():
+    listbox = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
+    listbox.add_css_class("boxed-list")
+    return listbox
+
+
+class TaskListPage(Adw.NavigationPage):
+    def __init__(self, window, context):
+        super().__init__(title="Today", tag="list")
+        self.window = window
+        self.context = context
+        self.rows = []
+        toolbar = Adw.ToolbarView()
+        header = Adw.HeaderBar()
+        self.title = Adw.WindowTitle()
+        header.set_title_widget(self.title)
+        self.menu = Gtk.MenuButton(icon_name="view-more-symbolic",
+                                   tooltip_text="List Menu")
+        self.menu.update_property([Gtk.AccessibleProperty.LABEL], ["List Menu"])
+        header.pack_end(self.menu)
+        toolbar.add_top_bar(header)
+        self._add_actions()
+
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=18,
+                      margin_top=12, margin_bottom=24, margin_start=12, margin_end=12)
+        add_list = boxed_list()
+        self.entry = Adw.EntryRow(title="Add Task")
+        self.entry.set_show_apply_button(True)
+        self.entry.connect("entry-activated", self._on_add)
+        self.entry.connect("apply", self._on_add)
+        add_list.append(self.entry)
+        box.append(add_list)
+        self.empty = Adw.StatusPage(icon_name="checkbox-checked-symbolic",
+                                    title="No Open Tasks")
+        self.empty.add_css_class("compact")
+        box.append(self.empty)
+        self.open_list = boxed_list()
+        box.append(self.open_list)
+        self.done_title = Gtk.Label(xalign=0, margin_top=6)
+        self.done_title.add_css_class("heading")
+        box.append(self.done_title)
+        self.done_list = boxed_list()
+        box.append(self.done_list)
+        clamp = Adw.Clamp(child=box, maximum_size=720)
+        self.scroller = Gtk.ScrolledWindow(child=clamp,
+                                           hscrollbar_policy=Gtk.PolicyType.NEVER)
+        toolbar.set_content(self.scroller)
+        self.set_child(toolbar)
+        self.refresh()
+
+    # --- list actions ------------------------------------------------------
+
+    def _add_actions(self):
+        group = Gio.SimpleActionGroup()
+        for name, callback in (("rename", self._on_rename),
+                               ("archive", self._on_archive),
+                               ("delete", self._on_delete)):
+            action = Gio.SimpleAction.new(name, None)
+            action.connect("activate", callback)
+            group.add_action(action)
+        self.insert_action_group("list", group)
+
+    def _menu_model(self):
+        if self.context.kind == "today":
+            return None
+        menu = Gio.Menu()
+        menu.append("Rename…", "list.rename")
+        if self.context.kind == "project" and self.context.id != "INBOX_PROJECT":
+            menu.append("Archive Project", "list.archive")
+        if self.context.id != "INBOX_PROJECT":
+            menu.append("Delete…", "list.delete")
+        return menu
+
+    def _kind_name(self):
+        return "Project" if self.context.kind == "project" else "Tag"
+
+    def _on_rename(self, *_):
+        from pensum.ui.dialogs import name_dialog
+        ds = self.window.ds
+
+        def done(name):
+            contexts.rename(ds, self.context.kind, self.context.id, name)
+            self.window.changed()
+
+        name_dialog(self.window, f"Rename {self._kind_name()}",
+                    ds.context_title(self.context), "Rename", done)
+
+    def _on_archive(self, *_):
+        contexts.set_archived(self.window.ds, self.context.id, True)
+        self.window.toast("Project archived")
+        self.window.show_list(Context.today())
+        self.window.changed()
+
+    def _on_delete(self, *_):
+        from pensum.ui.dialogs import confirm_dialog
+        ds = self.window.ds
+        name = ds.context_title(self.context)
+        if self.context.kind == "project":
+            body = "The project's tasks, notes and archived tasks are deleted too."
+        else:
+            body = "The tasks stay; they only lose the tag."
+
+        def done():
+            if self.context.kind == "project":
+                contexts.delete_project(ds, self.context.id)
+            else:
+                contexts.delete_tag(ds, self.context.id)
+            self.window.show_list(Context.today())
+            self.window.changed()
+
+        confirm_dialog(self.window, f"Delete “{name}”?", body, "Delete", done)
+
+    # --- tasks -------------------------------------------------------------
+
+    def focus_entry(self):
+        self.entry.grab_focus()
+
+    def set_context(self, context):
+        self.context = context
+        self.refresh()
+        self.scroller.get_vadjustment().set_value(0)
+
+    def _on_add(self, entry):
+        title = entry.get_text().strip()
+        if not title:
+            return
+        tasks.add_task(self.window.ds, title, self.context)
+        entry.set_text("")
+        self.window.changed()
+        entry.grab_focus()
+
+    def _context_label(self, task):
+        """In Today and tag lists the row also names the task's project."""
+        if self.context.kind == "project":
+            return None
+        project = self.window.ds.project_entities.get(task.get("projectId"))
+        return project.get("title") if project else None
+
+    def refresh(self):
+        ds = self.window.ds
+        title = ds.context_title(self.context)
+        self.set_title(title)
+        today = ds.today()
+        self.title.set_title(title)
+        if self.context.kind == "today":
+            worked = tracking.day_total(ds, today) + self.window.timer.unbooked_ms()
+            self.title.set_subtitle(f"{duration.format_short(worked)} worked"
+                                    if worked >= 60_000 else "")
+        else:
+            self.title.set_subtitle("")
+        model = self._menu_model()
+        self.menu.set_menu_model(model)
+        self.menu.set_visible(model is not None)
+        self.entry.set_title("Add Task to Today" if self.context.kind == "today"
+                             else "Add Task")
+        open_tasks, done_tasks = ds.list_tasks(self.context, today)
+        self.rows = []
+        for listbox, items in ((self.open_list, open_tasks),
+                               (self.done_list, done_tasks)):
+            listbox.remove_all()
+            for task in items:
+                row = TaskRow(self.window, task["id"], self._context_label)
+                self.rows.append(row)
+                listbox.append(row)
+            listbox.set_visible(bool(items))
+        self.empty.set_visible(not open_tasks)
+        self.empty.set_description(
+            "Tasks you plan for today show here." if self.context.kind == "today"
+            else None)
+        self.done_title.set_visible(bool(done_tasks))
+        self.done_title.set_label(f"Done ({len(done_tasks)})")
+
+    def tick(self):
+        running = self.window.timer.task_id
+        for row in self.rows:
+            task = row.task
+            if task and (row.task_id == running or running in task.get("subTaskIds", ())):
+                row.refresh()
+        if self.context.kind == "today" and running:
+            ds = self.window.ds
+            worked = tracking.day_total(ds, ds.today()) + self.window.timer.unbooked_ms()
+            if worked >= 60_000:
+                self.title.set_subtitle(f"{duration.format_short(worked)} worked")

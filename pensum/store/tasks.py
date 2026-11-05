@@ -1,0 +1,220 @@
+"""Changes to tasks, keeping every list Super Productivity derives from
+them consistent: project and tag order, subtask ids, the Today order and
+the parent's estimate and time. No GTK."""
+from pensum.store import dates, defaults
+from pensum.store.defaults import TODAY_ID
+from pensum.store.ids import new_id
+
+
+def _drop(values, value):
+    while value in values:
+        values.remove(value)
+
+
+def _insert(values, value, top):
+    _drop(values, value)
+    if top:
+        values.insert(0, value)
+    else:
+        values.append(value)
+
+
+def _touch(task, now):
+    task["modified"] = now
+
+
+def recalc_parent(ds, parent_id):
+    """A parent's time spent is the sum of its subtasks' and its estimate
+    the time they have left (reCalcTimesForParentIfParent)."""
+    parent = ds.tasks.get(parent_id)
+    if not parent or not parent.get("subTaskIds"):
+        return
+    subs = ds.subtasks(parent)
+    per_day = {}
+    for sub in subs:
+        for day, ms in (sub.get("timeSpentOnDay") or {}).items():
+            if ms:
+                per_day[day] = per_day.get(day, 0) + ms
+    parent["timeSpentOnDay"] = per_day
+    parent["timeSpent"] = sum(per_day.values())
+    parent["timeEstimate"] = sum(
+        0 if s.get("isDone") else max(0, s.get("timeEstimate", 0) - s.get("timeSpent", 0))
+        for s in subs)
+
+
+def _today_order(ds):
+    return ds.tag_entities[TODAY_ID]["taskIds"] if TODAY_ID in ds.tag_entities else []
+
+
+def add_task(ds, title, context, now=None, top=True):
+    """A new top-level task in a list: in Today it is due today and lives
+    in the default project; in a tag list it carries the tag."""
+    now = now or dates.now_ms()
+    task = defaults.get("task")
+    task.update(id=new_id(), title=title.strip(), created=now)
+    if context.kind == "project":
+        task["projectId"] = context.id
+    else:
+        task["projectId"] = ds.default_project_id()
+    if context.kind == "tag":
+        task["tagIds"] = [context.id]
+        _insert(ds.tag_entities[context.id]["taskIds"], task["id"], top)
+    if context.kind == "today":
+        task["dueDay"] = ds.today(now)
+        _insert(_today_order(ds), task["id"], top)
+    _touch(task, now)
+    ds.tasks[task["id"]] = task
+    ds.data["task"]["ids"].append(task["id"])
+    project = ds.project_entities[task["projectId"]]
+    _insert(project["taskIds"], task["id"], top)
+    return task
+
+
+def add_subtask(ds, parent_id, title, now=None):
+    now = now or dates.now_ms()
+    parent = ds.tasks[parent_id]
+    task = defaults.get("task")
+    task.update(id=new_id(), title=title.strip(), created=now,
+                parentId=parent_id, projectId=parent["projectId"])
+    _touch(task, now)
+    ds.tasks[task["id"]] = task
+    ds.data["task"]["ids"].append(task["id"])
+    parent["subTaskIds"].append(task["id"])
+    recalc_parent(ds, parent_id)
+    return task
+
+
+def update(ds, task_id, now=None, **changes):
+    """Title, notes and other plain fields."""
+    task = ds.tasks[task_id]
+    for key, value in changes.items():
+        if value is None:
+            task.pop(key, None)
+        else:
+            task[key] = value
+    _touch(task, now or dates.now_ms())
+    return task
+
+
+def set_estimate(ds, task_id, ms, now=None):
+    task = ds.tasks[task_id]
+    task["timeEstimate"] = max(0, int(ms))
+    _touch(task, now or dates.now_ms())
+    if task.get("parentId"):
+        recalc_parent(ds, task["parentId"])
+
+
+def set_done(ds, task_id, done, now=None):
+    now = now or dates.now_ms()
+    task = ds.tasks[task_id]
+    task["isDone"] = bool(done)
+    if done:
+        task["doneOn"] = now
+        if ds.data["task"].get("currentTaskId") == task_id:
+            ds.data["task"]["currentTaskId"] = None
+    else:
+        task.pop("doneOn", None)
+    _touch(task, now)
+    if task.get("parentId"):
+        recalc_parent(ds, task["parentId"])
+
+
+def schedule_day(ds, task_id, day, now=None):
+    """Plan a task for a day (None: unplanned). Today's order list holds
+    it while it is due today; the planner holds later days."""
+    now = now or dates.now_ms()
+    task = ds.tasks[task_id]
+    task.pop("dueWithTime", None)
+    for ids in ds.data["planner"]["days"].values():
+        _drop(ids, task_id)
+    if day is None:
+        task["dueDay"] = None
+        _drop(_today_order(ds), task_id)
+    else:
+        task["dueDay"] = day
+        if day == ds.today(now):
+            if not task.get("parentId"):
+                _insert(_today_order(ds), task_id, top=False)
+        else:
+            _drop(_today_order(ds), task_id)
+            if day > ds.today(now) and not task.get("parentId"):
+                ds.data["planner"]["days"].setdefault(day, []).append(task_id)
+    _touch(task, now)
+
+
+def move_to_project(ds, task_id, project_id, now=None):
+    task = ds.tasks[task_id]
+    if task.get("parentId") or task.get("projectId") == project_id:
+        return
+    old = ds.project_entities.get(task.get("projectId"))
+    if old:
+        _drop(old["taskIds"], task_id)
+        _drop(old["backlogTaskIds"], task_id)
+    ds.project_entities[project_id]["taskIds"].append(task_id)
+    for sub in [task] + ds.subtasks(task):
+        sub["projectId"] = project_id
+        _touch(sub, now or dates.now_ms())
+
+
+def set_tags(ds, task_id, tag_ids, now=None):
+    task = ds.tasks[task_id]
+    tag_ids = [t for t in tag_ids if t in ds.tag_entities and t != TODAY_ID]
+    for tag_id in task.get("tagIds", ()):
+        if tag_id not in tag_ids and tag_id in ds.tag_entities:
+            _drop(ds.tag_entities[tag_id]["taskIds"], task_id)
+    if not task.get("parentId"):
+        for tag_id in tag_ids:
+            if task_id not in ds.tag_entities[tag_id]["taskIds"]:
+                ds.tag_entities[tag_id]["taskIds"].append(task_id)
+    task["tagIds"] = tag_ids
+    _touch(task, now or dates.now_ms())
+
+
+def move(ds, task_id, context, offset, today=None):
+    """Move a top-level task up (-1) or down (+1) in a list's order."""
+    if context.kind == "project":
+        order = ds.project_entities[context.id]["taskIds"]
+    elif context.kind == "tag":
+        order = ds.tag_entities[context.id]["taskIds"]
+    else:
+        order = _today_order(ds)
+        for i in ds.top_level_ids(context, today):
+            if i not in order:
+                order.append(i)
+    visible = ds.top_level_ids(context, today)
+    if task_id not in visible:
+        return
+    index = visible.index(task_id) + offset
+    if not 0 <= index < len(visible):
+        return
+    neighbour = visible[index]
+    a, b = order.index(task_id), order.index(neighbour)
+    order[a], order[b] = order[b], order[a]
+
+
+def delete(ds, task_id):
+    """Remove a task with its subtasks from every list that names it."""
+    task = ds.tasks.get(task_id)
+    if not task:
+        return
+    for sub_id in list(task.get("subTaskIds", ())):
+        delete(ds, sub_id)
+    ds.tasks.pop(task_id)
+    _drop(ds.data["task"]["ids"], task_id)
+    if ds.data["task"].get("currentTaskId") == task_id:
+        ds.data["task"]["currentTaskId"] = None
+    for project in ds.project_entities.values():
+        _drop(project.get("taskIds", []), task_id)
+        _drop(project.get("backlogTaskIds", []), task_id)
+    for tag in ds.tag_entities.values():
+        _drop(tag.get("taskIds", []), task_id)
+    for ids in ds.data["planner"]["days"].values():
+        _drop(ids, task_id)
+    for section in ds.data["section"]["entities"].values():
+        _drop(section.get("taskIds", []), task_id)
+    ds.data["reminders"] = [r for r in ds.data["reminders"]
+                            if r.get("relatedId") != task_id]
+    parent = ds.tasks.get(task.get("parentId"))
+    if parent:
+        _drop(parent["subTaskIds"], task_id)
+        recalc_parent(ds, parent["id"])

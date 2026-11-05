@@ -1,0 +1,33 @@
+# Licence of every file, for "reuse lint" (https://reuse.software).
+# Licence texts are in LICENSES/; the Flatpak bundles phosh-toolkit's
+# package (docs/dependencies.md).
+version = 1
+
+[[annotations]]
+path = "**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 suitably"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+# AppStream metadata is CC0 so stores and distributions can reuse it.
+[[annotations]]
+path = "data/*.metainfo.xml"
+precedence = "override"
+SPDX-FileCopyrightText = "2026 suitably"
+SPDX-License-Identifier = "CC0-1.0"
+
+# Default values transcribed from Super Productivity's source, so a new
+# dataset is one Super Productivity accepts (docs/super-productivity-data.md).
+[[annotations]]
+path = "pensum/store/sp-defaults.json"
+precedence = "override"
+SPDX-FileCopyrightText = "2018 Johannes Millan"
+SPDX-License-Identifier = "MIT"
+
+# Backups from Super Productivity's own tests (e2e/fixtures, op-log
+# validation fixtures), used to check that Pensum reads real data.
+[[annotations]]
+path = "tests/fixtures/*.json"
+precedence = "override"
+SPDX-FileCopyrightText = "2018 Johannes Millan"
+SPDX-License-Identifier = "MIT"
