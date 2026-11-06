@@ -83,7 +83,9 @@ settings (`seen`).
 The engine is found where `PENSUM_QUESTARC_DIR` points (a QuestArc
 release archive, or a QuestArc checkout after `npm ci && npm run build`)
 and run with `PENSUM_GJS` (default `gjs`); in the Flatpak it is
-`/app/share/questarc`. On the cloud host gjs comes from the GNOME
+`/app/share/questarc`, from the release archive the manifest pins
+(module `questarc-engine`, QuestArc 3.1.0, updated by the update check).
+Without it the page says "Journeys Are Not Installed". On the cloud host gjs comes from the GNOME
 runtime through bwrap ([development environment](dev-environment.md)).
 Tests that need the engine are skipped without it; CI fetches the
 archive the manifest pins, installs gjs and sets
@@ -93,10 +95,6 @@ its second station with one gap.
 
 ## Open
 
-- The Flatpak manifest pins QuestArc's engine archive once QuestArc
-  3.1.0 is released (the first release with `evaluateHost` and
-  `action`); until then the app shows "Journeys Are Not Installed" and
-  CI skips the engine tests.
 - German texts follow with QuestArc's (QuestArc#39).
 - The engine runs once per change; its time on the phone is still to be
   measured (QuestArc#16).

@@ -34,6 +34,23 @@ modules:
         x-checker-data:
           type: git
           tag-pattern: ^v([\d.]+)$
+  # QuestArc's engine and journeys, run by the runtime's gjs (docs/journeys.md).
+  - name: questarc-engine
+    buildsystem: simple
+    build-commands:
+      - install -Dm644 -t /app/share/questarc engine.mjs engine-cli.mjs
+      - cp -r content /app/share/questarc/
+      - install -Dm644 LICENSE /app/share/licenses/$FLATPAK_ID/questarc-engine/LICENSE
+      - install -Dm644 content/LICENSE /app/share/licenses/$FLATPAK_ID/questarc-journeys/LICENSE
+    sources:
+      - type: archive
+        url: https://github.com/nexumia-de/QuestArc/releases/download/v3.1.0/questarc-engine-3.1.0.tar.gz
+        sha256: acb5a47fe734d44705697814d754bd3be66885d3f538cfdc39f534d6aca9346d
+        x-checker-data:
+          type: json
+          url: https://api.github.com/repos/nexumia-de/QuestArc/releases/latest
+          version-query: .tag_name | sub("^v"; "")
+          url-query: .assets[] | select(.name | test("^questarc-engine-.*\\.tar\\.gz$")) | .browser_download_url
   - name: pensum
     buildsystem: meson
     sources:
