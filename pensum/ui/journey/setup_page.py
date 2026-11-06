@@ -16,9 +16,7 @@ from pensum.ui.repeat_page import describe
 class SetupPage(JourneySubpage):
     def __init__(self, window):
         super().__init__(window, t("ui.setup.title"), "journey-setup")
-        self.model.listeners.append(self._changed)
-        self.connect("destroy", lambda *_: self._changed in self.model.listeners
-                     and self.model.listeners.remove(self._changed))
+        self.listen(self._changed)
         self.refresh()
 
     def _changed(self):

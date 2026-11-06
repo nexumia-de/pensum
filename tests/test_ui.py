@@ -358,3 +358,70 @@ def test_walk_into_a_journey(app, tmp_path):
     window.flush()
     assert validate.problems(backup.read(window.files.path)) == []
     window.close()
+
+
+def settle(window, seconds=10):
+    """Run the main loop until the background evaluation has finished."""
+    import time
+    model = window.journeys
+    deadline = time.monotonic() + seconds
+    iterate()
+    while (model._source is not None or model._running) and time.monotonic() < deadline:
+        iterate()
+        time.sleep(0.02)
+    iterate()
+
+
+@needs_engine
+def test_journey_comes_forward_only_for_its_own_task(app, tmp_path):
+    from pensum.game import content, engine, records
+    from pensum.store import tasks
+    window = new_window(app, tmp_path)
+    journey = content.journey("gentle-morning")
+    records.write(window.ds, engine.action("setMode", "calm"))
+    records.write(window.ds, engine.action("startJourney", {
+        "runId": "r", "journey": journey, "startDay": window.ds.today()}))
+    window.changed()
+    window.journeys.refresh_now()
+    window.show_journey()
+    iterate()
+    page = visible(window)
+    page._main_action()  # Set up the task
+    iterate()
+    setup = visible(window)
+    assert setup.get_tag() == "journey-setup"
+    setup._main()  # Create the task
+    iterate(40)
+    assert visible(window) is page
+    stage_task = next(t["id"] for t in window.ds.tasks.values() if t.get("repeatCfgId"))
+
+    # Unrelated actions keep the user where they are, though the set-up
+    # page they came through is still alive.
+    window.show_list(Context.today())
+    iterate()
+    other = tasks.add_task(window.ds, "Water the plants", Context.today())["id"]
+    window.changed()
+    settle(window)
+    assert visible(window) is window.list_page
+    tasks.set_done(window.ds, other, True)
+    window.changed()
+    settle(window)
+    assert visible(window) is window.list_page
+    window.show_task(other)
+    iterate()
+    tasks.update(window.ds, other, title="Water the roses")
+    window.changed()
+    settle(window)
+    assert visible(window).get_tag() != "journey"
+
+    # Ticking off the station's own task brings the journey forward.
+    window.show_list(Context.today())
+    iterate()
+    tasks.set_done(window.ds, stage_task, True)
+    window.changed()
+    settle(window)
+    assert visible(window) is window.journey_page
+    assert window.journeys.active()["stations"][0]["completions"] == 1
+    window.flush()
+    assert validate.problems(backup.read(window.files.path)) == []
+    window.close()

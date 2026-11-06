@@ -1,7 +1,9 @@
 """The game view of the dataset, kept current: after each change the
 engine runs (in a thread, so the window stays responsive), the events
-become one toast, and pausing the bound repeat rule is recorded. With no
-QuestArc record at all the engine does not run."""
+become one toast, and pausing the bound repeat rule is recorded. Ticking
+off the current station's own task brings the journey forward; any other
+change leaves the page the user is on. With no QuestArc record at all
+the engine does not run."""
 import logging
 import threading
 
@@ -11,6 +13,10 @@ from pensum.game import content, engine, records, sentences, stages
 
 log = logging.getLogger(__name__)
 DELAY_MS = 300
+# The engine's events for a new completion of the current station's task
+# (QuestArc docs/behaviour.md, flow A). Several completions at once come
+# from a sync or an import and only get the toast.
+OWN_COMPLETION = {"event.completion", "event.welcome-back"}
 
 
 class JourneyModel:
@@ -122,6 +128,8 @@ class JourneyModel:
         if self._record_repeat_pause(view):
             return
         self._notify()
+        if any(e["key"] in OWN_COMPLETION for e in events or ()):
+            self.window.show_journey()
 
     def _record_repeat_pause(self, view):
         """The bound rule was paused or resumed since the last look
