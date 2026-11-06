@@ -1,5 +1,5 @@
 {
- "_source": "Super Productivity 19.3.1 (commit 590178d7), src/app/features/config/default-global-config.const.ts, project.const.ts, tag.const.ts, work-context.const.ts, task.model.ts and the reducers' initial states; transcribed as data.",
+ "_source": "Super Productivity 19.3.1 (commit 590178d7), src/app/features/config/default-global-config.const.ts, project.const.ts, tag.const.ts, work-context.const.ts, task.model.ts, task-repeat-cfg.model.ts (DEFAULT_TASK_REPEAT_CFG, without the fields it leaves undefined) and the reducers' initial states; transcribed as data.",
  "crossModelVersion": 4.5,
  "globalConfig": {
   "appFeatures": {
@@ -416,6 +416,29 @@
   "tagIds": [],
   "created": 0,
   "attachments": []
+ },
+ "taskRepeatCfg": {
+  "id": "",
+  "title": "",
+  "projectId": null,
+  "repeatEvery": 1,
+  "isPaused": false,
+  "quickSetting": "DAILY",
+  "repeatCycle": "WEEKLY",
+  "repeatFromCompletionDate": false,
+  "waitForCompletion": false,
+  "monday": true,
+  "tuesday": true,
+  "wednesday": true,
+  "thursday": true,
+  "friday": true,
+  "saturday": false,
+  "sunday": false,
+  "tagIds": [],
+  "order": 0,
+  "shouldInheritSubtasks": false,
+  "disableAutoUpdateSubtasks": false,
+  "skipOverdue": false
  },
  "slices": {
   "task": {

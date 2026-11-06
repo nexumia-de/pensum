@@ -112,6 +112,10 @@ class TaskPage(Adw.NavigationPage):
         self.tags_row.add_suffix(Gtk.Image(icon_name="go-next-symbolic"))
         self.tags_row.connect("activated", self._on_tags)
         plan.add(self.tags_row)
+        self.repeat_row = Adw.ActionRow(title="Repeat", activatable=True)
+        self.repeat_row.add_suffix(Gtk.Image(icon_name="go-next-symbolic"))
+        self.repeat_row.connect("activated", self._on_repeat)
+        plan.add(self.repeat_row)
         page.add(plan)
 
         notes = Adw.PreferencesGroup(title="Notes")
@@ -172,6 +176,8 @@ class TaskPage(Adw.NavigationPage):
         is_parent = bool(task.get("subTaskIds"))
         self.estimate_row.set_sensitive(not is_parent)
         self.tick()
+        self.repeat_row.set_visible(not task.get("parentId"))
+        self.repeat_row.set_subtitle(self._repeat_label(ds, task))
 
         today = ds.today()
         with self._blocked(self.today_row, self._today_handler):
@@ -325,6 +331,17 @@ class TaskPage(Adw.NavigationPage):
         day = ds.planned_day(self.task) or ds.today()
         tasks.schedule_time(ds, self.task_id, day, moment.hour, moment.minute)
         self._change()
+
+    @staticmethod
+    def _repeat_label(ds, task):
+        from pensum.store.repeat import rules
+        from pensum.ui.repeat_page import describe
+        cfg = rules.rule_of(ds, task)
+        return describe(cfg) if cfg else "Never"
+
+    def _on_repeat(self, *_):
+        from pensum.ui.repeat_page import RepeatPage
+        self.window.nav.push(RepeatPage(self.window, self.task_id))
 
     def _on_clear_day(self, *_):
         tasks.schedule_day(self.window.ds, self.task_id, None)

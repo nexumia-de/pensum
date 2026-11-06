@@ -216,40 +216,40 @@ def test_search_page(app, tmp_path):
     window.close()
 
 
-def _navigation_views(widget):
-    found = [widget] if isinstance(widget, Adw.NavigationView) else []
-    child = widget.get_first_child()
-    while child is not None:
-        found += _navigation_views(child)
-        child = child.get_next_sibling()
-    return found
-
-
-def test_one_navigation_view_and_swipe_back_stack(app, tmp_path):
-    """A nested AdwNavigationView broke the back swipe on the phone; the
-    window has one, the lists are its first page on narrow windows and
-    every page above can pop (phosh-toolkit adaptive rule 9)."""
+def test_ephyra_layout_and_swipe_back_stack(app, tmp_path):
+    """Ephyra's layout (phosh-toolkit adaptive rule 9): one navigation view
+    whose first page holds a split view with the lists as sidebar and the
+    list as content. Collapsed, the list sits above the lists, so a swipe
+    goes back to them; pushed pages can pop."""
     window = new_window(app, tmp_path, demo.create())
-    window._set_wide(False)
+    window.split.set_collapsed(True)
     iterate()
-    assert _navigation_views(window) == [window.nav]
-    stack = window._pages()
-    assert stack[:2] == [window.lists_page, window.list_page]
+    assert window._navigation_root() is window.main_page
+    assert window.split.get_sidebar() is window.lists_page
+    window.show_list(Context("project", "demo-garden"))
+    iterate()
+    assert window.split.get_show_content()
+    assert window.visible_page() is window.list_page
+    assert window.list_page.get_can_pop()
     window.show_task(window.ds.current_task_id())
     iterate()
     assert all(p.get_can_pop() for p in window._pages()[1:])
     window.nav.pop()
-    window.nav.pop()
     iterate()
-    assert window.nav.get_visible_page() is window.lists_page
-    window._set_wide(True)
+    assert window.visible_page() is window.list_page
+    window.show_lists()
     iterate()
-    assert window.lists_page not in window._pages()
-    assert window.split.get_sidebar() is window.sidebar
-    assert _navigation_views(window) == [window.nav]
-    window._set_wide(False)
+    assert window.visible_page() is window.lists_page
+    window.show_journey()
     iterate()
-    assert window._pages()[0] is window.lists_page
+    assert window.visible_page().get_tag() == "journey"
+    assert window.split.get_content() is window.journey_page
+    window.show_list(Context.today())
+    iterate()
+    assert window.split.get_content() is window.list_page
+    window.split.set_collapsed(False)
+    iterate()
+    assert window.visible_page() is window.list_page
     window.close()
 
 
@@ -272,4 +272,89 @@ def test_delete_with_undo(app, tmp_path):
     iterate()
     assert "demo-website" in window.ds.project_entities
     assert validate.problems(window.ds.data) == []
+    window.close()
+
+
+def test_make_a_task_repeat_and_stop_with_undo(app, tmp_path):
+    window = new_window(app, tmp_path)
+    page = window.list_page
+    page.entry.set_text("Walk")
+    page._on_add(page.entry)
+    iterate()
+    task_id = page.rows[0].task_id
+    window.show_task(task_id)
+    iterate()
+    task_page = window.nav.get_visible_page()
+    assert task_page.repeat_row.get_subtitle() == "Never"
+    task_page._on_repeat()
+    iterate()
+    repeat = window.nav.get_visible_page()
+    assert repeat.get_tag() == f"repeat-{task_id}"
+    repeat.schedule_row.set_selected(2)  # Monday to Friday
+    iterate()
+    cfg_id = window.ds.task(task_id)["repeatCfgId"]
+    cfg = window.ds.data["taskRepeatCfg"]["entities"][cfg_id]
+    assert cfg["quickSetting"] == "MONDAY_TO_FRIDAY"
+    assert repeat.pause_row.get_visible()
+    repeat._on_stop()
+    iterate()
+    assert "repeatCfgId" not in window.ds.task(task_id)
+    assert task_page.repeat_row.get_subtitle() == "Never"
+    window.flush()
+    assert validate.problems(backup.read(window.files.path)) == []
+    window.close()
+
+
+needs_engine = pytest.mark.skipif(
+    not os.environ.get("PENSUM_QUESTARC_DIR") and not os.environ.get("PENSUM_REQUIRE_ENGINE"),
+    reason="needs gjs and QuestArc's engine (PENSUM_QUESTARC_DIR, PENSUM_GJS)")
+
+
+def visible(window):
+    return window.visible_page()
+
+
+@needs_engine
+def test_walk_into_a_journey(app, tmp_path):
+    window = new_window(app, tmp_path)
+    window.show_journey()
+    iterate()
+    page = visible(window)
+    assert page.get_tag() == "journey"
+    assert page.main_button.get_label() == "Get Started"
+    page._main_action()  # calm
+    iterate()
+    assert page.main_button.get_label() == "Choose a journey"
+    page._main_action()
+    iterate()
+    choose = visible(window)
+    assert choose.get_tag() == "journey-choose"
+    from pensum.ui.journey.choose_page import PreviewPage
+    window.nav.push(PreviewPage(window, "gentle-morning"))
+    iterate()
+    visible(window)._main()  # Start this journey
+    iterate()
+    start = visible(window)
+    start.why_row.set_text("Calmer mornings")
+    start._main()
+    iterate()
+    assert visible(window) is page
+    assert page.main_button.get_label() == "Set up the task"
+    page._main_action()
+    iterate()
+    setup = visible(window)
+    setup._main()  # Create the task
+    iterate(40)
+    assert visible(window) is page
+    run = window.journeys.active()
+    assert run["why"] == "Calmer mornings"
+    assert run["stations"][0]["state"] == "current"
+    task_id = next(t["id"] for t in window.ds.tasks.values() if t.get("repeatCfgId"))
+    from pensum.store import tasks
+    tasks.set_done(window.ds, task_id, True)
+    window.journeys.refresh_now()
+    iterate()
+    assert window.journeys.active()["stations"][0]["completions"] == 1
+    window.flush()
+    assert validate.problems(backup.read(window.files.path)) == []
     window.close()

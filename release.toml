@@ -28,3 +28,8 @@ actions = ["app.show-lists"]
 name = "project"
 caption = "A project's tasks"
 actions = ["app.show-list('project:demo-garden')"]
+
+[[screenshots.shot]]
+name = "journey"
+caption = "A habit journey, its current station and the path"
+actions = ["app.show-journey"]

@@ -2,8 +2,11 @@
 recorded values, never live data. No GTK."""
 from datetime import datetime, timedelta
 
-from pensum.store import contexts, defaults, tasks, tracking
+from pensum.game import records
+from pensum.store import contexts, dates, defaults, tasks, tracking
 from pensum.store.dataset import Context, Dataset
+from pensum.store.repeat import instances
+from pensum.store.repeat.instances import noon_ms
 
 def demo_now():
     """10:30 today: the made-up day always is the current one, so Today is
@@ -67,4 +70,67 @@ def create(now=None):
     tasks.schedule_day(ds, books["id"], (datetime.fromtimestamp(now / 1000)
                                          - timedelta(days=1)).strftime("%Y-%m-%d"), now)
     tracking.set_current(ds, review["subTaskIds"][1])
+    _journey(ds, now)
     return ds
+
+
+WORKDAYS = ("monday", "tuesday", "wednesday", "thursday", "friday")
+
+
+def _rule(ds, cfg_id, title, start, today):
+    cfg = defaults.get("taskRepeatCfg")
+    cfg.update(id=cfg_id, title=title, projectId=ds.default_project_id(), startDate=start,
+               quickSetting="MONDAY_TO_FRIDAY", repeatCycle="WEEKLY",
+               lastTaskCreationDay=today, lastTaskCreation=noon_ms(today))
+    ds.data["taskRepeatCfg"]["ids"].append(cfg_id)
+    ds.data["taskRepeatCfg"]["entities"][cfg_id] = cfg
+    return cfg
+
+
+def _archived_instance(ds, cfg, day):
+    task = defaults.get("task")
+    task.update(id=f"rpt_{cfg['id']}_{day}", title=cfg["title"], created=noon_ms(day),
+                repeatCfgId=cfg["id"], projectId=cfg["projectId"], isDone=True,
+                doneOn=noon_ms(day) - 3 * 3_600_000)
+    archive = ds.data["archiveYoung"]["task"]
+    archive["ids"].append(task["id"])
+    archive["entities"][task["id"]] = task
+    return task
+
+
+def _journey(ds, now):
+    """Journey "First Things First" with game: the first station done
+    after a week, the second one on its way with one gap. The choice
+    records are written as QuestArc stores them (recorded values)."""
+    today = ds.today(now)
+    workdays = [dates.shift_day(today, -back) for back in range(16, 0, -1)
+                if dates.parse_day(dates.shift_day(today, -back)).weekday() < 5]
+    first, second = workdays[:5], workdays[5:]
+    stage_done = second[0]
+    one = _rule(ds, "demo-one-thing", "Sitting down at my desk: write down the one task "
+                "that matters most today", first[0], stage_done)
+    for day in first:
+        _archived_instance(ds, one, day)
+    focus = _rule(ds, "demo-focus-15", "Sitting down at my desk: write down my one task "
+                  "and give it 15 quiet minutes, notifications off", stage_done, today)
+    for day in second:
+        if day != second[-2]:  # one gap, never a loss
+            _archived_instance(ds, focus, day)
+    task = instances.create_for(ds, dict(focus, lastTaskCreationDay=second[-1]), today, now)
+    if task:
+        focus["lastTaskCreationDay"] = today
+    records.write(ds, {
+        "settings": {"mode": "rpg"},
+        "run:demo": {"journeyId": "first-things-first", "journeyVersion": 1,
+                     "startDay": first[0], "why": "Fewer scattered mornings at work"},
+        "stage:demo:one-thing": {"acceptedDay": first[0]},
+        "binding:demo:one-thing": {"taskId": f"rpt_demo-one-thing_{first[-1]}",
+                                   "repeatCfgId": "demo-one-thing", "day": first[0]},
+        "stage-done:demo:one-thing": {"day": stage_done, "xp": 50, "damage": 0},
+        "stage:demo:focus-15": {"acceptedDay": stage_done},
+        "binding:demo:focus-15": {"taskId": f"rpt_demo-focus-15_{today}",
+                                  "repeatCfgId": "demo-focus-15", "day": stage_done},
+    })
+    # The first stage's task was replaced by the next stage's; paused so it
+    # makes no more instances in the demo.
+    one["isPaused"] = True

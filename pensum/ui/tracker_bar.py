@@ -39,7 +39,7 @@ class TrackerBar(Gtk.ActionBar):
         # The running task's own page has the timer button already. Hidden
         # without the reveal animation: animating it while the page slides
         # in crashed gtk4-broadwayd (GNOME 51) in the CI screenshots.
-        visible = self.window.nav.get_visible_page()
+        visible = self.window.visible_page()
         on_own_page = task is not None and getattr(visible, "task_id", None) == task_id
         self.set_visible(not on_own_page)
         self.set_revealed(task is not None)

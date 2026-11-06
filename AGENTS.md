@@ -31,6 +31,8 @@ well.
 - Screenshots and UI tests use the demo dataset (`PENSUM_DEMO=1`,
   `pensum/demo.py`), never real tasks. Logs name ids and counts, never
   titles or notes.
-- Visible name: still "Pensum" until the owner chooses one (issue in M1).
+- Visible name: **Day Planner** (chosen by the owner on 2026-11-06,
+  [decision](docs/decisions/app-name.md)); the code name Pensum stays for
+  the repository, app id, package and docs.
 - Run PyGObject code with `/usr/bin/python3.12` on the cloud host; the
   default `python3` has no `gi`.

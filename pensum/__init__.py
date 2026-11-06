@@ -9,7 +9,7 @@ except ImportError:  # run from the source tree, config.py is not built
 VERSION = "0.1.0"
 # The nightly app is built from every push to main.
 NIGHTLY = APP_ID.endswith(".Devel")
-NAME = "Pensum (Nightly)" if NIGHTLY else "Pensum"
+NAME = "Day Planner (Nightly)" if NIGHTLY else "Day Planner"
 # About dialog, e.g. "0.1.0 (main · 8534d2c)" for a nightly build.
 VERSION_LABEL = f"{VERSION} ({BUILD_LABEL})" if BUILD_LABEL else VERSION
 REPO_URL = "https://github.com/nexumia-de/pensum"

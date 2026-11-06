@@ -1,7 +1,7 @@
-"""Pensum's own preferences on disk: the style, and the list shown on the
-last start. The tasks themselves are in the dataset (pensum.store). No
+"""Pensum's own preferences on disk: the style, the list shown on the
+last start and the journey banners already seen. The tasks themselves are in the dataset (pensum.store). No
 GTK."""
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from phosh_toolkit.settings import JsonStore, app_dir
 
@@ -12,6 +12,8 @@ VERSION = 1
 class Settings:
     style: str = "system"
     last_list: str = "today:TODAY"
+    # Journey banners the user closed ("Got it"), e.g. "nugget:<run>:<stage>".
+    seen: list = field(default_factory=list)
 
 
 def config_dir():

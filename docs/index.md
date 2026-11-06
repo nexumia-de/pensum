@@ -19,6 +19,10 @@ Change history is in [log.md](log.md).
 * [Data model](super-productivity-data.md) - Every slice of the dataset with fields and consistency rules, the backup files, how Pensum stores, imports and exports them.
 * [Sync files](super-productivity-sync.md) - The WebDAV/local-folder sync format (v2, v3), envelope, compression, encryption, operations, and what Pensum needs to sync.
 
+# Journeys
+
+* [QuestArc's journeys](journeys.md) - QuestArc's engine through gjs, the choice records in pluginUserData, stage tasks with their repeat rule, the journey pages, development.
+
 # Design
 
 * [Visual design](design.md) - Stock libadwaita with Pensum's indigo accent, the screens at 360 px and on the desktop.

@@ -3,11 +3,11 @@
   <id>de.nexumia.Pensum</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>AGPL-3.0-or-later</project_license>
-  <name>Pensum</name>
+  <name>Day Planner</name>
   <summary>Plan your day and track the time you spend on tasks</summary>
   <description>
     <p>
-      Pensum is a light task list with time tracking for Phosh phones and
+      Day Planner is a light task list with time tracking for Phosh phones and
       the desktop. It keeps your tasks in the backup format of Super
       Productivity, so a backup moves between both apps without changes.
     </p>
@@ -15,11 +15,13 @@
       <li>Today's list, projects and tags</li>
       <li>Tasks with subtasks, notes, estimates and a planned day</li>
       <li>A timer per task that books the time on the day you worked</li>
+      <li>Repeating tasks, the same way as in Super Productivity</li>
+      <li>Habit journeys: small steps that grow, calm or with a game layer</li>
       <li>Import and export of Super Productivity backups, and automatic backups</li>
       <li>Works offline; needs no account and no network</li>
     </ul>
     <p>
-      Pensum is an independent project and not affiliated with the Super
+      Day Planner is an independent project and not affiliated with the Super
       Productivity project.
     </p>
   </description>

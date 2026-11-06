@@ -15,6 +15,7 @@ pythondir = python.get_install_dir()
 python.install_sources(
   'pensum/__init__.py',
   'pensum/__main__.py',
+  'pensum/day_watch.py',
   'pensum/demo.py',
   'pensum/duration.py',
   'pensum/main.py',
@@ -44,10 +45,46 @@ python.install_sources(
   subdir: 'pensum' / 'store',
 )
 python.install_sources(
+  'pensum/store/repeat/__init__.py',
+  'pensum/store/repeat/instances.py',
+  'pensum/store/repeat/rules.py',
+  'pensum/store/repeat/schedule.py',
+  subdir: 'pensum' / 'store' / 'repeat',
+)
+python.install_sources(
+  'pensum/game/__init__.py',
+  'pensum/game/content.py',
+  'pensum/game/engine.py',
+  'pensum/game/records.py',
+  'pensum/game/sentences.py',
+  'pensum/game/stages.py',
+  subdir: 'pensum' / 'game',
+)
+python.install_sources(
+  'pensum/ui/journey/__init__.py',
+  'pensum/ui/journey/banners.py',
+  'pensum/ui/journey/base.py',
+  'pensum/ui/journey/card.py',
+  'pensum/ui/journey/checkin_page.py',
+  'pensum/ui/journey/choose_page.py',
+  'pensum/ui/journey/continue_page.py',
+  'pensum/ui/journey/drawing.py',
+  'pensum/ui/journey/model.py',
+  'pensum/ui/journey/motivates_page.py',
+  'pensum/ui/journey/page.py',
+  'pensum/ui/journey/path.py',
+  'pensum/ui/journey/setup_page.py',
+  'pensum/ui/journey/shelf_page.py',
+  'pensum/ui/journey/start_page.py',
+  'pensum/ui/journey/station_page.py',
+  subdir: 'pensum' / 'ui' / 'journey',
+)
+python.install_sources(
   'pensum/ui/__init__.py',
   'pensum/ui/archived_page.py',
   'pensum/ui/backup_actions.py',
   'pensum/ui/dialogs.py',
+  'pensum/ui/repeat_page.py',
   'pensum/ui/search_page.py',
   'pensum/ui/sidebar.py',
   'pensum/ui/tags_dialog.py',
@@ -90,11 +127,11 @@ configure_file(
 
 if nightly
   # The stable files in data/ stay the only source; the nightly app gets
-  # its own id and the name "Pensum (Nightly)".
+  # its own id and the name "Day Planner (Nightly)".
   sed = find_program('sed')
   variant = [sed, '-e', 's/' + base_id + '/' + app_id + '/g',
-             '-e', 's/^Name=Pensum$/Name=Pensum (Nightly)/',
-             '-e', 's|<name>Pensum</name>|<name>Pensum (Nightly)</name>|',
+             '-e', 's/^Name=Day Planner$/Name=Day Planner (Nightly)/',
+             '-e', 's|<name>Day Planner</name>|<name>Day Planner (Nightly)</name>|',
              '@INPUT@']
   desktop = configure_file(input: 'data' / base_id + '.desktop',
     output: app_id + '.desktop', command: variant, capture: true)

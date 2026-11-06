@@ -1,5 +1,5 @@
-"""Preferences: style, the day boundary Super Productivity uses, and where
-the data and its backups are."""
+"""Preferences: style, the day boundary Super Productivity uses, how the
+journeys look and their data, and where the data and its backups are."""
 from gi.repository import Adw, GLib, Gtk
 from phosh_toolkit.style import style_row
 
@@ -25,10 +25,12 @@ class PreferencesDialog(Adw.PreferencesDialog):
         self.hour_row.connect("notify::value", self._on_hour)
         day.add(self.hour_row)
         page.add(day)
+        if window.journeys.available:
+            page.add(self._journeys_group())
 
         data = Adw.PreferencesGroup(
             title="Data",
-            description="Pensum keeps everything in a Super Productivity backup "
+            description="Day Planner keeps everything in a Super Productivity backup "
                         "file and makes an automatic backup at most every 15 "
                         "minutes. Use Export Backup to move the data to Super "
                         "Productivity, and Import Backup for the other way.")
@@ -38,6 +40,36 @@ class PreferencesDialog(Adw.PreferencesDialog):
                                    subtitle=GLib.markup_escape_text(str(path))))
         page.add(data)
         self.add(page)
+
+    def _journeys_group(self):
+        from pensum.game.content import t
+        group = Adw.PreferencesGroup(title="Journeys", description=t("ui.mode.change"))
+        self.mode_row = Adw.ComboRow(title=t("ui.mode.title"), model=Gtk.StringList.new(
+            [t("ui.mode.calm"), t("ui.mode.rpg")]))
+        self.mode_row.set_selected(1 if self.window.journeys.mode() == "rpg" else 0)
+        self.mode_row.connect("notify::selected", self._on_mode)
+        group.add(self.mode_row)
+        remove = Adw.ButtonRow(title=t("ui.settings.data.remove")) if hasattr(
+            Adw, "ButtonRow") else Adw.ActionRow(title=t("ui.settings.data.remove"),
+                                                  activatable=True)
+        remove.add_css_class("destructive-action")
+        remove.connect("activated", self._on_remove)
+        group.add(remove)
+        return group
+
+    def _on_mode(self, row, *_):
+        self.window.journeys.action("setMode", "rpg" if row.get_selected() == 1 else "calm")
+
+    def _on_remove(self, *_):
+        from pensum.game.content import t
+        from pensum.ui.dialogs import confirm_dialog
+
+        def remove():
+            model = self.window.journeys
+            model.write({key: "" for key in model.records()})
+
+        confirm_dialog(self, t("ui.settings.data.remove"), t("ui.settings.data.confirm"),
+                       t("ui.settings.data.remove-now"), remove)
 
     def _on_style(self, style):
         self.window.settings.style = style

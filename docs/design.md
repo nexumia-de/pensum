@@ -48,14 +48,24 @@ keep the title, back and the menu ([adaptive rule 10](../../phosh-toolkit/docs/a
 
 # Navigation
 
-One `AdwNavigationView` holds every page. Below 600 sp the lists are its
-first page and a list is pushed on it, so a swipe from the left goes
-back from a task to its list and from a list to the lists. From 600 sp
-the same sidebar widget moves into an `AdwOverlaySplitView` and the list
-becomes the first page. Before 2026-11-05 the list and its pages sat in
-a second navigation view inside an `AdwNavigationSplitView`'s content;
-the owner found that the back swipe did not work on the phone. To be
-re-checked on the phone (#5).
+The layout is Ephyra's, which swipes back correctly on the phone (owner,
+2026-11-06; phosh-toolkit adaptive rule 9): one `AdwNavigationView`
+whose first page holds an `AdwNavigationSplitView` with the lists as
+sidebar and the shown list (or Journeys) as content. Below 600 sp the
+split view collapses: the list lies above the lists, so a swipe from a
+list goes back to them, and its header has a back button. Task, search,
+archived projects and the journey's own pages are pushed on the
+navigation view and swipe back to where they were opened.
+
+History: v0.1.0 nested a second navigation view in the split view's
+content, and the back swipe did not work on the phone. The next layout
+(one navigation view with the lists as its first page, moved into an
+`AdwOverlaySplitView` on wide windows) was the owner's report on
+2026-11-06 ("back to the overview is missing", compared with Ephyra and
+Nauta). The Ephyra layout was checked with real touch events (headless
+Mutter at 360 × 720, touch through its remote-desktop API): a swipe from
+Today, from Journeys and from a task goes back, also when the window
+starts wide and is maximised later. To be confirmed on the phone (#5).
 
 # Not yet done
 
