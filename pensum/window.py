@@ -1,10 +1,13 @@
-"""The window: one navigation view for every page (swipe back everywhere),
-the lists as its first page on the phone or as a sidebar on wide windows,
-the timer bar, and saving the dataset shortly after each change.
+"""The window: the lists and the shown list in a split view, pages such as
+a task pushed on top, the timer bar, and saving the dataset shortly after
+each change.
 
-There is exactly one AdwNavigationView: a second one nested in a split
-view's content kept the back swipe from working on the phone (phosh-toolkit
-docs/adaptive-libadwaita.md, rule 9)."""
+The layout is Ephyra's (phosh-toolkit docs/adaptive-libadwaita.md, rule
+9): one AdwNavigationView whose first page holds an AdwNavigationSplitView
+with the lists as sidebar and the shown list (or the journey) as content.
+Below 600 sp the split view collapses, so a swipe from a list goes back to
+the lists; every other page is pushed on the navigation view and swipes
+back to where it came from."""
 import logging
 
 from gi.repository import Adw, Gio, GLib, Gtk
@@ -50,33 +53,25 @@ class Window(Adw.ApplicationWindow):
         from pensum.ui.task_list import TaskListPage
         from pensum.ui.tracker_bar import TrackerBar
         self.sidebar = Sidebar(self)
-        # Phone: the lists are the first page and a list is pushed on it.
         self.lists_page = Adw.NavigationPage(title=NAME, tag="lists",
                                              child=self.sidebar)
+        self.list_page = TaskListPage(self, parse_context_key(self.settings.last_list))
+        self.split = Adw.NavigationSplitView(sidebar=self.lists_page,
+                                             content=self.list_page, show_content=True)
+        self.split.connect("notify::show-content", lambda *_: self.tracker_bar.refresh())
+        self.main_page = Adw.NavigationPage(title=NAME, tag="main", child=self.split)
         self.nav = Adw.NavigationView()
+        self.nav.add(self.main_page)
         self.tracker_bar = TrackerBar(self)
         self.nav.connect("notify::visible-page", lambda *_: self.tracker_bar.refresh())
         content = Adw.ToolbarView(content=self.nav)
         content.add_bottom_bar(self.tracker_bar)
-        self.list_page = TaskListPage(self, parse_context_key(self.settings.last_list))
-        self.nav.add(self.lists_page)
-        self.nav.push(self.list_page)
-        self.wide = False
-        # Wide windows: the same sidebar widget moves into this split view
-        # and the list becomes the navigation view's first page.
-        self.split = Adw.OverlaySplitView(content=content, show_sidebar=False,
-                                          collapsed=True, enable_show_gesture=False,
-                                          enable_hide_gesture=False)
-        self.toasts = Adw.ToastOverlay(child=self.split)
+        self.toasts = Adw.ToastOverlay(child=content)
         self.set_content(self.toasts)
 
         breakpoint = Adw.Breakpoint.new(
-            Adw.BreakpointCondition.parse("min-width: 600sp"))
-        # Breakpoints apply during size allocation; moving widgets then
-        # crashed the Broadway server in CI, so the move waits for idle.
-        breakpoint.connect("apply", lambda *_: self._queue_wide(True))
-        breakpoint.connect("unapply", lambda *_: self._queue_wide(False))
-        self._wide_source = None
+            Adw.BreakpointCondition.parse("max-width: 600sp"))
+        breakpoint.add_setter(self.split, "collapsed", True)
         self.add_breakpoint(breakpoint)
 
         action = Gio.SimpleAction.new("add-task", None)
@@ -135,9 +130,23 @@ class Window(Adw.ApplicationWindow):
                 page.refresh()
         self.tracker_bar.refresh()
 
+    def _navigation_root(self):
+        stack = self.nav.get_navigation_stack()
+        return stack.get_item(0) if stack.get_n_items() else None
+
+    def visible_page(self):
+        """The page the user sees: a pushed page, else the split view's
+        content or, collapsed and showing the lists, the lists."""
+        page = self.nav.get_visible_page()
+        if page is not self.main_page:
+            return page
+        if self.split.get_collapsed() and not self.split.get_show_content():
+            return self.lists_page
+        return self.split.get_content()
+
     def focus_task_row(self, task_id):
         """Keep the keyboard focus on a row after a move rebuilt the list."""
-        page = self.nav.get_visible_page()
+        page = self.visible_page()
         if hasattr(page, "focus_row"):
             page.focus_row(task_id)
 
@@ -148,48 +157,27 @@ class Window(Adw.ApplicationWindow):
                 page.tick()
 
     def _pages(self):
+        """The split view's content and every pushed page."""
         stack = self.nav.get_navigation_stack()
-        return [stack.get_item(i) for i in range(stack.get_n_items())]
+        pushed = [stack.get_item(i) for i in range(1, stack.get_n_items())]
+        return [self.split.get_content()] + pushed
 
     def _unfocus(self):
         self.set_focus(None)
         return GLib.SOURCE_REMOVE
 
-    def _queue_wide(self, wide):
-        if self._wide_source is not None:
-            GLib.source_remove(self._wide_source)
-
-        def run():
-            self._wide_source = None
-            self._set_wide(wide)
-            return GLib.SOURCE_REMOVE
-
-        self._wide_source = GLib.idle_add(run)
-
-    def _set_wide(self, wide):
-        """Move the lists between the first page (phone) and the sidebar."""
-        if wide == self.wide:
-            return
-        self.wide = wide
-        pages = [p for p in self._pages() if p is not self.lists_page]
-        if wide:
-            self.lists_page.set_child(None)
-            self.nav.replace(pages or [self.list_page])
-            self.split.set_sidebar(self.sidebar)
-            self.split.set_collapsed(False)
-            self.split.set_show_sidebar(True)
-        else:
-            self.split.set_show_sidebar(False)
-            self.split.set_collapsed(True)
-            self.split.set_sidebar(None)
-            self.lists_page.set_child(self.sidebar)
-            self.nav.replace([self.lists_page] + pages)
+    def _show_content(self, page):
+        """Show `page` as the split view's content, above the lists."""
+        if self.split.get_content() is not page:
+            self.split.set_content(page)
+        self.nav.pop_to_page(self.main_page)
+        self.split.set_show_content(True)
 
     def show_lists(self):
-        """The lists: on the phone the first page, on wide windows the
-        sidebar, which is always shown."""
-        if not self.wide:
-            self.nav.pop_to_page(self.lists_page)
+        """The lists: on the phone the split view's sidebar page, on wide
+        windows always beside the list."""
+        self.nav.pop_to_page(self.main_page)
+        self.split.set_show_content(False)
 
     def _on_close(self, *_):
         self.flush()
@@ -228,10 +216,7 @@ class Window(Adw.ApplicationWindow):
         if not self.ds.context_exists(context):
             context = Context.today()
         self.list_page.set_context(context)
-        if self.list_page in self._pages():
-            self.nav.pop_to_page(self.list_page)
-        else:
-            self.nav.push(self.list_page)
+        self._show_content(self.list_page)
         self.sidebar.select(context)
         self.settings.last_list = context_key(context)
         self.save_settings()
@@ -247,22 +232,15 @@ class Window(Adw.ApplicationWindow):
 
     def show_archived(self):
         from pensum.ui.archived_page import ArchivedPage
-        if self.list_page in self._pages():
-            self.nav.pop_to_page(self.list_page)
+        self.nav.pop_to_page(self.main_page)
         self.nav.push(ArchivedPage(self))
 
     def show_journey(self):
+        """The journey is shown like a list: the split view's content."""
         from pensum.ui.journey.page import JourneyPage
-        page = self.nav.find_page("journey")
-        if page:
-            self.nav.pop_to_page(page)
-            return
-        # Like a list: on the phone pushed on the lists, on wide windows on
-        # the list page, which stays the navigation view's first page.
-        first = self.list_page if self.wide else self.lists_page
-        if first in self._pages():
-            self.nav.pop_to_page(first)
-        self.nav.push(JourneyPage(self))
+        if getattr(self, "journey_page", None) is None:
+            self.journey_page = JourneyPage(self)
+        self._show_content(self.journey_page)
         self.sidebar.select(Context("journey", "questarc"))
 
     def show_task(self, task_id):

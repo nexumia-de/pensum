@@ -110,6 +110,8 @@ class Sidebar(Adw.Bin):
     def refresh(self):
         ds = self.window.ds
         selected = self.window.list_page.context
+        if self.window.split.get_content() is not self.window.list_page:
+            selected = Context("journey", "questarc")
         self.listbox.remove_all()
         today = ds.today()
         entries = [(Context.today(), "Today", "weather-clear-symbolic")]

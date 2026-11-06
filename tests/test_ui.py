@@ -216,40 +216,40 @@ def test_search_page(app, tmp_path):
     window.close()
 
 
-def _navigation_views(widget):
-    found = [widget] if isinstance(widget, Adw.NavigationView) else []
-    child = widget.get_first_child()
-    while child is not None:
-        found += _navigation_views(child)
-        child = child.get_next_sibling()
-    return found
-
-
-def test_one_navigation_view_and_swipe_back_stack(app, tmp_path):
-    """A nested AdwNavigationView broke the back swipe on the phone; the
-    window has one, the lists are its first page on narrow windows and
-    every page above can pop (phosh-toolkit adaptive rule 9)."""
+def test_ephyra_layout_and_swipe_back_stack(app, tmp_path):
+    """Ephyra's layout (phosh-toolkit adaptive rule 9): one navigation view
+    whose first page holds a split view with the lists as sidebar and the
+    list as content. Collapsed, the list sits above the lists, so a swipe
+    goes back to them; pushed pages can pop."""
     window = new_window(app, tmp_path, demo.create())
-    window._set_wide(False)
+    window.split.set_collapsed(True)
     iterate()
-    assert _navigation_views(window) == [window.nav]
-    stack = window._pages()
-    assert stack[:2] == [window.lists_page, window.list_page]
+    assert window._navigation_root() is window.main_page
+    assert window.split.get_sidebar() is window.lists_page
+    window.show_list(Context("project", "demo-garden"))
+    iterate()
+    assert window.split.get_show_content()
+    assert window.visible_page() is window.list_page
+    assert window.list_page.get_can_pop()
     window.show_task(window.ds.current_task_id())
     iterate()
     assert all(p.get_can_pop() for p in window._pages()[1:])
     window.nav.pop()
-    window.nav.pop()
     iterate()
-    assert window.nav.get_visible_page() is window.lists_page
-    window._set_wide(True)
+    assert window.visible_page() is window.list_page
+    window.show_lists()
     iterate()
-    assert window.lists_page not in window._pages()
-    assert window.split.get_sidebar() is window.sidebar
-    assert _navigation_views(window) == [window.nav]
-    window._set_wide(False)
+    assert window.visible_page() is window.lists_page
+    window.show_journey()
     iterate()
-    assert window._pages()[0] is window.lists_page
+    assert window.visible_page().get_tag() == "journey"
+    assert window.split.get_content() is window.journey_page
+    window.show_list(Context.today())
+    iterate()
+    assert window.split.get_content() is window.list_page
+    window.split.set_collapsed(False)
+    iterate()
+    assert window.visible_page() is window.list_page
     window.close()
 
 
@@ -311,7 +311,7 @@ needs_engine = pytest.mark.skipif(
 
 
 def visible(window):
-    return window.nav.get_visible_page()
+    return window.visible_page()
 
 
 @needs_engine

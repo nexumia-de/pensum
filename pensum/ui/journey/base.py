@@ -50,9 +50,4 @@ class JourneySubpage(Adw.NavigationPage):
         return label
 
     def back_to_journey(self):
-        nav = self.window.nav
-        journey = nav.find_page("journey")
-        if journey:
-            nav.pop_to_page(journey)
-        else:
-            nav.pop()
+        self.window.show_journey()
