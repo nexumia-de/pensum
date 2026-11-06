@@ -54,8 +54,15 @@ back from a task to its list and from a list to the lists. From 600 sp
 the same sidebar widget moves into an `AdwOverlaySplitView` and the list
 becomes the first page. Before 2026-11-05 the list and its pages sat in
 a second navigation view inside an `AdwNavigationSplitView`'s content;
-the owner found that the back swipe did not work on the phone. To be
-re-checked on the phone (#5).
+the owner found that the back swipe did not work on the phone.
+
+Checked on 2026-11-06 with real touch events (headless Mutter 46 at
+360 × 720, touch injected through its remote-desktop D-Bus API, the
+window maximised like in Phosh, also maximised late after starting
+wide): on `main` a swipe from left to right on Today goes back to the
+lists; v0.1.0 (still the stable release, before the change above) does
+not react. Still to be confirmed on the phone with a build from `main`
+(the nightly) or the next release (#5).
 
 # Not yet done
 
