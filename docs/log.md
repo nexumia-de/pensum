@@ -19,3 +19,5 @@
 ## 2026-11-06
 
 * **Visible name**: the owner chose **Day Planner** (#1). `.desktop` `Name`, metainfo `<name>`, window title, sidebar header and About dialog say Day Planner, the nightly "Day Planner (Nightly)"; repository, app id, package and docs keep the code name Pensum ([app name](decisions/app-name.md)).
+* **Repeating tasks** (#12): `pensum/store/repeat/` creates instances the way Super Productivity does (schedule, instances, rules) at start, after an import and on day change (`pensum/day_watch.py`); the task page has a Repeat page with presets, custom schedules, pause and Stop Repeating with Undo. Defaults for a new rule come from `DEFAULT_TASK_REPEAT_CFG` in `sp-defaults.json` ([data](super-productivity-data.md), [features](features.md)). Found on the way: replacing a combo row's list from inside its own `notify::selected` blocks GTK, so the page redraws on idle.
+

@@ -137,6 +137,47 @@ flags `monday` … `sunday`, `monthlyWeekOfMonth`/`monthlyWeekday`/
 `lastTaskCreation`/`lastTaskCreationDay` (when an instance was last
 made). Instances are normal tasks with `repeatCfgId`.
 
+How Pensum creates and changes them (`pensum/store/repeat/`, written
+anew from Super Productivity's behaviour at the recorded commit):
+
+- **When:** at start, after an import and when the logical day changes
+  (checked every minute, `pensum/day_watch.py`), for every rule that is
+  not paused, whose `lastTaskCreationDay` is before today and whose
+  skipped days (`deletedInstanceDates`) do not contain today.
+- **Which day:** only the newest occurrence on or before today (or
+  `repeatUntilDay`), after `lastTaskCreationDay`; missed occurrences are
+  never backfilled. The series starts at `startDate`, or at
+  `lastTaskCreationDay` with `repeatFromCompletionDate`. Weekly counts
+  whole weeks from the start; monthly uses the start's day (clamped to
+  the month's last day, or 31 with `monthlyLastDay`) or the n-th
+  weekday (`monthlyWeekOfMonth` 1–4 or -1, `monthlyWeekday` 0 = Sunday);
+  yearly the start's month and day (29 February → 28).
+- **Skipped:** an instance for that day already exists (id or `created`
+  day) → only `lastTaskCreationDay` moves; the day is skipped → nothing;
+  `waitForCompletion` and any live or archived instance undone →
+  nothing; `skipOverdue` and the day is before today → only
+  `lastTaskCreationDay` moves.
+- **The instance:** id `rpt_<rule>_<day>`, `created` local noon of the
+  day, `dueDay` the day, title, `defaultEstimate`, `notes`, tags (never
+  TODAY), `priority` (high/medium/low or 3/2/1), the rule's project or
+  the default project; first in the project's order (last when `order`
+  > 0). With `startTime` and `remindAt`: `dueWithTime` at that time on
+  the logical day (a time before the start of the next day is that
+  day's late night) and `remindAt` before it, `dueDay` removed. With
+  `shouldInheritSubtasks`: subtasks `<instance>_sub_<n>` from
+  `subTaskTemplates`.
+- **Done:** ticking off the latest instance of a
+  `repeatFromCompletionDate` rule sets `startDate` and
+  `lastTaskCreationDay` to today; for `waitForCompletion` the next
+  instance is created at once if it is due.
+- **Making a task recurring:** the rule takes the task's title,
+  project, tags, estimate and subtasks (as templates); `skipOverdue` is
+  on only for every single day. The first occurrence from `startDate`
+  becomes `lastTaskCreationDay`; when it is not today, the task moves to
+  that day (`created` noon, `dueDay`).
+- **Stopping:** the rule is removed and `repeatCfgId` is deleted (never
+  set to `null`) on live and archived tasks; Undo puts both back.
+
 ### Archive (`src/app/features/archive/archive.service.ts`)
 
 "Finish Day" moves done top-level tasks with their subtasks from `task`

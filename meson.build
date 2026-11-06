@@ -15,6 +15,7 @@ pythondir = python.get_install_dir()
 python.install_sources(
   'pensum/__init__.py',
   'pensum/__main__.py',
+  'pensum/day_watch.py',
   'pensum/demo.py',
   'pensum/duration.py',
   'pensum/main.py',
@@ -44,10 +45,18 @@ python.install_sources(
   subdir: 'pensum' / 'store',
 )
 python.install_sources(
+  'pensum/store/repeat/__init__.py',
+  'pensum/store/repeat/instances.py',
+  'pensum/store/repeat/rules.py',
+  'pensum/store/repeat/schedule.py',
+  subdir: 'pensum' / 'store' / 'repeat',
+)
+python.install_sources(
   'pensum/ui/__init__.py',
   'pensum/ui/archived_page.py',
   'pensum/ui/backup_actions.py',
   'pensum/ui/dialogs.py',
+  'pensum/ui/repeat_page.py',
   'pensum/ui/search_page.py',
   'pensum/ui/sidebar.py',
   'pensum/ui/tags_dialog.py',

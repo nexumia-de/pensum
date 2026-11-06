@@ -273,3 +273,33 @@ def test_delete_with_undo(app, tmp_path):
     assert "demo-website" in window.ds.project_entities
     assert validate.problems(window.ds.data) == []
     window.close()
+
+
+def test_make_a_task_repeat_and_stop_with_undo(app, tmp_path):
+    window = new_window(app, tmp_path)
+    page = window.list_page
+    page.entry.set_text("Walk")
+    page._on_add(page.entry)
+    iterate()
+    task_id = page.rows[0].task_id
+    window.show_task(task_id)
+    iterate()
+    task_page = window.nav.get_visible_page()
+    assert task_page.repeat_row.get_subtitle() == "Never"
+    task_page._on_repeat()
+    iterate()
+    repeat = window.nav.get_visible_page()
+    assert repeat.get_tag() == f"repeat-{task_id}"
+    repeat.schedule_row.set_selected(2)  # Monday to Friday
+    iterate()
+    cfg_id = window.ds.task(task_id)["repeatCfgId"]
+    cfg = window.ds.data["taskRepeatCfg"]["entities"][cfg_id]
+    assert cfg["quickSetting"] == "MONDAY_TO_FRIDAY"
+    assert repeat.pause_row.get_visible()
+    repeat._on_stop()
+    iterate()
+    assert "repeatCfgId" not in window.ds.task(task_id)
+    assert task_page.repeat_row.get_subtitle() == "Never"
+    window.flush()
+    assert validate.problems(backup.read(window.files.path)) == []
+    window.close()

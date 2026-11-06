@@ -41,6 +41,8 @@ class Window(Adw.ApplicationWindow):
 
         from pensum.timer import Timer
         self.timer = Timer(lambda: self.ds, self.changed, self._on_tick)
+        from pensum.day_watch import DayWatch
+        self.day_watch = DayWatch(lambda: self.ds, self.changed)
 
         from pensum.ui.sidebar import Sidebar
         from pensum.ui.task_list import TaskListPage
@@ -81,6 +83,8 @@ class Window(Adw.ApplicationWindow):
         self.connect("close-request", self._on_close)
         self.timer.resume()
         self.refresh()
+        if self.day_watch.start_day():
+            self.changed()
         # No field focused at the start: on the phone that would open the
         # on-screen keyboard over the list.
         self.connect("map", lambda *_: GLib.idle_add(self._unfocus))
@@ -113,6 +117,7 @@ class Window(Adw.ApplicationWindow):
         """After an import: show the new data from the start."""
         self.timer.stop()
         self.ds = ds
+        self.day_watch.start_day()
         self.timer.resume()
         self.show_list(Context.today())
         self.refresh()

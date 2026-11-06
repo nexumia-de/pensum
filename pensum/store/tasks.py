@@ -117,6 +117,9 @@ def set_done(ds, task_id, done, now=None):
     _touch(task, now)
     if task.get("parentId"):
         recalc_parent(ds, task["parentId"])
+    if done and task.get("repeatCfgId"):
+        from pensum.store.repeat import instances
+        instances.on_done(ds, task, now)
 
 
 def schedule_day(ds, task_id, day, now=None):
