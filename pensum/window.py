@@ -43,6 +43,8 @@ class Window(Adw.ApplicationWindow):
         self.timer = Timer(lambda: self.ds, self.changed, self._on_tick)
         from pensum.day_watch import DayWatch
         self.day_watch = DayWatch(lambda: self.ds, self.changed)
+        from pensum.ui.journey.model import JourneyModel
+        self.journeys = JourneyModel(self)
 
         from pensum.ui.sidebar import Sidebar
         from pensum.ui.task_list import TaskListPage
@@ -92,8 +94,10 @@ class Window(Adw.ApplicationWindow):
     # --- data ------------------------------------------------------------
 
     def changed(self):
-        """Something in the dataset changed: redraw and save soon."""
+        """Something in the dataset changed: redraw, update the journey
+        and save soon."""
         self.refresh()
+        self.journeys.schedule()
         if self._save_source is None:
             self._save_source = GLib.timeout_add(SAVE_DELAY_MS, self._save_now)
 
@@ -246,6 +250,20 @@ class Window(Adw.ApplicationWindow):
         if self.list_page in self._pages():
             self.nav.pop_to_page(self.list_page)
         self.nav.push(ArchivedPage(self))
+
+    def show_journey(self):
+        from pensum.ui.journey.page import JourneyPage
+        page = self.nav.find_page("journey")
+        if page:
+            self.nav.pop_to_page(page)
+            return
+        # Like a list: on the phone pushed on the lists, on wide windows on
+        # the list page, which stays the navigation view's first page.
+        first = self.list_page if self.wide else self.lists_page
+        if first in self._pages():
+            self.nav.pop_to_page(first)
+        self.nav.push(JourneyPage(self))
+        self.sidebar.select(Context("journey", "questarc"))
 
     def show_task(self, task_id):
         if task_id not in self.ds.tasks:

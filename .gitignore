@@ -16,3 +16,7 @@ _build/
 .pytest_cache/
 # Shared package checked out by CI (tests.yml)
 /.phosh-toolkit/
+
+# QuestArc engine fetched by CI (tests.yml)
+/.questarc/
+/questarc.tar.gz

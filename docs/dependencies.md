@@ -23,6 +23,16 @@ Only `lib/phosh_toolkit/` is installed; Pensum uses `settings`
 (`JsonStore`, `app_dir`) and `style` (light/dark)
 ([shared code](../../phosh-toolkit/docs/shared-connection.md#used-by)).
 
+Planned, once QuestArc 3.1.0 is released ([journeys](journeys.md)):
+
+| Module | Version | Licence | Licence files |
+|---|---|---|---|
+| `questarc-engine` | release archive `v3.1.0` | engine AGPL-3.0-or-later (same author); journeys in `content/journeys/` CC BY-SA 4.0 | `LICENSE` → `…/questarc-engine/`, `content/LICENSE` → `…/questarc-journeys/` |
+
+Only `engine.mjs`, `engine-cli.mjs` and `content/` are installed, to
+`/app/share/questarc/`; the runtime's `gjs` runs the engine. The
+journeys' authors are named in the app ("Written by …").
+
 # Data from Super Productivity
 
 `pensum/store/sp-defaults.json`: default values transcribed from Super

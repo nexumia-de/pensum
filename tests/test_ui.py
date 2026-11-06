@@ -303,3 +303,58 @@ def test_make_a_task_repeat_and_stop_with_undo(app, tmp_path):
     window.flush()
     assert validate.problems(backup.read(window.files.path)) == []
     window.close()
+
+
+needs_engine = pytest.mark.skipif(
+    not os.environ.get("PENSUM_QUESTARC_DIR") and not os.environ.get("PENSUM_REQUIRE_ENGINE"),
+    reason="needs gjs and QuestArc's engine (PENSUM_QUESTARC_DIR, PENSUM_GJS)")
+
+
+def visible(window):
+    return window.nav.get_visible_page()
+
+
+@needs_engine
+def test_walk_into_a_journey(app, tmp_path):
+    window = new_window(app, tmp_path)
+    window.show_journey()
+    iterate()
+    page = visible(window)
+    assert page.get_tag() == "journey"
+    assert page.main_button.get_label() == "Get Started"
+    page._main_action()  # calm
+    iterate()
+    assert page.main_button.get_label() == "Choose a journey"
+    page._main_action()
+    iterate()
+    choose = visible(window)
+    assert choose.get_tag() == "journey-choose"
+    from pensum.ui.journey.choose_page import PreviewPage
+    window.nav.push(PreviewPage(window, "gentle-morning"))
+    iterate()
+    visible(window)._main()  # Start this journey
+    iterate()
+    start = visible(window)
+    start.why_row.set_text("Calmer mornings")
+    start._main()
+    iterate()
+    assert visible(window) is page
+    assert page.main_button.get_label() == "Set up the task"
+    page._main_action()
+    iterate()
+    setup = visible(window)
+    setup._main()  # Create the task
+    iterate(40)
+    assert visible(window) is page
+    run = window.journeys.active()
+    assert run["why"] == "Calmer mornings"
+    assert run["stations"][0]["state"] == "current"
+    task_id = next(t["id"] for t in window.ds.tasks.values() if t.get("repeatCfgId"))
+    from pensum.store import tasks
+    tasks.set_done(window.ds, task_id, True)
+    window.journeys.refresh_now()
+    iterate()
+    assert window.journeys.active()["stations"][0]["completions"] == 1
+    window.flush()
+    assert validate.problems(backup.read(window.files.path)) == []
+    window.close()

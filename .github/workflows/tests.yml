@@ -26,12 +26,25 @@ jobs:
           repository: nexumia-de/phosh-toolkit
           ref: ${{ steps.toolkit.outputs.commit }}
           path: .phosh-toolkit
+      # QuestArc's engine and journeys at the release the Flatpak manifest
+      # pins (docs/journeys.md); the engine tests then must run.
+      - name: Fetch the pinned QuestArc engine
+        id: questarc
+        run: |
+          url=$(sed -n '/- name: questarc-engine/,/sha256:/s/^ *url: *//p' de.nexumia.Pensum.yml)
+          sha=$(sed -n '/- name: questarc-engine/,/sha256:/s/^ *sha256: *//p' de.nexumia.Pensum.yml)
+          if [ -z "$url" ]; then echo "No QuestArc engine pinned in the manifest"; exit 0; fi
+          curl -sSfL --retry 3 -o questarc.tar.gz "$url"
+          echo "$sha  questarc.tar.gz" | sha256sum -c -
+          mkdir -p .questarc
+          tar -xzf questarc.tar.gz -C .questarc --strip-components=1
+          echo "dir=$PWD/.questarc" >> "$GITHUB_OUTPUT"
       - name: Install dependencies
         run: |
           apt=(sudo env DEBIAN_FRONTEND=noninteractive apt-get -o DPkg::Lock::Timeout=120)
           "${apt[@]}" update -q
           "${apt[@]}" install -y -q --no-install-recommends \
-            python3-pytest python3-gi gir1.2-gtk-4.0 gir1.2-adw-1 \
+            python3-pytest python3-gi python3-gi-cairo gir1.2-gtk-4.0 gir1.2-adw-1 gjs \
             xvfb xauth appstream desktop-file-utils
       - name: Validate metadata
         run: |
@@ -42,4 +55,6 @@ jobs:
       - name: Run tests
         env:
           PYTHONPATH: .phosh-toolkit/lib
+          PENSUM_QUESTARC_DIR: ${{ steps.questarc.outputs.dir }}
+          PENSUM_REQUIRE_ENGINE: ${{ steps.questarc.outputs.dir != '' && '1' || '' }}
         run: xvfb-run -a /usr/bin/python3 -m pytest -v

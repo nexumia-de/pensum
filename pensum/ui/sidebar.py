@@ -98,7 +98,7 @@ class Sidebar(Adw.Bin):
         if before is not None and before.context.kind == kind:
             row.set_header(None)
             return
-        if kind == "today":
+        if kind in ("today", "journey"):
             row.set_header(None)
             return
         label = Gtk.Label(label="Projects" if kind == "project" else "Tags",
@@ -113,12 +113,14 @@ class Sidebar(Adw.Bin):
         self.listbox.remove_all()
         today = ds.today()
         entries = [(Context.today(), "Today", "weather-clear-symbolic")]
+        if self.window.journeys.available:
+            entries.append((Context("journey", "questarc"), "Journeys", "mark-location-symbolic"))
         entries += [(Context("project", p["id"]), p.get("title") or "Untitled",
                      "folder-symbolic") for p in ds.projects()]
         entries += [(Context("tag", t["id"]), t.get("title") or "Untitled",
                      "pensum-tag-symbolic") for t in ds.tags()]
         for context, title, icon in entries:
-            count = len(ds.list_tasks(context, today)[0])
+            count = 0 if context.kind == "journey" else len(ds.list_tasks(context, today)[0])
             row = self._row(context, title, icon, count)
             self.listbox.append(row)
             if context == selected:
@@ -133,4 +135,7 @@ class Sidebar(Adw.Bin):
             row = row.get_next_sibling()
 
     def _on_activated(self, listbox, row):
+        if row.context.kind == "journey":
+            self.window.show_journey()
+            return
         self.window.show_list(row.context)

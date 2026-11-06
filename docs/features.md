@@ -66,6 +66,9 @@ lost when the same backup goes back to Super Productivity.
 
 # Habits and views
 
+Habit journeys come from [QuestArc](https://github.com/nexumia-de/QuestArc)
+and are not a Super Productivity feature: [journeys](journeys.md).
+
 | Feature | Data | Pensum |
 |---|---|---|
 | Habits: counters and stopwatches with streaks | `simpleCounter` | M3 |

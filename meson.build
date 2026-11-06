@@ -52,6 +52,34 @@ python.install_sources(
   subdir: 'pensum' / 'store' / 'repeat',
 )
 python.install_sources(
+  'pensum/game/__init__.py',
+  'pensum/game/content.py',
+  'pensum/game/engine.py',
+  'pensum/game/records.py',
+  'pensum/game/sentences.py',
+  'pensum/game/stages.py',
+  subdir: 'pensum' / 'game',
+)
+python.install_sources(
+  'pensum/ui/journey/__init__.py',
+  'pensum/ui/journey/banners.py',
+  'pensum/ui/journey/base.py',
+  'pensum/ui/journey/card.py',
+  'pensum/ui/journey/checkin_page.py',
+  'pensum/ui/journey/choose_page.py',
+  'pensum/ui/journey/continue_page.py',
+  'pensum/ui/journey/drawing.py',
+  'pensum/ui/journey/model.py',
+  'pensum/ui/journey/motivates_page.py',
+  'pensum/ui/journey/page.py',
+  'pensum/ui/journey/path.py',
+  'pensum/ui/journey/setup_page.py',
+  'pensum/ui/journey/shelf_page.py',
+  'pensum/ui/journey/start_page.py',
+  'pensum/ui/journey/station_page.py',
+  subdir: 'pensum' / 'ui' / 'journey',
+)
+python.install_sources(
   'pensum/ui/__init__.py',
   'pensum/ui/archived_page.py',
   'pensum/ui/backup_actions.py',

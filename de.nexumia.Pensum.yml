@@ -44,3 +44,4 @@ modules:
           - repo
           - tests
           - .phosh-toolkit
+          - .questarc
