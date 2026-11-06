@@ -1,9 +1,10 @@
-# Pensum
+# Day Planner
 
 Tasks and time tracking for Phosh phones and the desktop, in the data
 format of [Super Productivity](https://github.com/johannesjo/super-productivity).
 
-Pensum is a light GTK4/libadwaita app. It keeps your tasks as a Super
+Day Planner (code name and repository: Pensum) is a light
+GTK4/libadwaita app. It keeps your tasks as a Super
 Productivity backup, so the same file moves between both apps: export
 in Super Productivity, import in Pensum, and back.
 

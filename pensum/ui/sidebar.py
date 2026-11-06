@@ -15,7 +15,7 @@ def main_menu():
     rest = Gio.Menu()
     rest.append("Archived Projects", "app.show-archived")
     rest.append("Preferences", "app.preferences")
-    rest.append("About Pensum", "app.about")
+    rest.append(f"About {NAME}", "app.about")
     menu.append_section(None, rest)
     return menu
 

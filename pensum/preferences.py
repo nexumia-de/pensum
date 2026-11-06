@@ -28,7 +28,7 @@ class PreferencesDialog(Adw.PreferencesDialog):
 
         data = Adw.PreferencesGroup(
             title="Data",
-            description="Pensum keeps everything in a Super Productivity backup "
+            description="Day Planner keeps everything in a Super Productivity backup "
                         "file and makes an automatic backup at most every 15 "
                         "minutes. Use Export Backup to move the data to Super "
                         "Productivity, and Import Backup for the other way.")

@@ -90,11 +90,11 @@ configure_file(
 
 if nightly
   # The stable files in data/ stay the only source; the nightly app gets
-  # its own id and the name "Pensum (Nightly)".
+  # its own id and the name "Day Planner (Nightly)".
   sed = find_program('sed')
   variant = [sed, '-e', 's/' + base_id + '/' + app_id + '/g',
-             '-e', 's/^Name=Pensum$/Name=Pensum (Nightly)/',
-             '-e', 's|<name>Pensum</name>|<name>Pensum (Nightly)</name>|',
+             '-e', 's/^Name=Day Planner$/Name=Day Planner (Nightly)/',
+             '-e', 's|<name>Day Planner</name>|<name>Day Planner (Nightly)</name>|',
              '@INPUT@']
   desktop = configure_file(input: 'data' / base_id + '.desktop',
     output: app_id + '.desktop', command: variant, capture: true)

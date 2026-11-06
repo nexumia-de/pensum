@@ -15,3 +15,7 @@
 
 ## 2026-11-05 (later)
 * **Swipe back and thumb reach**: the owner reported that swiping back did not work on the phone and asked for the controls at the bottom. One navigation view now holds every page (lists as first page on the phone, sidebar from 600 sp) instead of a navigation view nested in a split view's content; Search/Add List, the add field, Mark as Done and the timer moved into bottom bars; deleting and Finish Day offer Undo instead of a confirmation ([design](design.md)). Tests check that the window has exactly one `AdwNavigationView`. The gesture itself still has to be checked on the phone.
+
+## 2026-11-06
+
+* **Visible name**: the owner chose **Day Planner** (#1). `.desktop` `Name`, metainfo `<name>`, window title, sidebar header and About dialog say Day Planner, the nightly "Day Planner (Nightly)"; repository, app id, package and docs keep the code name Pensum ([app name](decisions/app-name.md)).

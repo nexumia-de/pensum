@@ -43,7 +43,7 @@ def confirm(window, path):
         window.toast("Backup imported")
 
     confirm_dialog(window, "Replace All Tasks?",
-                   "Pensum's tasks, projects and tracked time are replaced by "
+                   "Your tasks, projects and tracked time are replaced by "
                    "the backup's. A copy of the current data is kept in the "
                    "backups folder.", "Replace", done)
 
