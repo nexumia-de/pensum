@@ -105,6 +105,7 @@ class TaskPage(Adw.NavigationPage):
         plan.add(self.priority_row)
         self.project_row = Adw.ComboRow(title="Project")
         self._project_ids = []
+        self._project_titles = None
         self._project_handler = self.project_row.connect("notify::selected",
                                                          self._on_project)
         plan.add(self.project_row)
@@ -201,10 +202,14 @@ class TaskPage(Adw.NavigationPage):
         top_level = not task.get("parentId")
         self.project_row.set_visible(top_level)
         projects = ds.projects()
-        self._project_ids = [p["id"] for p in projects]
+        titles = [p.get("title") or "Untitled" for p in projects]
         with self._blocked(self.project_row, self._project_handler):
-            self.project_row.set_model(Gtk.StringList.new(
-                [p.get("title") or "Untitled" for p in projects]))
+            # Replacing the model while the row is still handling a
+            # selection crashes GTK, so only replace it when it changed.
+            if titles != self._project_titles:
+                self.project_row.set_model(Gtk.StringList.new(titles))
+                self._project_titles = titles
+            self._project_ids = [p["id"] for p in projects]
             if task.get("projectId") in self._project_ids:
                 self.project_row.set_selected(self._project_ids.index(task["projectId"]))
         names = [ds.tag_entities[t].get("title") or "Untitled"
@@ -365,8 +370,15 @@ class TaskPage(Adw.NavigationPage):
     def _on_project(self, row, *_):
         index = row.get_selected()
         if 0 <= index < len(self._project_ids):
-            tasks.move_to_project(self.window.ds, self.task_id, self._project_ids[index])
+            project_id = self._project_ids[index]
+            # Redraw after the row has finished its own signal handling.
+            GLib.idle_add(self._move_to_project, project_id)
+
+    def _move_to_project(self, project_id):
+        if self.task is not None:
+            tasks.move_to_project(self.window.ds, self.task_id, project_id)
             self._change()
+        return GLib.SOURCE_REMOVE
 
     def _on_tags(self, *_):
         from pensum.ui.tags_dialog import TagsDialog

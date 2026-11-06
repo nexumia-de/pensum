@@ -275,6 +275,28 @@ def test_delete_with_undo(app, tmp_path):
     window.close()
 
 
+def test_change_project_on_the_task_page(app, tmp_path):
+    """Choosing another project used to crash: the redraw replaced the
+    combo row's list while the row still handled the selection."""
+    window = new_window(app, tmp_path, demo.create())
+    task_id = window.ds.top_level_ids(Context("project", "demo-website"))[0]
+    window.show_task(task_id)
+    iterate()
+    page = window.nav.get_visible_page()
+    model = page.project_row.get_model()
+    page.project_row.activate()
+    iterate()
+    page.project_row.set_selected(page._project_ids.index("demo-garden"))
+    iterate()
+    assert window.ds.task(task_id)["projectId"] == "demo-garden"
+    assert task_id in window.ds.project_entities["demo-garden"]["taskIds"]
+    assert task_id not in window.ds.project_entities["demo-website"]["taskIds"]
+    assert page.project_row.get_model() is model
+    assert page._project_ids[page.project_row.get_selected()] == "demo-garden"
+    assert validate.problems(window.ds.data) == []
+    window.close()
+
+
 def test_make_a_task_repeat_and_stop_with_undo(app, tmp_path):
     window = new_window(app, tmp_path)
     page = window.list_page
