@@ -10,9 +10,7 @@ from pensum.ui.journey.base import JourneySubpage
 class ShelfPage(JourneySubpage):
     def __init__(self, window):
         super().__init__(window, t("ui.shelf.title"), "journey-shelf")
-        self.model.listeners.append(self.refresh)
-        self.connect("destroy", lambda *_: self.refresh in self.model.listeners
-                     and self.model.listeners.remove(self.refresh))
+        self.listen(self.refresh)
         self.refresh()
 
     def refresh(self):

@@ -25,6 +25,23 @@ class JourneySubpage(Adw.NavigationPage):
         self._main = None
         self._groups = []
 
+    def listen(self, callback):
+        """Call `callback` when the game view changes, only while this page
+        is on the navigation stack. A popped page is never destroyed while
+        the model holds its callback, so the listener removes itself; a
+        stale page would otherwise keep reacting (a set-up page would show
+        the journey after every change in the task lists)."""
+        def on_change():
+            if self not in self._stack():
+                self.model.listeners.remove(on_change)
+                return
+            callback()
+        self.model.listeners.append(on_change)
+
+    def _stack(self):
+        stack = self.window.nav.get_navigation_stack()
+        return [stack.get_item(i) for i in range(stack.get_n_items())]
+
     def set_main(self, label, action):
         self._main = action
         self.main_button.set_label(label or "")

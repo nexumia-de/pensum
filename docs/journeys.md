@@ -51,6 +51,21 @@ Day Planner adds no second implementation.
   (`pensum/ui/journey/model.py`) to evaluate after 300 ms in a thread;
   the request is made on the main thread, a late result from an older
   request is dropped. Without any QuestArc record the engine never runs.
+- **When the journey comes forward:** only when the engine reports a new
+  completion of the current station's own task (`event.completion` or
+  `event.welcome-back`); then, after the toast, the journey page is
+  shown. Every other change (other tasks, lists, an import or sync with
+  several completions at once, `event.progress-summary`) leaves the user
+  where they are, with the toast only. QuestArc's plugin shows only the
+  toast (its behaviour, flow A); the owner asked for this in Day
+  Planner on 2026-11-06.
+- **Listening pages:** a pushed journey page that redraws on changes
+  subscribes with `JourneySubpage.listen()`, which drops the subscription
+  once the page is off the navigation stack. A popped `AdwNavigationPage`
+  is not destroyed while the model still holds its callback, so a
+  "destroy" handler never ran: the set-up page stayed subscribed after
+  its task was created and showed the journey after every change in the
+  task lists.
 
 ## Pages
 
