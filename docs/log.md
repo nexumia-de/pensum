@@ -1,5 +1,8 @@
 # Directory Update Log
 
+## 2026-11-08
+* **Update**: `AGENTS.md` imports `agents/core.md` and `agents/gtk-app.md` from phosh-toolkit instead of its whole `AGENTS.md`; repeated shared rules removed (toolkit decision "lean agent rules", to use fewer tokens per session).
+
 ## 2026-11-05
 * **Initialization**: Pensum, a light GTK4/libadwaita rebuild of Super Productivity for Phosh phones on the same data, at the owner's request ("a lighter app than the current one, with the same data base so that its backup system can be reused"). Analysed Super Productivity 19.3.1 (commit `590178d7`): [data model](super-productivity-data.md) of every slice, backup files and import checks; [sync files](super-productivity-sync.md) (v2/v3 envelope, gzip, Argon2id + AES-GCM, compact ops); [feature inventory](features.md) mapped to milestones. Decision [backup format as storage](decisions/backup-format.md). Built M1's core: dataset in `CompleteBackup` format with automatic backups, import/export, Today/projects/tags, tasks with subtasks, notes, estimates, planned day, tags, timer with per-day booking and work spans; Super Productivity's import checks ported (`pensum/store/validate.py`). Verified in the cloud container: 40 tests (incl. round trips of Super Productivity's own e2e fixtures and its frozen 18.15 state, and a UI test through the pages); screenshots at 360×720 and 1000×700, light and dark; meson install. Not yet checked: import of a Pensum export into a running Super Productivity, the Flatpak build (CI), the phone.
 * **Reorder and archive**: row menu to move tasks and subtasks (long press, right click, Alt+↑/↓; `tasks.move` now also moves to the top or bottom and inside a parent), Archived Projects page with unarchive (#4, part of #3). 42 tests.
