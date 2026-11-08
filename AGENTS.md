@@ -1,11 +1,11 @@
-@../phosh-toolkit/AGENTS.md
+@../phosh-toolkit/agents/core.md
+@../phosh-toolkit/agents/gtk-app.md
 
 # Pensum
 
 A light task list with time tracking for Phosh phones and the desktop
 that keeps its data in [Super Productivity](https://github.com/johannesjo/super-productivity)'s
-backup format. The shared rules in ../phosh-toolkit/AGENTS.md apply as
-well.
+backup format.
 
 - App id: `de.nexumia.Pensum`.
 - Plan: work items are [issues](https://github.com/nexumia-de/pensum/issues)
