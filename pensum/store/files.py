@@ -56,5 +56,13 @@ class Files:
         self.save(ds)
         return ds
 
+    def import_data(self, data, current):
+        """Replace the dataset with one read elsewhere (a sync folder),
+        backing up the current one first like import_file."""
+        ds = Dataset(data)
+        autobackup.write(self.backups, current.data)
+        self.save(ds)
+        return ds
+
     def export_file(self, path, ds):
         backup.write(path, ds.data, dates.now_ms())

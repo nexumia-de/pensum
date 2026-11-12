@@ -235,6 +235,11 @@ class Window(Adw.ApplicationWindow):
         self.nav.pop_to_page(self.main_page)
         self.nav.push(ArchivedPage(self))
 
+    def show_sync(self):
+        from pensum.ui.sync_page import SyncPage
+        self.nav.pop_to_page(self.main_page)
+        self.nav.push(SyncPage(self))
+
     def show_journey(self):
         """The journey is shown like a list: the split view's content."""
         from pensum.ui.journey.page import JourneyPage

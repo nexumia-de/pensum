@@ -3,7 +3,7 @@ type: Playbook
 title: Development environment
 description: Hosts, host packages, and how to run, test, screenshot and build Pensum.
 tags: [development, environment, testing, flatpak]
-generated: { by: claude-code/2.1.318, at: 2026-11-12T15:00:00Z }
+generated: { by: claude-code/2.1.318, at: 2026-11-12T17:00:00Z }
 ---
 
 # Hosts
@@ -107,6 +107,67 @@ Hosts: `app.super-productivity.com` (the live app; it sometimes answers
 a script with 502, so the test loads the page up to three times),
 `hub.docker.com` (image digests). `registry-1.docker.io` answered 429
 without login on 2026-11-12.
+
+# Sync test
+
+`tests/real_app/run_sync.sh` checks reading a sync folder against a real
+Super Productivity ([what it checks](super-productivity-sync.md#checked-against-a-real-super-productivity)):
+it starts the WebDAV test server (`wsgidav.yaml`: `127.0.0.1:2345`, user
+and password `test`, CORS for the web app), runs `sp_sync.mjs` (round 1:
+sets up WebDAV sync in Super Productivity's sync dialog, adds and
+changes tasks, syncs, exports) and `check_sync.py` (Pensum reads the
+folder and compares), then round 2 on the same browser profile. The
+server comes from PyPI, pinned in `requirements-webdav.txt`:
+
+```sh
+python3 -m venv ../webdav
+```
+
+```sh
+../webdav/bin/pip install --no-deps -r tests/real_app/requirements-webdav.txt
+```
+
+```sh
+WSGIDAV=../webdav/bin/wsgidav PYTHON=/usr/bin/python3.12 tests/real_app/run_sync.sh
+```
+
+It runs twice, `plain` and `encrypted` (compression and encryption on,
+password "test password"); files go to `tests/real_app/out-sync/`
+(the folders in `dav/plain` and `dav/encrypted`, each scenario's browser
+profile in `<scenario>/profile/`). The tests need Argon2id:
+
+```sh
+/usr/bin/python3.12 -m pip install --user --break-system-packages --no-deps -r tests/requirements.txt
+```
+ Like the real-app test it uses the
+live web app unless `PENSUM_SP_URL` names another; CI uses the pinned
+image. The live app (HTTPS) reaches the server on `127.0.0.1` because
+Chromium treats loopback as secure and the proxy is bypassed for it.
+Hosts: `pypi.org` and `files.pythonhosted.org` (the server; reachable
+by default as package registries).
+
+# SuperSync probe
+
+Manual, not in CI (#34, [findings](super-productivity-sync.md#supersync)).
+Needs the SuperSync **test account's** access token as a network secret
+of the environment for `sync.super-productivity.com` (Authorization:
+Bearer); the proxy adds it to every request to that host, so scripts
+and the app only see a placeholder. Never use a real account.
+
+```sh
+node tests/real_app/sp_supersync.mjs ../supersync-probe 1
+```
+
+```sh
+python3 tests/real_app/read_supersync.py
+```
+
+`sp_supersync.mjs` round 1 (for an empty account) adds tasks and sets up
+SuperSync with encryption password "test password"; round 2 adds and
+completes tasks. `read_supersync.py` downloads the ops (GET only),
+decrypts them and prints the newest full-state op's counts and the
+later ops a reader would have to replay. Hosts:
+`sync.super-productivity.com` (allowed by the saved network secret).
 
 # Flatpak
 

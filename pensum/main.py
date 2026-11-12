@@ -40,6 +40,7 @@ class Application(Adw.Application):
                                ("show-current-task", self._on_show_current),
                                ("show-lists", self._on_show_lists),
                                ("show-archived", self._on_show_archived),
+                               ("show-sync", self._on_show_sync),
                                ("show-journey", self._on_show_journey),
                                ("search", self._on_search),
                                ("quit", self._on_quit)):
@@ -109,6 +110,10 @@ class Application(Adw.Application):
     def _on_show_archived(self, *_):
         if self._window():
             self._window().show_archived()
+
+    def _on_show_sync(self, *_):
+        if self._window():
+            self._window().show_sync()
 
     def _on_show_journey(self, *_):
         if self._window():

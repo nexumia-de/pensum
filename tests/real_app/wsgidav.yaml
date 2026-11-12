@@ -1,0 +1,51 @@
+# WebDAV test server for the sync test (sp_sync.mjs, run_sync.sh): one
+# user, the folder given with --root, CORS for Super Productivity's web
+# app (which calls WebDAV from the browser). Test only, never for real data.
+host: 127.0.0.1
+port: 2345
+verbose: 2
+logging:
+  enable: true
+http_authenticator:
+  domain_controller: null
+  accept_basic: true
+  accept_digest: false
+  default_to_digest: false
+simple_dc:
+  user_mapping:
+    "*":
+      "test":
+        password: "test"
+cors:
+  allow_origin: "*"
+  allow_headers:
+    - Authorization
+    - Content-Type
+    - Depth
+    - Destination
+    - Overwrite
+    - If-Match
+    - If-None-Match
+    - If-Modified-Since
+    - Cache-Control
+    - X-Requested-With
+  allow_methods:
+    - GET
+    - HEAD
+    - PUT
+    - DELETE
+    - OPTIONS
+    - PROPFIND
+    - MKCOL
+    - MOVE
+    - COPY
+  expose_headers:
+    - ETag
+    - Last-Modified
+    - Content-Length
+    - DAV
+  max_age: 600
+dir_browser:
+  enable: false
+lock_storage: true
+property_manager: true
