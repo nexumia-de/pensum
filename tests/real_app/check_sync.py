@@ -294,13 +294,28 @@ def main(directory, round_):
                 wrong[f"replay without {what}"] = compare_states(bad, snapshot.data)
         no_ops = reader.Snapshot(**{**snapshot.__dict__, "ops": []})
         wrong["recentOps ignored"] = follows(no_ops, first["syncVersion"], expected)[0]
-        bak = dav / FOLDER / "sync-data.json.bak"
-        if bak.exists():
-            payload, _ = envelope.decode(bak.read_text(), PASSWORD)
-            wrong["the previous file (.bak)"] = compare(
-                backup.parse(json.dumps(payload["state"])), sp)
+        if SPLIT:
+            # v3: the snapshot without the ops after it must not pass.
+            ops_file, _ = envelope.decode((dav / FOLDER / "sync-ops.json").read_text(),
+                                          PASSWORD)
+            ref = ops_file["snapshotRef"]
+            name = ref.get("file") or "sync-state.json"
+            state_file, _ = envelope.decode((dav / FOLDER / name).read_text(), PASSWORD)
+            later = [op for op in ops_file.get("recentOps") or []
+                     if (op.get("sv") or 0) > ref["syncVersion"]]
+            if later:
+                wrong["the snapshot without its ops"] = compare(
+                    backup.parse(json.dumps(state_file["state"])), sp)
+            else:
+                print("note: the snapshot is current (just compacted)")
         else:
-            print("note: Super Productivity wrote no sync-data.json.bak")
+            bak = dav / FOLDER / "sync-data.json.bak"
+            payload = envelope.decode(bak.read_text(), PASSWORD)[0] if bak.exists() else {}
+            if "state" in payload:
+                wrong["the previous file (.bak)"] = compare(
+                    backup.parse(json.dumps(payload["state"])), sp)
+            else:
+                print("note: Super Productivity wrote no sync-data.json.bak")
         for what, problems in wrong.items():
             if problems:
                 print(f"ok: wrong decode caught: {what} ({len(problems)} differences)")
