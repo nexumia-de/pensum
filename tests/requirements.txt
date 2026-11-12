@@ -1,0 +1,3 @@
+# Python modules the tests need beyond Ubuntu 24.04 packages (CI jobs
+# test and real-app); the Flatpak builds them from source.
+argon2-cffi-bindings==26.1.0

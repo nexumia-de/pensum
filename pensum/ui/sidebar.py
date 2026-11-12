@@ -11,6 +11,7 @@ def main_menu():
     backup = Gio.Menu()
     backup.append("Import Backup…", "app.import-backup")
     backup.append("Export Backup…", "app.export-backup")
+    backup.append("Read Sync Folder…", "app.show-sync")
     menu.append_section(None, backup)
     rest = Gio.Menu()
     rest.append("Archived Projects", "app.show-archived")

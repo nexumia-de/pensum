@@ -20,3 +20,13 @@ updates:
     directory: /tests/real_app
     schedule:
       interval: weekly
+  # The WebDAV test server of the sync test.
+  - package-ecosystem: pip
+    directory: /tests/real_app
+    schedule:
+      interval: weekly
+  # Python modules of the tests (Argon2id bindings).
+  - package-ecosystem: pip
+    directory: /tests
+    schedule:
+      interval: weekly

@@ -22,3 +22,4 @@ _build/
 /questarc.tar.gz
 # Real-app test output (tests/real_app/run.sh)
 /tests/real_app/out/
+/tests/real_app/out-sync/
