@@ -4,7 +4,7 @@ title: Visual design
 description: Stock libadwaita with Pensum's indigo accent, the screens at 360 px and on the desktop.
 tags: [design, accent, adaptive, libadwaita]
 resource: ../pensum/style.css
-generated: { by: claude-code/2.1.318, at: 2026-11-05T00:30:00Z }
+generated: { by: claude-code/2.1.318, at: 2026-11-12T00:00:00Z }
 ---
 
 Pensum follows the toolkit's [visual design](../../phosh-toolkit/docs/design.md)
@@ -44,7 +44,12 @@ keep the title, back and the menu ([adaptive rule 10](../../phosh-toolkit/docs/a
   stop button; tapping it opens the task. Hidden on that task's own page, without the reveal animation (animating it while the page slid in crashed gtk4-broadwayd).
 - **Undo**: deleting a task or a list and Finish Day act at once and
   show a toast with Undo (GNOME HIG: undo instead of confirmation).
-  Import still asks first; it replaces everything.
+  Import still asks first; it replaces everything. When the current data
+  has changes the file lacks, the question becomes a warning with counts
+  ("Import Older Data?", "3 tasks and 1 journey entry would be lost",
+  the journey's lost completions by day) and **Import Anyway** /
+  **Cancel**; the automatic backup before the import stays the undo
+  (#47).
 
 # Navigation
 
