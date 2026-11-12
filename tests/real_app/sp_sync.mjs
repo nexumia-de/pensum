@@ -67,7 +67,11 @@ page.on('console', (message) => {
   const version = text.match(/Upload complete \(syncVersion=(\d+)/);
   if (version) log.version = Number(version[1]);
   if (/Sync complete, status=IN_SYNC/.test(text)) log.inSync = (log.inSync ?? 0) + 1;
-  if (/sync.*(error|failed)/i.test(text)) log.errors.push(text.slice(0, 160));
+  // Super Productivity marks expected misses itself, e.g. no previous
+  // snapshot to back up on the first Surgical sync upload.
+  if (/sync.*(error|failed)/i.test(text) && !/\(non-fatal\)/.test(text)) {
+    log.errors.push(text.slice(0, 160));
+  }
 });
 
 async function open() {
