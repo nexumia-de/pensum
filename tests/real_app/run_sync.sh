@@ -3,7 +3,8 @@
 # server, Super Productivity syncing to it (sp_sync.mjs), and Pensum
 # reading the folder (check_sync.py), in two rounds; check_sync.py also
 # checks that wrong decodes fail and that reading changes no file. Runs
-# twice: plain files, then compressed and encrypted ones (#29).
+# three times: plain files, compressed and encrypted ones (#29), and the
+# split v3 files whose ops Pensum replays (#30).
 #
 #   tests/real_app/run_sync.sh [OUT_DIR]
 #
@@ -29,15 +30,20 @@ until curl -s -o /dev/null -u test:test http://127.0.0.1:2345/; do
 done
 export PENSUM_DAV_URL=http://127.0.0.1:2345/ PENSUM_DAV_ROOT="$out/dav"
 
+# scenario NAME SPLIT COMPRESS PASSWORD
 scenario() {
-  name=$1
-  echo "== $name"
-  mkdir -p "$out/$name"
+  echo "== $1"
+  export PENSUM_DAV_FOLDER="$1" PENSUM_SYNC_SPLIT="$2" PENSUM_SYNC_COMPRESS="$3" \
+    PENSUM_SYNC_PASSWORD="$4"
+  mkdir -p "$out/$1"
   for round in 1 2; do
-    PENSUM_DAV_FOLDER=$name node "$here/sp_sync.mjs" "$out/$name" $round
-    PENSUM_DAV_FOLDER=$name "$python" "$here/check_sync.py" "$out/$name" $round
+    node "$here/sp_sync.mjs" "$out/$1" $round
+    "$python" "$here/check_sync.py" "$out/$1" $round
   done
 }
 
-PENSUM_SYNC_COMPRESS= PENSUM_SYNC_PASSWORD= scenario plain
-PENSUM_SYNC_COMPRESS=1 PENSUM_SYNC_PASSWORD="test password" scenario encrypted
+scenario plain "" "" ""
+scenario encrypted "" 1 "test password"
+# Surgical sync (v3): the snapshot lags behind, so reading needs the
+# replay of the ops after it (#30).
+scenario split 1 "" ""

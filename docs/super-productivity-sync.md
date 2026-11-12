@@ -158,9 +158,9 @@ changed fields of one entity and resolves conflicts last-writer-wins.
 - **v3**: `sync-ops.json` and the snapshot its `snapshotRef` names
   (then `sync-state.json`, `.bak`, each checked against `syncVersion`
   and vector clock). At 20.0.0 the snapshot is rewritten only on
-  compaction; ops after it would have to be replayed through Super
-  Productivity's reducers. Pensum reads v3 only while no op is newer
-  than the snapshot and says so otherwise (full v3: #31).
+  compaction; the ops after it are replayed ([below](#replaying-operations-30)),
+  and a folder with an op Pensum can't apply yet is refused with the
+  action's name.
 - Compressed and encrypted files (#29): the encryption password is a
   field on the page, kept in the keyring per folder; a missing or wrong
   password is said as such.
@@ -204,6 +204,43 @@ Found on the way: Super Productivity 20 itself moved a done task's
 `doneOn` by a few milliseconds between the export after round 1 and
 round 2 with no op (the op carried the later value), so "changed" in
 the test means user-visible fields, not timestamps.
+
+## Replaying operations (#30)
+
+`pensum/sync/replay/` applies ops the way Super Productivity's reducers
+do on a device that receives them (20.0.0: `task-shared-crud.reducer.ts`,
+`section-shared.reducer.ts`, `task-shared-deadline.reducer.ts`,
+`task.reducer.ts`, `task.reducer.util.ts`, `task-shared-helpers.ts`,
+`global-config.reducer.ts`; meta-reducer order from
+`meta-reducer-registry.ts`). It takes compact ops (`a` short code,
+`action-type-codes.ts`) and SuperSync's full ops. Supported, read-only:
+
+| Action | Code | Rules |
+|---|---|---|
+| `[Task Shared] addTask` | `HA` | default task fields, Today never in `tagIds`, top or bottom of the project list or backlog (backlog only if enabled), above the previous repeat instance if there is one, Today's order when due today, a planner day when due later |
+| `[Task] Add SubTask` | `TA` | parent's project, no tags; the first subtask takes the parent's time spent and estimate; parent's `subTaskIds`, estimate (open time left of the subtasks) and time spent (per-day sums) recalculated |
+| `[Task Shared] updateTask` | `HU` | a completion-day `dueDay` dropped for scheduled tasks and subtasks; the in-progress tag dropped on completion; tag lists (out of left tags, on top of joined ones); time spent with the difference passed to the parent; estimate recalculated on the parent; `doneOn` from the change or now, removed when undone; `modified` = now; Today's order and planner days follow `dueDay` |
+| `[Task Shared] deleteTask` | `HD` | the task and all its subtasks out of tasks, the project's lists, every tag and every section; a last subtask gives its time spent and estimate to the parent |
+| `[Global Config] Update Global Config Section` | `CU` | only `sync`, which stays local (stripped from synced data): no change |
+
+Refused for now: every other action; `updateTask` with `projectId`
+(project moves touch sections); `addTask` with a deadline (auto
+planning); deleting a calendar (`ICAL`) task; other settings sections.
+"Today" is the replaying device's logical day, as in Super
+Productivity. JavaScript's truthiness is kept where the reducers rely
+on it (an empty `tagIds` list or `timeSpentOnDay` object counts as
+given).
+
+The real-app sync test checks it: in round 2 the data read in round 1
+plus the ops since must equal what Super Productivity holds (tasks with
+all fields, task order, project, tag and section lists, planner days),
+and the same replay without the deletes, updates or adds must fail. A
+third scenario uses Surgical sync (v3), where reading itself needs the
+replay. Not compared: `modified` (the time of replay) and `doneOn`
+within a second, because the device that completes a task keeps its own
+clock's value in its state while the op carries a value a few ms later,
+which every other device applies (and Super Productivity itself after a
+reload).
 
 ## SuperSync
 

@@ -7,15 +7,14 @@ docs/super-productivity-sync.md.
 v2: every upload rewrites `state` with the uploader's full state after
 its operations, so `state` is the current dataset and `recentOps` says
 what changed. v3: the snapshot is rewritten only on compaction; the
-operations after it would have to be replayed through Super
-Productivity's reducers, which Pensum does not do (issue #31), so a v3
-folder is read only while its snapshot is current."""
+operations after it are replayed with pensum.sync.replay (#30), and a
+folder with an op Pensum can't apply yet is refused."""
 import json
 import logging
 from dataclasses import dataclass, field
 
 from pensum.store import backup
-from pensum.sync import SyncError, crypto, envelope
+from pensum.sync import SyncError, crypto, envelope, replay
 
 log = logging.getLogger("pensum.sync")
 
@@ -93,14 +92,11 @@ def _read_split(source, ops_text, decode):
         raise SyncError("The Surgical sync snapshot is missing.")
     newer = [op for op in ops_file.get("recentOps") or []
              if (op.get("sv") or 0) > ref["syncVersion"]]
-    if newer:
-        log.info("sync v3: %d ops newer than snapshot %s", len(newer),
-                 ref["syncVersion"])
-        raise SyncError("Super Productivity's Surgical sync has changes that "
-                        "are not in its snapshot yet. Pensum can't read them "
-                        "yet; switch Surgical sync off in Super Productivity "
-                        "to read this data.")
     snapshot = _snapshot("v3", ops_file, state_file)
+    if newer:
+        log.info("sync v3: replaying %d ops after snapshot %s", len(newer),
+                 ref["syncVersion"])
+        snapshot.data = replay.apply(snapshot.data, newer)
     log.info("read sync v3: syncVersion %s, %d tasks, %d recent ops",
              snapshot.sync_version, len(snapshot.data["task"]["ids"]),
              len(snapshot.ops))

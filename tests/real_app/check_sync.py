@@ -36,12 +36,13 @@ for toolkit in (ROOT.parent / "phosh-toolkit", ROOT / ".phosh-toolkit"):
 from pensum.store import backup, validate  # noqa: E402
 from pensum.store.dataset import Dataset  # noqa: E402
 from pensum.store.files import Files  # noqa: E402
-from pensum.sync import SyncError, changes, crypto, envelope, reader  # noqa: E402
+from pensum.sync import SyncError, changes, crypto, envelope, reader, replay  # noqa: E402
 from pensum.sync.local import LocalFolder  # noqa: E402
 from pensum.sync.webdav import WebDav  # noqa: E402
 
 FOLDER = os.environ.get("PENSUM_DAV_FOLDER") or "super-productivity"
 PASSWORD = os.environ.get("PENSUM_SYNC_PASSWORD") or None
+SPLIT = os.environ.get("PENSUM_SYNC_SPLIT") == "1"
 TASK_FIELDS = ("title", "isDone", "projectId", "tagIds", "parentId", "subTaskIds",
                "timeEstimate", "timeSpent", "doneOn", "notes", "dueDay", "created")
 CONTEXT_FIELDS = ("title", "taskIds")
@@ -152,6 +153,44 @@ def changed_tasks(before, after):
             or any(a[tid].get(k) != b[tid].get(k) for k in CHANGE_FIELDS)}
 
 
+# Replay (#30) against what Super Productivity itself holds. Not compared:
+# `modified` (the time of replay), and `doneOn` within a second: the device
+# that completes a task keeps its own clock's doneOn in its state while
+# the op carries a few ms later value, which every other device (and
+# Super Productivity itself after a reload) applies.
+DONE_ON_DRIFT_MS = 1000
+
+
+def compare_states(replayed, real):
+    found = []
+    a, b = replayed["task"], real["task"]
+    if a["ids"] != b["ids"]:
+        found.append(f"task order: {len(a['ids'])} replayed, {len(b['ids'])} real")
+    for tid in set(a["entities"]) | set(b["entities"]):
+        x, y = a["entities"].get(tid), b["entities"].get(tid)
+        if x is None or y is None:
+            found.append(f"task {tid}: {'missing' if x is None else 'extra'} after replay")
+            continue
+        for key in (set(x) | set(y)) - {"modified"}:
+            if key == "doneOn" and isinstance(x.get(key), int) and isinstance(y.get(key), int) \
+                    and abs(x[key] - y[key]) <= DONE_ON_DRIFT_MS:
+                continue
+            if x.get(key) != y.get(key):
+                found.append(f"task {tid}: {key}")
+    for name, keys in (("project", ("taskIds", "backlogTaskIds")), ("tag", ("taskIds",)),
+                       ("section", ("taskIds",))):
+        for cid in set(replayed[name]["entities"]) | set(real[name]["entities"]):
+            x = replayed[name]["entities"].get(cid) or {}
+            y = real[name]["entities"].get(cid) or {}
+            for key in keys:
+                if x.get(key) != y.get(key):
+                    found.append(f"{name} {cid}: {key}")
+    days = lambda d: {k: v for k, v in ((d.get("planner") or {}).get("days") or {}).items() if v}
+    if days(replayed) != days(real):
+        found.append("planner days")
+    return found
+
+
 def follows(snapshot, seen, expected):
     found = changes.since(snapshot, seen)
     problems = []
@@ -193,8 +232,11 @@ def main(directory, round_):
           f"{len(snapshot.data['task']['ids'])} tasks, {len(snapshot.ops)} recent ops, "
           f"{len(before)} files in the folder")
 
-    prefix = (dav / FOLDER / "sync-data.json").read_text()[:8]
-    want = "pf_CE" if PASSWORD else "pf_2__"
+    main_file = "sync-ops.json" if SPLIT else "sync-data.json"
+    prefix = (dav / FOLDER / main_file).read_text()[:8]
+    want = "pf_CE" if PASSWORD else ("pf_3__" if SPLIT else "pf_2__")
+    check(f"format {'v3' if SPLIT else 'v2'}",
+          [] if snapshot.format == ("v3" if SPLIT else "v2") else [snapshot.format])
     check(f"files written {'compressed and encrypted' if PASSWORD else 'plain'}",
           [] if prefix.startswith(want) else [f"prefix {prefix[:6]!r}"])
     if PASSWORD:
@@ -232,8 +274,18 @@ def main(directory, round_):
         problems, found = follows(snapshot, first["syncVersion"], expected)
         check(f"recentOps since round 1 ({found.count} ops, {len(expected)} tasks "
               "changed in Super Productivity)", problems)
-        # Wrong decodes must fail the same checks.
+        # Replay (#30): round 1's data plus the ops since must give what
+        # Super Productivity holds now.
+        since = [op for op in snapshot.ops if (op.get("sv") or 0) > first["syncVersion"]]
+        replayed = replay.apply(first["data"], since)
+        check(f"round 1 + {len(since)} ops replayed = round 2",
+              compare_states(replayed, snapshot.data))
+        # Wrong decodes and wrong replays must fail the same checks.
         wrong = {"the first snapshot kept": compare(first["data"], sp)}
+        for code, what in (("HD", "deletes"), ("HU", "updates"), ("HA", "adds")):
+            if any(op.get("a") == code for op in since):
+                bad = replay.apply(first["data"], [op for op in since if op.get("a") != code])
+                wrong[f"replay without {what}"] = compare_states(bad, snapshot.data)
         no_ops = reader.Snapshot(**{**snapshot.__dict__, "ops": []})
         wrong["recentOps ignored"] = follows(no_ops, first["syncVersion"], expected)[0]
         bak = dav / FOLDER / "sync-data.json.bak"

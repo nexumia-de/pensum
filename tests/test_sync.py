@@ -187,10 +187,17 @@ def test_v3_falls_back_to_fixed_snapshot(tmp_path):
     assert reader.read(folder(tmp_path, files)).format == "v3"
 
 
-def test_v3_refuses_ops_newer_than_snapshot(tmp_path):
-    """Those ops would need Super Productivity's reducers (issue #31)."""
-    with pytest.raises(SyncError, match="not in its snapshot"):
-        reader.read(folder(tmp_path, v3_files(sp_state(), ops=[op(4), op(5)])))
+def test_v3_replays_ops_newer_than_snapshot(tmp_path):
+    rename = {**op(5), "a": "HU", "p": {"actionPayload": {"task": {
+        "id": "active-task-1", "changes": {"title": "Renamed"}}}}}
+    snapshot = reader.read(folder(tmp_path, v3_files(sp_state(), ops=[op(4), rename])))
+    assert snapshot.data["task"]["entities"]["active-task-1"]["title"] == "Renamed"
+
+
+def test_v3_refuses_ops_it_cannot_apply(tmp_path):
+    other = {**op(5), "a": "XX"}
+    with pytest.raises(SyncError, match="can't apply yet"):
+        reader.read(folder(tmp_path, v3_files(sp_state(), ops=[other])))
 
 
 def test_v3_refuses_snapshot_that_does_not_match(tmp_path):
