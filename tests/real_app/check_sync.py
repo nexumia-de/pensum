@@ -90,6 +90,8 @@ def compare(read, sp):
     for tid in ids(read, "task") & ids(sp, "task"):
         r, s = read["task"]["entities"][tid], sp["task"]["entities"][tid]
         for key in TASK_FIELDS:
+            if key == "doneOn" and done_on_drift(r.get(key), s.get(key)):
+                continue
             if r.get(key) != s.get(key):
                 found.append(f"task {tid}: {key}")
     for name in ("project", "tag"):
@@ -161,6 +163,10 @@ def changed_tasks(before, after):
 DONE_ON_DRIFT_MS = 1000
 
 
+def done_on_drift(a, b):
+    return isinstance(a, int) and isinstance(b, int) and abs(a - b) <= DONE_ON_DRIFT_MS
+
+
 def compare_states(replayed, real):
     found = []
     a, b = replayed["task"], real["task"]
@@ -172,8 +178,7 @@ def compare_states(replayed, real):
             found.append(f"task {tid}: {'missing' if x is None else 'extra'} after replay")
             continue
         for key in (set(x) | set(y)) - {"modified"}:
-            if key == "doneOn" and isinstance(x.get(key), int) and isinstance(y.get(key), int) \
-                    and abs(x[key] - y[key]) <= DONE_ON_DRIFT_MS:
+            if key == "doneOn" and done_on_drift(x.get(key), y.get(key)):
                 continue
             if x.get(key) != y.get(key):
                 found.append(f"task {tid}: {key}")
@@ -224,9 +229,10 @@ def main(directory, round_):
     after = hashes(dav)
     check("folder unchanged by reading", [] if before == after else
           [f"{len(set(before.items()) ^ set(after.items()))} file entries differ"])
+    # Replayed ops (v3) carry the time of reading in `modified`.
     check("WebDAV and disk read the same",
-          [] if over_webdav.data == on_disk.data
-          and over_webdav.sync_version == on_disk.sync_version else ["data differ"])
+          compare_states(over_webdav.data, on_disk.data)
+          + ([] if over_webdav.sync_version == on_disk.sync_version else ["syncVersion"]))
     snapshot = over_webdav
     print(f"round {round_}: {snapshot.format}, syncVersion {snapshot.sync_version}, "
           f"{len(snapshot.data['task']['ids'])} tasks, {len(snapshot.ops)} recent ops, "
