@@ -38,12 +38,20 @@ def test_phone_metadata():
     assert root.find("url[@type='donation']").text == pensum.SUPPORT_URL
 
 
-def test_manifest_has_no_network_and_no_file_access():
+def test_manifest_has_no_file_access_and_network_only_for_webdav():
     manifest = (ROOT / f"{APP_ID}.yml").read_text()
     args = [line.strip()[2:] for line in manifest.splitlines()
             if line.strip().startswith("- --")]
-    assert "--share=network" not in args
     assert not [a for a in args if a.startswith("--filesystem")]
+    # The network is for reading a sync folder on WebDAV (#28): only that
+    # module opens connections, and it sends nothing but GET.
+    assert "--share=network" in args
+    network = re.compile(r"^\s*(import|from)\s+(urllib|http|socket|ssl|requests)\b", re.M)
+    users = {p.relative_to(ROOT).as_posix() for p in (ROOT / "pensum").rglob("*.py")
+             if network.search(p.read_text())}
+    assert users == {"pensum/sync/webdav.py"}
+    webdav = (ROOT / "pensum/sync/webdav.py").read_text()
+    assert re.findall(r'method="(\w+)"', webdav) == ["GET"]
     commit = re.search(r"- name: phosh-toolkit.*?commit: (\w+)", manifest, re.S)
     assert commit and len(commit.group(1)) == 40
 

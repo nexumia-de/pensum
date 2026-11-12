@@ -12,7 +12,7 @@ import gi  # noqa: E402
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Adw, GLib  # noqa: E402
+from gi.repository import Adw, GLib, Gtk  # noqa: E402
 
 from pensum import demo, settings  # noqa: E402
 from pensum.store import backup, validate  # noqa: E402
@@ -446,4 +446,39 @@ def test_journey_comes_forward_only_for_its_own_task(app, tmp_path):
     assert window.journeys.active()["stations"][0]["completions"] == 1
     window.flush()
     assert validate.problems(backup.read(window.files.path)) == []
+    window.close()
+
+
+def test_sync_page_reads_folder_and_imports(app, tmp_path):
+    """Read a sync folder written by Super Productivity, show its counts,
+    import it; the folder stays as it was and the data stays valid."""
+    import shutil
+    from pathlib import Path
+    folder = tmp_path / "sync"
+    shutil.copytree(Path(__file__).parent / "fixtures" / "sync", folder)
+    before = {p.name: p.read_bytes() for p in folder.iterdir()}
+    window = new_window(app, tmp_path, demo.create())
+    window.show_sync()
+    iterate()
+    page = window.nav.get_visible_page()
+    assert window.get_focus() is None or not isinstance(window.get_focus(), Gtk.Text)
+    page.read(wait=True)  # WebDAV without an address
+    assert page.banner.get_revealed() and page.snapshot is None
+    page.kind_row.set_selected(1)
+    window.settings.sync_local_path = str(folder)
+    page.read(wait=True)
+    iterate()
+    assert not page.banner.get_revealed()
+    assert page.snapshot.format == "v2"
+    assert int(page.rows["open"].get_label()) + int(page.rows["done"].get_label()) == \
+        len(page.snapshot.data["task"]["ids"])
+    assert page.rows["changes"].get_label() == "0"
+    assert page.import_button.get_sensitive()
+    page.import_now()
+    iterate()
+    titles = {t["title"] for t in window.ds.data["task"]["entities"].values()}
+    assert "Sync test: water the plants" in titles
+    assert validate.problems(window.ds.data) == []
+    assert {p.name: p.read_bytes() for p in folder.iterdir()} == before
+    assert window.settings.sync_kind == "local"
     window.close()

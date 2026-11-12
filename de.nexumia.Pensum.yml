@@ -8,9 +8,13 @@ finish-args:
   - --socket=fallback-x11
   - --socket=wayland
   - --device=dri
-  # No network and no file system access: the dataset lives in the
-  # app's own data directory; backups are opened and saved through the
-  # file chooser portal (docs/super-productivity-data.md).
+  # Network only to read a Super Productivity sync folder on a WebDAV
+  # server (docs/super-productivity-sync.md); its password goes to the
+  # keyring through the Secret portal. No file system access: the
+  # dataset lives in the app's own data directory; backups and local
+  # sync folders are opened through the file chooser portal
+  # (docs/super-productivity-data.md).
+  - --share=network
 cleanup:
   - /include
   - /lib/pkgconfig

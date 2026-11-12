@@ -31,3 +31,12 @@ path = "tests/fixtures/*.json"
 precedence = "override"
 SPDX-FileCopyrightText = "2018 Johannes Millan"
 SPDX-License-Identifier = "MIT"
+
+# A sync file written by Super Productivity 20.0.0 itself (its default
+# settings and onboarding task, plus the test tasks of
+# tests/real_app/sp_sync.mjs), used to check that Pensum reads real files.
+[[annotations]]
+path = "tests/fixtures/sync/*"
+precedence = "override"
+SPDX-FileCopyrightText = "2018 Johannes Millan"
+SPDX-License-Identifier = "MIT"

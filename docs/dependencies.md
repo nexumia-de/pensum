@@ -41,11 +41,17 @@ Pensum's package; its licence text goes to
 |---|---|---|---|
 | `playwright` (npm, `tests/real_app/package.json`) | 1.64.1 | Apache-2.0 | real-app test |
 | Super Productivity Docker image `johannesjo/super-productivity` | `v20.0.0` (digest in `tests/real_app/Dockerfile`) | MIT (© 2018 Johannes Millan) | real-app test, CI only |
+| `wsgidav` (PyPI, `tests/real_app/requirements-webdav.txt`) | 4.4.0 | MIT | sync test's WebDAV server |
+| its dependencies: `cheroot` 11.1.2, `jaraco.functools` 4.6.0, `more-itertools` 11.2.1, `defusedxml` 0.7.1, `Jinja2` 3.1.6, `MarkupSafe` 3.0.4, `json5` 0.17.3, `PyYAML` 6.0.3 | as listed | BSD-3-Clause (cheroot), MIT (jaraco.functools, more-itertools, PyYAML), PSF-2.0 (defusedxml), BSD-3-Clause (Jinja2, MarkupSafe), Apache-2.0 (json5) | the same |
 
-Dependabot updates both.
+Licences read from each package's `LICENSE` file or licence metadata on
+2026-11-12. None of these is bundled. Dependabot updates them.
 
 # From the runtime (not bundled)
 
-`org.gnome.Platform//51` provides Python 3, PyGObject, GTK 4 and
-libadwaita. M4 (sync) will need Argon2id and AES-GCM
+`org.gnome.Platform//51` provides Python 3, PyGObject, GTK 4,
+libadwaita and libsecret (the WebDAV password in the keyring; without
+it the password is not remembered). Reading WebDAV uses Python's
+`urllib`. Compressed and encrypted sync files (#29) will need Argon2id
+and AES-GCM
 ([sync files](super-productivity-sync.md#file-envelope)).

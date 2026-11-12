@@ -20,3 +20,8 @@ updates:
     directory: /tests/real_app
     schedule:
       interval: weekly
+  # The WebDAV test server of the sync test.
+  - package-ecosystem: pip
+    directory: /tests/real_app
+    schedule:
+      interval: weekly

@@ -45,6 +45,18 @@ python.install_sources(
   subdir: 'pensum' / 'store',
 )
 python.install_sources(
+  'pensum/sync/__init__.py',
+  'pensum/sync/changes.py',
+  'pensum/sync/envelope.py',
+  'pensum/sync/keyring.py',
+  'pensum/sync/local.py',
+  'pensum/sync/reader.py',
+  'pensum/sync/summary.py',
+  'pensum/sync/webdav.py',
+  subdir: 'pensum' / 'sync',
+)
+
+python.install_sources(
   'pensum/store/repeat/__init__.py',
   'pensum/store/repeat/instances.py',
   'pensum/store/repeat/rules.py',
@@ -86,6 +98,7 @@ python.install_sources(
   'pensum/ui/dialogs.py',
   'pensum/ui/repeat_page.py',
   'pensum/ui/search_page.py',
+  'pensum/ui/sync_page.py',
   'pensum/ui/sidebar.py',
   'pensum/ui/tags_dialog.py',
   'pensum/ui/time_dialog.py',
