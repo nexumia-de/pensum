@@ -1,11 +1,13 @@
 """QuestArc's pictures (content/art/, QuestArc decision "shared pictures")
 drawn with librsvg into Cairo. A picture has no colours of its own: its
-shapes carry the roles fg, accent and dim, which a stylesheet fills from
-libadwaita's colours, so light and dark follow the system: the text
-colour, the accent as libadwaita's `.accent` class shows it (the app's
-own accent, made readable on dark surfaces since libadwaita 1.6), and
-dim, the text colour mixed into the surface the picture stands on, as in
-the plugin.
+shapes carry the roles in ROLES, which a stylesheet fills from
+libadwaita's colours, so light and dark follow the system: fg the text
+colour, accent as libadwaita's `.accent` class shows it (the app's own
+accent, made readable on dark surfaces since libadwaita 1.6), dim the
+text colour mixed into the surface the picture stands on, bg that
+surface, tint and tint-strong the accent mixed into it, as in the
+plugin. Every role is opaque, so overlaps show no seams. A scene's far
+band is drawn as one silhouette in tint.
 Every picture and scene has its title as the accessible label."""
 import html
 import re
@@ -21,7 +23,10 @@ from gi.repository import GLib, Gtk, Rsvg  # noqa: E402
 
 from pensum.game import content  # noqa: E402
 
+ROLES = ("fg", "accent", "dim", "bg", "tint", "tint-strong")
 DIM = 0.3  # share of the text colour in dim
+TINT = 0.16  # share of the accent in tint
+TINT_STRONG = 0.4  # share of the accent in tint-strong
 _TITLE = re.compile(r"<title>(.*?)</title>", re.S)
 
 
@@ -50,22 +55,35 @@ def surface(widget, card=False):
     return _over(card_bg, base) if card_bg else base
 
 
+def _mix(top, below, share):
+    return tuple(t * share + b * (1 - share) for t, b in zip(top, below))
+
+
 def colours(widget, card=False):
-    """The three roles as opaque (r, g, b) for the widget's style."""
+    """The roles as opaque (r, g, b) for the widget's style."""
     below = surface(widget, card)
     fg = widget.get_color()
     acc = Gtk.Label(css_classes=["accent"]).get_color()
     text = _over((fg.red, fg.green, fg.blue, fg.alpha), below)
+    accent = _over((acc.red, acc.green, acc.blue, acc.alpha), below)
     return {
         "fg": text,
-        "accent": _over((acc.red, acc.green, acc.blue, acc.alpha), below),
-        "dim": tuple(t * DIM + b * (1 - DIM) for t, b in zip(text, below)),
+        "accent": accent,
+        "dim": _mix(text, below, DIM),
+        "bg": tuple(below),
+        "tint": _mix(accent, below, TINT),
+        "tint-strong": _mix(accent, below, TINT_STRONG),
     }
 
 
 def stylesheet(roles):
     hexes = {k: "#%02x%02x%02x" % tuple(round(c * 255) for c in v) for k, v in roles.items()}
     return "".join(f".{k}{{fill:{v}}}" for k, v in sorted(hexes.items()))
+
+
+def far_stylesheet(roles):
+    """The far band: every role in tint, one silhouette with the ground."""
+    return stylesheet({k: roles["tint"] for k in roles})
 
 
 @lru_cache(maxsize=128)
@@ -94,14 +112,19 @@ def draw(cr, name, x, y, width, height, css):
     return True
 
 
-def draw_scene(cr, scene, width, height, css):
-    """A scene scaled to fit and centred in width × height."""
+def draw_scene(cr, scene, width, height, roles):
+    """A scene scaled to fit, centred and clipped to its own size, in the
+    roles' colours; the far band as one silhouette in tint."""
     scale = min(width / scene["width"], height / scene["height"])
+    css, far = stylesheet(roles), far_stylesheet(roles)
     cr.save()
     cr.translate((width - scene["width"] * scale) / 2, (height - scene["height"] * scale) / 2)
     cr.scale(scale, scale)
+    cr.rectangle(0, 0, scene["width"], scene["height"])
+    cr.clip()
     for p in scene["pictures"]:
-        draw(cr, p["art"], p["x"], p["y"], p["width"], p["height"], css)
+        draw(cr, p["art"], p["x"], p["y"], p["width"], p["height"],
+             far if p.get("band") == "far" else css)
     cr.restore()
 
 
@@ -110,7 +133,7 @@ def _area(label, draw_func, card):
     area.update_property([Gtk.AccessibleProperty.LABEL], [label])
 
     def on_draw(area, cr, width, height):
-        draw_func(cr, width, height, stylesheet(colours(area, card)))
+        draw_func(cr, width, height, colours(area, card))
 
     area.set_draw_func(on_draw)
     return area
@@ -118,7 +141,7 @@ def _area(label, draw_func, card):
 
 def picture_area(name, size, card=False):
     """A picture as a widget of size × size px."""
-    area = _area(title(name), lambda cr, w, h, css: draw(cr, name, 0, 0, w, h, css), card)
+    area = _area(title(name), lambda cr, w, h, roles: draw(cr, name, 0, 0, w, h, stylesheet(roles)), card)
     area.set_content_width(size)
     area.set_content_height(size)
     return area
@@ -127,7 +150,7 @@ def picture_area(name, size, card=False):
 def scene_area(scene, card=False):
     """A scene as a widget as wide as its parent, its height following the
     width in the scene's proportions."""
-    area = _area(scene["title"], lambda cr, w, h, css: draw_scene(cr, scene, w, h, css), card)
+    area = _area(scene["title"], lambda cr, w, h, roles: draw_scene(cr, scene, w, h, roles), card)
     area.set_hexpand(True)
     area.set_content_height(scene["height"])
 
