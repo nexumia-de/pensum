@@ -12,7 +12,7 @@ in Super Productivity, import in Pensum, and back.
 - Tasks with subtasks, notes, estimates and a planned day
 - A timer per task that books the time on the day you worked
 - Repeating tasks, the same way as in Super Productivity
-- Habit journeys from [QuestArc](https://github.com/nexumia-de/QuestArc):
+- Habit journeys from [QuestArc](https://github.com/nexumia-de/quest-arc):
   small steps that grow, calm or with a game layer
 - Import and export of Super Productivity backups, automatic backups
 - Offline: no account, no network

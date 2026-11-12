@@ -7,7 +7,7 @@ picks the part, `growth` (default), `shore`, `sizes`, `sequence-<ladder>`,
 `sequence-<ladder>-<marker>`, `journey-<ladder>[-ready]` or `palette`; a second
 argument a palette hue:
 
-    PENSUM_QUESTARC_DIR=../QuestArc /usr/bin/python3.12 tests/art_demo.py sequence-crossing slate
+    PENSUM_QUESTARC_DIR=../quest-arc /usr/bin/python3.12 tests/art_demo.py sequence-crossing slate
 """
 import sys
 from pathlib import Path
