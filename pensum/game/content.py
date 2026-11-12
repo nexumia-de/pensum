@@ -91,7 +91,8 @@ def scene(name):
 
 def ladder(name):
     """A ladder of content/art/ (`<name>.ladder.json`): the versions of one
-    build, its material and the setting with its places; None if absent."""
+    build, its default marker and the setting with its places; None if
+    absent."""
     return _art_json(name, ".ladder.json")
 
 

@@ -86,8 +86,9 @@ def test_far_stylesheet_fills_every_role_with_tint():
     assert css.count("fill:#00ffff") == len(ROLES)
 
 
-# The ladders (QuestArc#42): one build per ladder, whole at every version,
-# a scaffold while the next version is worked on, a flag when it is ready.
+# The ladders (QuestArc#42): one build per ladder, whole at every version;
+# while a stage runs a festive marker in front of it grows one element at a
+# time and is "on" while the stage is met. States, never counts.
 
 @pytest.fixture
 def crossing():
@@ -97,42 +98,80 @@ def crossing():
     return found
 
 
-def _arts(ladder, version, state="standing", lit=False):
-    return [p["art"] for p in art.ladder_scene(ladder, version, state, lit)["pictures"]]
+def _arts(ladder, version, **state):
+    return [p["art"] for p in art.ladder_scene(ladder, version, **state)["pictures"]]
+
+
+def _marks(ladder, version, **state):
+    return [a for a in _arts(ladder, version, **state) if a.startswith("marker-")]
 
 
 def test_ladder_scene_fills_the_build_slot(crossing):
     scene = art.ladder_scene(crossing, 3)
     assert scene["pictures"][0]["art"] == "setting-river"
     assert [a for a in _arts(crossing, 3) if a.startswith("build-")] == ["build-crossing-3"]
-    assert scene["title"] == "A plank bridge"
-    for item in scene["pictures"]:
-        assert content.art_path(item["art"]) is not None, item["art"]
+    assert _marks(crossing, 3) == []
+    assert scene["title"] == "A plank bridge stands"
 
 
-def test_work_on_the_next_version_is_the_scaffold_behind_the_build(crossing):
-    arts = _arts(crossing, 3, "extending")
-    assert arts.index("build-scaffold") == arts.index("build-crossing-3") - 1
-    assert "pennant" not in arts
-    assert art.ladder_scene(crossing, 3, "extending")["title"] == \
-        "A plank bridge, work on a stone bridge has begun"
+def test_every_picture_of_every_marker_exists(crossing):
+    home = content.ladder("home")
+    for ladder in (crossing, home):
+        for kind in ("lanterns", "bunting", "flowers"):
+            for state in ({"progress": 1.0}, {"ready": True}):
+                for item in art.ladder_scene(ladder, 2, marker=kind, **state)["pictures"]:
+                    assert content.art_path(item["art"]) is not None, item["art"]
 
 
-def test_ready_sets_the_flag_and_nothing_is_counted(crossing):
-    arts = _arts(crossing, 3, "ready")
-    assert "build-scaffold" in arts and "pennant" in arts
-    assert not any(a.startswith("material-") for a in arts)
-    assert art.ladder_scene(crossing, 3, "ready")["title"] == "A plank bridge, a stone bridge is ready"
+def test_the_marker_grows_one_element_at_a_time(crossing):
+    assert art.marker_elements(crossing) == 9
+    assert art.elements_shown(crossing, 0) == 0
+    assert art.elements_shown(crossing, 3 / 9) == 3
+    assert _marks(crossing, 3, progress=1 / 9) == ["marker-lanterns-post"]
+    two = _arts(crossing, 3, progress=2 / 9)
+    assert sum("-post" in a for a in two) == 2 and sum("-cord-" in a for a in two) == 1
+    assert sum("-bead" in a for a in _marks(crossing, 3, progress=5 / 9)) == 2
+    assert art.ladder_scene(crossing, 3, 0.5)["title"] == \
+        "A plank bridge stands, a stone bridge is on its way"
 
 
-def test_ladder_last_version_is_never_extended_and_takes_the_lantern(crossing):
-    arts = _arts(crossing, 5, "ready", lit=True)
-    assert "build-scaffold" not in arts and arts.count("lantern") == 1
+def test_sides_leaves_the_middle_open():
+    home = content.ladder("home")
+    lines = [a for a in _arts(home, 3, progress=0.4) if "-cord-" in a]
+    assert lines == ["setting-clearing-cord-1", "setting-clearing-cord-2"]
+
+
+def test_ready_shows_every_element_on_and_the_words(crossing):
+    on = _marks(crossing, 3, progress=0.5, ready=True)
+    assert len(on) == 9 and sum(a.endswith("-bead-lit") for a in on) == 6
+    assert on.count("marker-lanterns-post") == 3
+    assert art.ladder_scene(crossing, 3, ready=True)["title"] == \
+        "A plank bridge stands, a stone bridge is ready"
+    assert art.build_words(crossing, 1, 0.1) == "Stepping stones stand · a log is on its way"
+
+
+def test_another_marker_and_the_last_version(crossing):
+    home = content.ladder("home")
+    assert _marks(home, 3, progress=0.1) == ["marker-bunting-post"]
+    assert _marks(home, 3, progress=0.1, marker="flowers") == ["marker-flowers-post"]
+    arts = _arts(crossing, 5, ready=True, graduated=True)
+    assert _marks(crossing, 5, ready=True) == [] and arts.count("lantern") == 1
+
+
+def test_the_row_of_versions_can_show_a_zoomed_part(crossing):
+    assert crossing["row"] == [30, 38, 60, 40]
+    surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, 60, 40)
+    cr = cairo.Context(surface)
+    css = art.stylesheet({role: (0.0, 0.0, 1.0) for role in ROLES})
+    assert art.draw_part(cr, "build-crossing-1", 60, 40, crossing["row"], css)
+    data = surface.get_data()
+    drawn = sum(data[i + 3] == 255 for i in range(0, len(data), 4))
+    assert drawn > 60 * 40 * 0.2  # the stones fill the cell, not a thin line
 
 
 def test_ladder_scene_is_drawn_only_in_the_roles_colours(crossing):
     for version in range(1, len(crossing["versions"]) + 1):
-        scene = art.ladder_scene(crossing, version, "ready", version == 5)
+        scene = art.ladder_scene(crossing, version, ready=True, graduated=version == 5)
         pixels = [p for p in render(scene) if p[3] == 255]
         assert (0, 0, 0, 255) not in pixels
         assert sum(p in PURE for p in pixels) / len(pixels) > 0.95

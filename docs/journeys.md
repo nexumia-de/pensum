@@ -130,17 +130,24 @@ PENSUM_QUESTARC_DIR=$PWD/../QuestArc /usr/bin/python3.12 tests/art_demo.py
 
 **Ladders and hues** (QuestArc#42, QuestArc's journey design "Builds and
 ladders"): a journey builds one thing in versions, each whole, in the same
-slot of the same setting. `art.ladder_scene(ladder, version, state, lit)`
-composes the scene from `<ladder>.ladder.json` (`content.ladder`): the
-setting and its plants, the standing version in the `build` slot, the
-scaffold behind it while the next version is worked on (`"extending"`),
-the pennant on the scaffold when it is ready (`"ready"`), the lantern
-after graduation; never a count. A region may take a hue from
+slot of the same setting. `art.ladder_scene(ladder, version, progress,
+ready, marker, graduated)` composes the scene from `<ladder>.ladder.json`
+(`content.ladder`): the setting and its plants, the standing version in
+the `build` slot and, while a stage runs, its marker in the foreground:
+the first ceil(p × E) elements (`art.elements_shown`; plain posts first,
+then the hanging lanterns, pennants or flowers; a line once both its
+posts stand), p the stage's best progress so it never loses one; when
+`ready` every hanging element in its "on" form (`-lit` picture), the
+posts stay plain. `marker` picks the kind (the ladder's default if None);
+the lantern after graduation; never a count. `art.build_words` says the
+state under the row of versions ("… is on its way", "… is ready"); the
+row may show a zoomed part of each version (`row`, `art.draw_part`). A region may take a hue from
 `palette.json` (`content.palette`): `art.colours(widget, card, hue)` then
 takes `accent`, `tint` and `tint-strong` from the hue's light or dark
 value (by `Adw.StyleManager`'s dark state); `fg`, `bg` and `dim` stay
-libadwaita's. The demo's parts `sequence-<ladder>`, `journey-<ladder>`
-(a static mock of the journey screen; the real pages are unchanged) and
+libadwaita's. The demo's parts `sequence-<ladder>[-<marker>]`,
+`journey-<ladder>[-ready]` (a static mock of the journey screen; the real
+pages are unchanged) and
 `palette` are in `tests/ladder_demo.py`, a palette hue as the second
 argument. `tests/test_art.py` checks the composed scenes and that every
 hue keeps WCAG contrast against libadwaita's cards in light and dark

@@ -1,10 +1,13 @@
 """The ladders' pages of the pictures' demo (QuestArc#42), for the owner to
 judge, the same as QuestArc's preview (packages/plugin/preview/ladders.ts):
-`sequence-<ladder>` shows one ladder as it grows (each version, then the
-scaffold while the next is worked on, the scaffold with the flag when it is
-ready, the last version with the lit lantern, the row of versions), `journey-<ladder>` a static mock of the
-journey screen with the build on top, `palette` every hue and each ladder
-in two hues. Not part of the app; the real journey pages are unchanged."""
+`sequence-<ladder>[-<marker>]` shows one ladder as it grows (each version,
+then its marker growing element by element: every element for the first
+stage, a few sampled steps for the others; ready; then the next version;
+the last version with the lit lantern; the row of versions),
+`journey-<ladder>[-ready]` a static mock of the journey screen with the
+build on top (posts up and two elements hanging, or ready), `palette` every
+hue and each ladder in two hues.
+Not part of the app; the real journey pages are unchanged."""
 import math
 
 import gi
@@ -17,24 +20,22 @@ from pensum.game import content  # noqa: E402
 from pensum.ui.journey import art  # noqa: E402
 
 
-def _words(ladder, version, state):
-    """The state in words, as under the row of versions."""
-    versions = ladder["versions"]
-    now = versions[version - 1]["title"]
-    following = versions[version]["title"].lower() if version < len(versions) else ""
-    stands = "stands" if now.startswith("A ") else "stand"
-    if state == "extending":
-        return f"{now} {stands} · work on {following} has begun"
-    if state == "ready":
-        return f"{now} {stands} · {following} is ready"
-    return f"{now} {stands}"
+def _steps(ladder, version):
+    """Every element for the first stage, a few sampled steps for the others."""
+    every = art.marker_elements(ladder)
+    posts = len(ladder["posts"])
+    if version == 1:
+        return list(range(1, every + 1))
+    return [1, posts, posts + math.ceil((every - posts) / 2), every]
 
 
-def _frame(ladder, hue, version, state, lit, caption, width=310):
+def _frame(ladder, hue, version, caption, width=300, **state):
     card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6, css_classes=["card"],
                    overflow=Gtk.Overflow.HIDDEN, width_request=width, valign=Gtk.Align.START)
-    card.append(art.scene_area(art.ladder_scene(ladder, version, state, lit), card=True, hue=hue))
-    card.append(Gtk.Label(label=caption, xalign=0, wrap=True, css_classes=["dimmed", "dim-label"],
+    card.append(art.scene_area(art.ladder_scene(ladder, version, **state), card=True, hue=hue))
+    # A short natural width, so four cards fit on a line and wrap when narrower.
+    card.append(Gtk.Label(label=caption, xalign=0, wrap=True, max_width_chars=30,
+                          css_classes=["dimmed", "dim-label"],
                           margin_start=12, margin_end=12, margin_bottom=10))
     return card
 
@@ -43,7 +44,8 @@ def _version_row(ladder, hue, standing, card=True):
     row = Gtk.Box(spacing=4, margin_start=8, margin_end=8, margin_top=8, margin_bottom=4)
     for i, version in enumerate(ladder["versions"][:standing]):
         cell = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
-        cell.append(art.picture_area(version["art"], 60, card=card, hue=hue, height=40))
+        cell.append(art.picture_area(version["art"], 60, card=card, hue=hue, height=40,
+                                     part=ladder.get("row")))
         cell.append(Gtk.Label(label=str(i + 1), css_classes=["caption", "dimmed", "dim-label"]))
         row.append(cell)
     if standing < len(ladder["versions"]):
@@ -55,7 +57,8 @@ def _version_row(ladder, hue, standing, card=True):
 
 
 def _flow(children, per_line=4):
-    box = Gtk.FlowBox(selection_mode=Gtk.SelectionMode.NONE, min_children_per_line=per_line,
+    # At least one per line, so a narrow window wraps instead of overflowing.
+    box = Gtk.FlowBox(selection_mode=Gtk.SelectionMode.NONE, min_children_per_line=1,
                       homogeneous=True,
                       max_children_per_line=per_line, column_spacing=12, row_spacing=12,
                       valign=Gtk.Align.START)
@@ -69,23 +72,32 @@ def _hue(ladder, name):
 
 
 def sequence(page, name, hue_name=None):
-    ladder = content.ladder(name)
+    ladder_name, _, kind = name.partition("-")
+    ladder = content.ladder(ladder_name)
     if ladder is None:
         page.append(Gtk.Label(label=f"No ladder {name}"))
         return
     hue = _hue(ladder, hue_name)
-    versions = ladder["versions"]
+    kind = kind or ladder["marker"]
+    last = len(ladder["versions"])
+    page.append(Gtk.Label(label=f"{ladder['title']} with {kind}", xalign=0,
+                          css_classes=["title-4"]))
     frames = []
-    for v in range(1, len(versions) + 1):
-        frames.append(_frame(ladder, hue, v, "standing", False, f"{v} · {_words(ladder, v, 'standing')}"))
-        if v < len(versions):
-            for state in ("extending", "ready"):
-                frames.append(_frame(ladder, hue, v, state, False, _words(ladder, v, state)))
-    frames.append(_frame(ladder, hue, len(versions), "standing", True,
-                         f"{len(versions)} · after graduation: the lantern lit"))
-    row = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, css_classes=["card"], width_request=310,
+    for v in range(1, last + 1):
+        frames.append(_frame(ladder, hue, v, f"{v} · {art.build_words(ladder, v)}"))
+        if v < last:
+            every = art.marker_elements(ladder)
+            for shown in _steps(ladder, v):
+                words = art.build_words(ladder, v, shown / every)
+                frames.append(_frame(ladder, hue, v, f"{shown} of {every} · {words}",
+                                     progress=shown / every, marker=kind))
+            frames.append(_frame(ladder, hue, v, f"ready · {art.build_words(ladder, v, ready=True)}",
+                                 ready=True, marker=kind))
+    frames.append(_frame(ladder, hue, last, f"{last} · after graduation: the lantern lit",
+                         graduated=True))
+    row = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, css_classes=["card"], width_request=300,
                   valign=Gtk.Align.START)
-    row.append(_version_row(ladder, hue, len(versions)))
+    row.append(_version_row(ladder, hue, last))
     row.append(Gtk.Label(label="The row of versions, 60 × 40 px", xalign=0,
                          css_classes=["dimmed", "dim-label"], margin_start=12, margin_bottom=10))
     frames.append(row)
@@ -109,20 +121,23 @@ class _Day(Gtk.DrawingArea):
 
 
 def journey(page, name, hue_name=None):
-    ladder = content.ladder(name)
+    ladder_name, _, flag = name.partition("-")
+    ladder = content.ladder(ladder_name)
     if ladder is None:
         page.append(Gtk.Label(label=f"No ladder {name}"))
         return
     hue = _hue(ladder, hue_name)
     standing = 3
+    lit = flag == "ready"
+    midway = (len(ladder["posts"]) + 2) / art.marker_elements(ladder)
     page.set_margin_start(0)
     page.set_margin_end(0)
     page.set_margin_top(0)
     page.set_spacing(8)
-    page.append(art.scene_area(art.ladder_scene(ladder, standing, "extending"), hue=hue))
+    page.append(art.scene_area(art.ladder_scene(ladder, standing, midway, lit), hue=hue))
     page.append(_version_row(ladder, hue, standing, card=False))
     page.append(Gtk.Label(
-        label=_words(ladder, standing, "extending"),
+        label=art.build_words(ladder, standing, midway, lit),
         xalign=0, wrap=True, css_classes=["dimmed", "dim-label"], margin_start=16, margin_end=16))
     card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8, css_classes=["card"],
                    margin_start=8, margin_end=8)
@@ -132,11 +147,11 @@ def journey(page, name, hue_name=None):
                                                                            "dim-label"]))
     inner.append(Gtk.Label(label="After getting up, I will drink a glass of water and stretch for five "
                                  "minutes.", xalign=0, wrap=True, css_classes=["heading"]))
-    inner.append(Gtk.ProgressBar(fraction=0.6))
-    inner.append(Gtk.Label(label="3 of 5 days in the last 7 due days", xalign=0))
+    inner.append(Gtk.ProgressBar(fraction=1.0 if lit else 0.6))
+    inner.append(Gtk.Label(label=f"{5 if lit else 3} of 5 days in the last 7 due days", xalign=0))
     days = Gtk.Box(homogeneous=True)
-    for day, state in (("Fr", "off"), ("Sa", "on"), ("Su", "on"), ("Mo", "off"), ("Tu", "on"),
-                       ("We", ""), ("Th", "")):
+    for day, state in (("Fr", "on" if lit else "off"), ("Sa", "on"), ("Su", "on"), ("Mo", "off"),
+                       ("Tu", "on"), ("We", "on" if lit else ""), ("Th", "")):
         cell = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
         cell.append(_Day(state))
         cell.append(Gtk.Label(label=day, css_classes=["caption", "dimmed", "dim-label"]))
@@ -160,6 +175,7 @@ def palette(page):
     for name, hues in (("crossing", ("water", "slate")), ("home", ("meadow", "rust"))):
         ladder = content.ladder(name)
         for hue in hues:
-            frames.append(_frame(ladder, hue, 4, "ready", False,
-                                 f"{ladder['title']} in {content.palette()[hue]['title'].lower()}"))
+            frames.append(_frame(ladder, hue, 4,
+                                 f"{ladder['title']} in {content.palette()[hue]['title'].lower()}",
+                                 ready=True))
     page.append(_flow(frames))

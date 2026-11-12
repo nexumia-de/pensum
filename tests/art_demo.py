@@ -4,7 +4,8 @@ ladders (tests/ladder_demo.py), drawn by pensum/ui/journey/art.py in
 libadwaita's colours. For screenshots; not part of the app. Needs
 PENSUM_QUESTARC_DIR with content/art/ (docs/journeys.md); the argument
 picks the part, `growth` (default), `shore`, `sizes`, `sequence-<ladder>`,
-`journey-<ladder>` or `palette`; a second argument a palette hue:
+`sequence-<ladder>-<marker>`, `journey-<ladder>[-ready]` or `palette`; a second
+argument a palette hue:
 
     PENSUM_QUESTARC_DIR=../QuestArc /usr/bin/python3.12 tests/art_demo.py sequence-crossing slate
 """
@@ -46,7 +47,8 @@ def scene_card(name, caption):
 
 def sizes_card():
     folder = content.directory() / "content" / "art"
-    names = sorted(p.stem for p in folder.glob("*.svg") if not p.stem.startswith("ground-"))
+    names = sorted(p.stem for p in folder.glob("*.svg")
+                   if not p.stem.startswith("ground-") and "-cord-" not in p.stem)
     grid = Gtk.FlowBox(selection_mode=Gtk.SelectionMode.NONE, min_children_per_line=2,
                        max_children_per_line=4, homogeneous=True, css_classes=["card"])
     for name in names:
@@ -86,7 +88,9 @@ def build(window, part, hue=None):
             page.append(scene_card(name, caption))
     title = TITLES.get(part.split("-")[0], TITLES["growth"])
     clamp = Adw.Clamp(maximum_size=clamp_size, child=page)
-    view = Adw.ToolbarView(content=Gtk.ScrolledWindow(child=clamp, vexpand=True))
+    scroller = Gtk.ScrolledWindow(child=clamp, vexpand=True,
+                                  hscrollbar_policy=Gtk.PolicyType.NEVER)
+    view = Adw.ToolbarView(content=scroller)
     view.add_top_bar(Adw.HeaderBar(title_widget=Adw.WindowTitle(title=title)))
     window.set_content(view)
 
