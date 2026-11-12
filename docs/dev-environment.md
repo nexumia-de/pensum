@@ -40,7 +40,7 @@ chmod +x ~/bin/gjs
 ```
 
 ```sh
-export PENSUM_QUESTARC_DIR=$PWD/../QuestArc PENSUM_GJS=$HOME/bin/gjs
+export PENSUM_QUESTARC_DIR=$PWD/../quest-arc PENSUM_GJS=$HOME/bin/gjs
 ```
 
 The wrapper names the runtime's path directly, because the tests point

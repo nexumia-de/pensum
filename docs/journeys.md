@@ -9,7 +9,7 @@ generated: { by: claude-code/2.1.318, at: 2026-11-06 }
 
 # QuestArc's journeys in Day Planner
 
-[QuestArc](https://github.com/nexumia-de/QuestArc) turns a habit into a
+[QuestArc](https://github.com/nexumia-de/quest-arc) turns a habit into a
 journey of small stages. Day Planner shows the same journeys natively,
 on the same data as QuestArc's Super Productivity plugin (pensum#38,
 #39, #40). The game logic exists once, in QuestArc's TypeScript engine;
@@ -19,7 +19,7 @@ Day Planner adds no second implementation.
 
 - **Engine:** `pensum/game/engine.py` runs QuestArc's `engine-cli.mjs`
   with `gjs` from the GNOME runtime: one JSON request on stdin, the
-  answer on stdout ([QuestArc decision](https://github.com/nexumia-de/QuestArc/blob/main/docs/decisions/engine-in-gjs.md)).
+  answer on stdout ([QuestArc decision](https://github.com/nexumia-de/quest-arc/blob/main/docs/decisions/engine-in-gjs.md)).
   Requests: `evaluateHost` (the dataset's live and archived tasks,
   repeat rules and choice records as they are; the engine builds its
   snapshot), `diff` (events between two views, for the toast) and
@@ -96,7 +96,7 @@ settings (`seen`).
 ## Pictures
 
 QuestArc's pictures are symbolic SVG files in its `content/art/`
-(QuestArc decision [shared pictures](https://github.com/nexumia-de/QuestArc/blob/main/docs/decisions/shared-pictures.md),
+(QuestArc decision [shared pictures](https://github.com/nexumia-de/quest-arc/blob/main/docs/decisions/shared-pictures.md),
 QuestArc#86, #97): no colours of their own, every shape marked with one
 of six roles (`art.ROLES`: `fg`, `accent`, `dim`, `bg`, `tint`,
 `tint-strong`), checked by QuestArc's picture checker. Day Planner draws the
@@ -125,7 +125,7 @@ QuestArc#86, or a release after 3.1.0); with the pinned 3.1.0 archive
 the tests are skipped.
 
 ```sh
-PENSUM_QUESTARC_DIR=$PWD/../QuestArc /usr/bin/python3.12 tests/art_demo.py
+PENSUM_QUESTARC_DIR=$PWD/../quest-arc /usr/bin/python3.12 tests/art_demo.py
 ```
 
 **Ladders and hues** (QuestArc#42, QuestArc's journey design "Builds and
