@@ -4,7 +4,10 @@ Productivity, without a display (docs/dev-environment.md, real app):
 - fixture.json: Super Productivity's e2e backup, imported and changed
   through pensum.store as issue #2 lists;
 - fresh.json: a dataset started fresh in Pensum with some data;
-- demo.json: the demo dataset with QuestArc's records.
+- demo.json: the demo dataset with QuestArc's records;
+- imported.json: the changed fixture with a withdrawn QuestArc record,
+  imported over the demo dataset as the import dialog does (#47): the
+  demo's records that the file lacks are kept.
 
 Next to each file, <name>.expect.json says what Super Productivity must
 show after the import: counts, project titles and a few field values.
@@ -23,8 +26,9 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 from pensum import demo  # noqa: E402
+from pensum.game import records  # noqa: E402
 from pensum.store import (archive, backup, contexts, dates, defaults,  # noqa: E402
-                          tasks, tracking, validate)
+                          incoming, tasks, tracking, validate)
 from pensum.store.dataset import Context, Dataset  # noqa: E402
 from pensum.store.repeat import instances, rules  # noqa: E402
 
@@ -113,6 +117,20 @@ def demo_data(now):
     return ds, fields, [], ["Garden", "Website Relaunch"], [], None
 
 
+def imported(now):
+    """The changed fixture, with one QuestArc record withdrawn, imported
+    over the demo dataset: the step of Files.import_dataset that changes
+    the data (Files itself needs phosh-toolkit, which this job lacks)."""
+    ds, fields, archived, titles, missing, baseline = changed_fixture(now)
+    records.write(ds, {"run:demo": ""})
+    current = demo.create(demo.demo_now())
+    incoming.keep_records(current.data, ds.data, records.PREFIX)
+    stored = {e["id"]: e["data"] for e in ds.data["pluginUserData"]}
+    if stored.get("questarc:run:demo") != "" or "questarc:binding:demo:focus-15" not in stored:
+        raise SystemExit("imported: the import did not keep the local records")
+    return ds, fields, archived, titles, missing, baseline
+
+
 def expectation(ds, fields, archived, titles, missing, baseline):
     young = ds.data["archiveYoung"]["task"]["ids"]
     return {"tasks": len(ds.data["task"]["ids"]),
@@ -158,6 +176,7 @@ def main(argv):
     fixture = write(out, "fixture", changed_fixture(now), now)
     write(out, "fresh", fresh(now), now)
     write(out, "demo", demo_data(demo.demo_now()), now)
+    write(out, "imported", imported(now), now)
     if "--broken" in argv:
         write_broken(out, *fixture, now)
 

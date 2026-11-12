@@ -5,7 +5,7 @@ from pathlib import Path
 
 from phosh_toolkit.settings import app_dir
 
-from pensum.store import autobackup, backup, dates, defaults, validate
+from pensum.store import autobackup, backup, dates, defaults, incoming, validate
 from pensum.store.dataset import Dataset
 
 log = logging.getLogger("pensum.store")
@@ -48,13 +48,24 @@ class Files:
         if autobackup.due(self.backups):
             autobackup.write(self.backups, ds.data)
 
-    def import_file(self, path, current):
-        """Replace the dataset with a backup file; the current one is backed
-        up first so the import can be undone from the backups folder."""
-        ds = Dataset(backup.read(path))
+    def read_import(self, path):
+        """The dataset of a backup file, before it replaces anything."""
+        return Dataset(backup.read(path))
+
+    def import_dataset(self, ds, current, keep_prefix=None):
+        """Replace the dataset with an imported one; the current one is
+        backed up first so the import can be undone from the backups
+        folder. Records of `keep_prefix` that only the current dataset has
+        are kept (pensum.store.incoming)."""
+        kept = incoming.keep_records(current.data, ds.data, keep_prefix) if keep_prefix else []
         autobackup.write(self.backups, current.data)
         self.save(ds)
+        log.info("imported %d tasks, kept %d local records", len(ds.data["task"]["ids"]),
+                 len(kept))
         return ds
+
+    def import_file(self, path, current, keep_prefix=None):
+        return self.import_dataset(self.read_import(path), current, keep_prefix)
 
     def export_file(self, path, ds):
         backup.write(path, ds.data, dates.now_ms())

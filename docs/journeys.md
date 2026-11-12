@@ -4,7 +4,7 @@ title: QuestArc's journeys in Day Planner
 description: How Day Planner shows QuestArc's journeys natively - the engine through gjs, the choice records in pluginUserData, setting up a stage's task with its repeat rule, the pages, and how to run it in development.
 tags: [journeys, questarc, game, gjs]
 resource: ../pensum/game/
-generated: { by: claude-code/2.1.318, at: 2026-11-06 }
+generated: { by: claude-code/2.1.318, at: 2026-11-12 }
 ---
 
 # QuestArc's journeys in Day Planner
@@ -32,7 +32,9 @@ Day Planner adds no second implementation.
   text, `GZ1:<base64 gzip>` from 1024 characters on, `''` for a
   withdrawn record (`pensum/game/records.py`). They travel with every
   backup and import into Super Productivity unchanged, where the plugin
-  reads them.
+  reads them. Importing a backup keeps the records only this device has
+  and warns when records or the journey task's completions would be lost
+  ([data model](super-productivity-data.md), #47).
 - **Content:** the built-in journeys (every file in
   `content/journeys/`, each with its own texts and optional `author`)
   and the app texts (`content/i18n/en.json`) come from QuestArc's

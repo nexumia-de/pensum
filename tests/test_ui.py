@@ -447,3 +447,49 @@ def test_journey_comes_forward_only_for_its_own_task(app, tmp_path):
     window.flush()
     assert validate.problems(backup.read(window.files.path)) == []
     window.close()
+
+
+def test_import_over_newer_data_warns_with_counts(app, tmp_path):
+    """#47: the dialog counts what an older file would lose and names the
+    journey's completions; Import Anyway keeps the records only here."""
+    from pensum.game import records
+    from pensum.store import tasks
+    from pensum.ui import backup_actions
+    now = demo.demo_now()
+    ds = demo.create(now)
+    older = tmp_path / "older.json"
+    backup.write(older, ds.data, now)
+    window = new_window(app, tmp_path, ds)
+    later = now + 6 * 3_600_000
+    tasks.add_task(window.ds, "Added after the export", Context.today(), later)
+    tasks.set_done(window.ds, records.load(window.ds)["binding:demo:focus-15"]["taskId"],
+                   True, later)
+    records.write(window.ds, {"settings": {"mode": "calm"}, "checkin:demo:w": {"answer": 3}})
+
+    dialog = backup_actions.confirm(window, str(older))
+    iterate()
+    assert dialog.get_heading() == "Import Older Data?"
+    body = dialog.get_body()
+    assert "2 tasks and 1 journey entry would be lost" in body
+    assert "your journey's task, done on " in body
+    assert dialog.get_response_label("delete") == "Import Anyway"
+    dialog.emit("response", "delete")
+    iterate()
+    assert records.load(window.ds)["checkin:demo:w"] == {"answer": 3}
+    assert records.load(window.ds)["settings"] == {"mode": "rpg"}
+    assert validate.problems(window.ds.data) == []
+    window.close()
+
+
+def test_import_without_loss_asks_the_plain_question(app, tmp_path):
+    from pensum.ui import backup_actions
+    now = demo.demo_now()
+    ds = demo.create(now)
+    window = new_window(app, tmp_path, ds)
+    same = tmp_path / "same.json"
+    backup.write(same, window.ds.data, now)
+    dialog = backup_actions.confirm(window, str(same))
+    assert dialog.get_heading() == "Replace All Tasks?"
+    assert dialog.get_response_label("delete") == "Replace"
+    dialog.close()
+    window.close()
