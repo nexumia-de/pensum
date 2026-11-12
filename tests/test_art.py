@@ -84,3 +84,100 @@ def test_stylesheet_has_the_roles():
 def test_far_stylesheet_fills_every_role_with_tint():
     css = art.far_stylesheet(ROLES)
     assert css.count("fill:#00ffff") == len(ROLES)
+
+
+# The ladders (QuestArc#42): one build per ladder, whole at every version,
+# a scaffold while the next version is worked on, a flag when it is ready.
+
+@pytest.fixture
+def crossing():
+    found = content.ladder("crossing")
+    if found is None:
+        pytest.skip("no ladders in PENSUM_QUESTARC_DIR")
+    return found
+
+
+def _arts(ladder, version, state="standing", lit=False):
+    return [p["art"] for p in art.ladder_scene(ladder, version, state, lit)["pictures"]]
+
+
+def test_ladder_scene_fills_the_build_slot(crossing):
+    scene = art.ladder_scene(crossing, 3)
+    assert scene["pictures"][0]["art"] == "setting-river"
+    assert [a for a in _arts(crossing, 3) if a.startswith("build-")] == ["build-crossing-3"]
+    assert scene["title"] == "A plank bridge"
+    for item in scene["pictures"]:
+        assert content.art_path(item["art"]) is not None, item["art"]
+
+
+def test_work_on_the_next_version_is_the_scaffold_behind_the_build(crossing):
+    arts = _arts(crossing, 3, "extending")
+    assert arts.index("build-scaffold") == arts.index("build-crossing-3") - 1
+    assert "pennant" not in arts
+    assert art.ladder_scene(crossing, 3, "extending")["title"] == \
+        "A plank bridge, work on a stone bridge has begun"
+
+
+def test_ready_sets_the_flag_and_nothing_is_counted(crossing):
+    arts = _arts(crossing, 3, "ready")
+    assert "build-scaffold" in arts and "pennant" in arts
+    assert not any(a.startswith("material-") for a in arts)
+    assert art.ladder_scene(crossing, 3, "ready")["title"] == "A plank bridge, a stone bridge is ready"
+
+
+def test_ladder_last_version_is_never_extended_and_takes_the_lantern(crossing):
+    arts = _arts(crossing, 5, "ready", lit=True)
+    assert "build-scaffold" not in arts and arts.count("lantern") == 1
+
+
+def test_ladder_scene_is_drawn_only_in_the_roles_colours(crossing):
+    for version in range(1, len(crossing["versions"]) + 1):
+        scene = art.ladder_scene(crossing, version, "ready", version == 5)
+        pixels = [p for p in render(scene) if p[3] == 255]
+        assert (0, 0, 0, 255) not in pixels
+        assert sum(p in PURE for p in pixels) / len(pixels) > 0.95
+
+
+def test_a_hue_replaces_accent_and_tints_only():
+    roles = dict(ROLES)
+    hued = art.with_hue(roles, (0.2, 0.4, 0.6))
+    assert hued["accent"] == (0.2, 0.4, 0.6)
+    assert hued["fg"] == roles["fg"] and hued["bg"] == roles["bg"] and hued["dim"] == roles["dim"]
+    assert hued["tint-strong"] == pytest.approx(tuple(0.4 * c + 0.6 * b for c, b in zip((0.2, 0.4, 0.6), roles["bg"])))
+
+
+# The palette's contrast in Day Planner's styles, computed (WCAG relative
+# luminance). libadwaita's cards: white on #fafafb in light; 8 % white on
+# #222226 (#343437) in dark, the window #222226 itself. Text: #333338 and
+# #ffffff. Thresholds as QuestArc's palette check: accent 3 : 1 (WCAG 1.4.11,
+# non-text), tint-strong 1.5 : 1 (decorative, but water must show), the
+# outline on tint-strong 3 : 1. tint (16 %) is decorative and not tested.
+CARDS = {"light": ["#ffffff", "#fafafb"], "dark": ["#343437", "#222226"]}
+TEXT = {"light": "#333338", "dark": "#ffffff"}
+
+
+def _luminance(rgb):
+    def lin(c):
+        return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+    r, g, b = (lin(c) for c in rgb)
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+
+def _contrast(a, b):
+    hi, lo = sorted((_luminance(a), _luminance(b)), reverse=True)
+    return (hi + 0.05) / (lo + 0.05)
+
+
+def test_every_palette_hue_keeps_its_contrast_on_day_planners_cards():
+    palette = content.palette()
+    if not palette:
+        pytest.skip("no palette in PENSUM_QUESTARC_DIR")
+    assert 6 <= len(palette) <= 10
+    for name, entry in palette.items():
+        for style in ("light", "dark"):
+            hue = art.hex_rgb(entry[style])
+            for card in map(art.hex_rgb, CARDS[style]):
+                strong = art.with_hue({"bg": card}, hue)["tint-strong"]
+                assert _contrast(hue, card) >= 3, (name, style)
+                assert _contrast(strong, card) >= 1.5, (name, style)
+                assert _contrast(art.hex_rgb(TEXT[style]), strong) >= 3, (name, style)

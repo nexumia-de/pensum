@@ -8,6 +8,12 @@ text colour mixed into the surface the picture stands on, bg that
 surface, tint and tint-strong the accent mixed into it, as in the
 plugin. Every role is opaque, so overlaps show no seams. A scene's far
 band is drawn as one silhouette in tint.
+A scene of a region may take its hue from QuestArc's palette
+(content/art/palette.json): then accent, tint and tint-strong come from
+the hue's light or dark value, fg, bg and dim stay libadwaita's. A
+ladder's scene (a build, the scaffold while the next version is worked
+on, the flag when it is ready, the lantern) is composed by ladder_scene
+from the ladder file's places.
 Every picture and scene has its title as the accessible label."""
 import html
 import re
@@ -19,7 +25,7 @@ import gi
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 gi.require_version("Rsvg", "2.0")
-from gi.repository import GLib, Gtk, Rsvg  # noqa: E402
+from gi.repository import Adw, GLib, Gtk, Rsvg  # noqa: E402
 
 from pensum.game import content  # noqa: E402
 
@@ -59,8 +65,32 @@ def _mix(top, below, share):
     return tuple(t * share + b * (1 - share) for t, b in zip(top, below))
 
 
-def colours(widget, card=False):
-    """The roles as opaque (r, g, b) for the widget's style."""
+def hex_rgb(value):
+    return tuple(int(value[i:i + 2], 16) / 255 for i in (1, 3, 5))
+
+
+def with_hue(roles, colour):
+    """The roles with accent, tint and tint-strong from a palette colour."""
+    below = roles["bg"]
+    return dict(roles, accent=tuple(colour), tint=_mix(colour, below, TINT),
+                **{"tint-strong": _mix(colour, below, TINT_STRONG)})
+
+
+def hue_colour(hue, dark):
+    """A palette hue's value for the style as (r, g, b), or None."""
+    entry = content.palette().get(hue or "")
+    return hex_rgb(entry["dark" if dark else "light"]) if entry else None
+
+
+def colours(widget, card=False, hue=None):
+    """The roles as opaque (r, g, b) for the widget's style; with a hue
+    from the palette for accent, tint and tint-strong."""
+    roles = _host_colours(widget, card)
+    colour = hue_colour(hue, Adw.StyleManager.get_default().get_dark())
+    return with_hue(roles, colour) if colour else roles
+
+
+def _host_colours(widget, card):
     below = surface(widget, card)
     fg = widget.get_color()
     acc = Gtk.Label(css_classes=["accent"]).get_color()
@@ -128,29 +158,62 @@ def draw_scene(cr, scene, width, height, roles):
     cr.restore()
 
 
-def _area(label, draw_func, card):
+def ladder_scene(ladder, version, state="standing", lit=False):
+    """The scene of a ladder (`<name>.ladder.json`) with `version` (from 1)
+    standing in `state`: "standing"; "extending", the next version worked on
+    (the scaffold behind the build); "ready", the stage met (the scaffold
+    with the flag). A met stage that falls back below its condition goes
+    back to "extending" only. If `lit`, the lantern. States, never counts
+    (QuestArc's journey design, "Builds and ladders")."""
+    versions = ladder["versions"]
+    standing = versions[min(max(version, 1), len(versions)) - 1]
+    following = versions[version] if version < len(versions) else None
+    work = state if following else "standing"
+    words = [standing["title"]]
+    if work == "extending":
+        words.append(f"work on {following['title'].lower()} has begun")
+    elif work == "ready":
+        words.append(f"{following['title'].lower()} is ready")
+    if lit:
+        words.append("the lantern lit")
+    fill = {"build": standing["art"], "scaffold": ladder["scaffold"] if work != "standing" else None,
+            "flag": "pennant" if work == "ready" else None, "lantern": "lantern" if lit else None}
+    pictures = []
+    for place in ladder["pictures"]:
+        kind = place.get("slot")
+        if kind is None:
+            pictures.append(place)
+        elif fill.get(kind):
+            pictures.append(dict(place, art=fill[kind]))
+    return {"title": ", ".join(words), "width": ladder["width"], "height": ladder["height"],
+            "pictures": pictures}
+
+
+def _area(label, draw_func, card, hue=None):
     area = Gtk.DrawingArea(accessible_role=Gtk.AccessibleRole.IMG)
     area.update_property([Gtk.AccessibleProperty.LABEL], [label])
 
     def on_draw(area, cr, width, height):
-        draw_func(cr, width, height, colours(area, card))
+        draw_func(cr, width, height, colours(area, card, hue))
 
     area.set_draw_func(on_draw)
     return area
 
 
-def picture_area(name, size, card=False):
-    """A picture as a widget of size × size px."""
-    area = _area(title(name), lambda cr, w, h, roles: draw(cr, name, 0, 0, w, h, stylesheet(roles)), card)
+def picture_area(name, size, card=False, hue=None, height=None):
+    """A picture as a widget of size × size px (or size × height)."""
+    area = _area(title(name), lambda cr, w, h, roles: draw(cr, name, 0, 0, w, h, stylesheet(roles)),
+                 card, hue)
     area.set_content_width(size)
-    area.set_content_height(size)
+    area.set_content_height(height or size)
     return area
 
 
-def scene_area(scene, card=False):
+def scene_area(scene, card=False, hue=None):
     """A scene as a widget as wide as its parent, its height following the
     width in the scene's proportions."""
-    area = _area(scene["title"], lambda cr, w, h, roles: draw_scene(cr, scene, w, h, roles), card)
+    area = _area(scene["title"], lambda cr, w, h, roles: draw_scene(cr, scene, w, h, roles), card,
+                 hue)
     area.set_hexpand(True)
     area.set_content_height(scene["height"])
 

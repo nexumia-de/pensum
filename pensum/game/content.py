@@ -76,10 +76,26 @@ def art_path(name):
     return path if path.is_file() else None
 
 
-def scene(name):
-    """A scene of content/art/ (`<name>.scene.json`): pictures at fixed
-    places, with its title in words; None if absent."""
-    path = directory() / "content" / "art" / f"{name}.scene.json"
+def _art_json(name, suffix):
+    path = directory() / "content" / "art" / f"{name}{suffix}"
     if not re.fullmatch(r"[a-z][a-z0-9]*(-[a-z0-9]+)*", name or "") or not path.is_file():
         return None
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def scene(name):
+    """A scene of content/art/ (`<name>.scene.json`): pictures at fixed
+    places, with its title in words; None if absent."""
+    return _art_json(name, ".scene.json")
+
+
+def ladder(name):
+    """A ladder of content/art/ (`<name>.ladder.json`): the versions of one
+    build, its material and the setting with its places; None if absent."""
+    return _art_json(name, ".ladder.json")
+
+
+def palette():
+    """The region hues of content/art/palette.json: name → {title, light,
+    dark}; empty if absent."""
+    return _art_json("palette", ".json") or {}

@@ -115,7 +115,7 @@ region"). Titles become accessible labels. Pictures are found by
 name only (`content.art_path`); names cannot leave the folder.
 
 This is the spike: the journey pages do not use pictures yet. The demo
-`tests/art_demo.py growth|shore|sizes` shows a meadow at three moments,
+`tests/art_demo.py growth|shore|sizes|sequence-crossing|journey-home|palette` shows a meadow at three moments,
 a shore, or every picture at 48, 32 and 24 px; `tests/test_art.py`
 checks that a scene is drawn only in the roles' colours, the far band in
 `tint`, and that every class in `content/art/` is a role Day Planner
@@ -127,6 +127,25 @@ the tests are skipped.
 ```sh
 PENSUM_QUESTARC_DIR=$PWD/../QuestArc /usr/bin/python3.12 tests/art_demo.py
 ```
+
+**Ladders and hues** (QuestArc#42, QuestArc's journey design "Builds and
+ladders"): a journey builds one thing in versions, each whole, in the same
+slot of the same setting. `art.ladder_scene(ladder, version, state, lit)`
+composes the scene from `<ladder>.ladder.json` (`content.ladder`): the
+setting and its plants, the standing version in the `build` slot, the
+scaffold behind it while the next version is worked on (`"extending"`),
+the pennant on the scaffold when it is ready (`"ready"`), the lantern
+after graduation; never a count. A region may take a hue from
+`palette.json` (`content.palette`): `art.colours(widget, card, hue)` then
+takes `accent`, `tint` and `tint-strong` from the hue's light or dark
+value (by `Adw.StyleManager`'s dark state); `fg`, `bg` and `dim` stay
+libadwaita's. The demo's parts `sequence-<ladder>`, `journey-<ladder>`
+(a static mock of the journey screen; the real pages are unchanged) and
+`palette` are in `tests/ladder_demo.py`, a palette hue as the second
+argument. `tests/test_art.py` checks the composed scenes and that every
+hue keeps WCAG contrast against libadwaita's cards in light and dark
+(accent 3 : 1, tint-strong 1.5 : 1, the text colour on tint-strong
+3 : 1).
 
 Measured on the cloud host (x86_64): the test scene (15 pictures)
 takes about 1.8 ms per draw with cached handles and 3.7 ms on the first

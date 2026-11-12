@@ -1,11 +1,12 @@
-"""The pictures' demo (QuestArc#86, #97): a region at three moments, a
-second region kind and every single picture at 48, 32 and 24 px, drawn by
-pensum/ui/journey/art.py in libadwaita's colours. For screenshots; not
-part of the app. Needs PENSUM_QUESTARC_DIR with content/art/
-(docs/journeys.md); the argument picks the part, `growth` (default),
-`shore` or `sizes`:
+"""The pictures' demo (QuestArc#86, #97, #42): a region at three moments,
+a second region kind, every single picture at 48, 32 and 24 px and the
+ladders (tests/ladder_demo.py), drawn by pensum/ui/journey/art.py in
+libadwaita's colours. For screenshots; not part of the app. Needs
+PENSUM_QUESTARC_DIR with content/art/ (docs/journeys.md); the argument
+picks the part, `growth` (default), `shore`, `sizes`, `sequence-<ladder>`,
+`journey-<ladder>` or `palette`; a second argument a palette hue:
 
-    PENSUM_QUESTARC_DIR=../QuestArc /usr/bin/python3.12 tests/art_demo.py sizes
+    PENSUM_QUESTARC_DIR=../QuestArc /usr/bin/python3.12 tests/art_demo.py sequence-crossing slate
 """
 import sys
 from pathlib import Path
@@ -20,11 +21,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from pensum.game import content  # noqa: E402
 from pensum.ui.journey import art  # noqa: E402
 
+import ladder_demo  # noqa: E402
+
 GROWTH = [("meadow-started", "Just started"), ("meadow-half", "Half built"),
           ("meadow-finished", "Finished and graduated")]
 SHORE = ("shore-finished", "Finished and graduated")
 TITLES = {"growth": "A Meadow as It Grows", "shore": "Another Kind: a Shore",
-          "sizes": "Pictures at 48, 32 and 24 px"}
+          "sizes": "Pictures at 48, 32 and 24 px", "sequence": "One Thing, Whole at Every Step",
+          "journey": "A Gentle Morning", "palette": "A Hue per Region"}
 
 
 def scene_card(name, caption):
@@ -58,12 +62,21 @@ def sizes_card():
     return grid
 
 
-def build(window, part):
+def build(window, part, hue=None):
     page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12,
                    margin_top=12, margin_bottom=12, margin_start=12, margin_end=12)
+    clamp_size = 720
     if content.scene(GROWTH[0][0]) is None:
         page.append(Adw.StatusPage(title="No Pictures Installed",
                                    description="Set PENSUM_QUESTARC_DIR to a QuestArc with content/art."))
+    elif part.startswith("sequence-"):
+        clamp_size = 1400
+        ladder_demo.sequence(page, part.removeprefix("sequence-"), hue)
+    elif part.startswith("journey-"):
+        ladder_demo.journey(page, part.removeprefix("journey-"), hue)
+    elif part == "palette":
+        clamp_size = 1400
+        ladder_demo.palette(page)
     elif part == "shore":
         page.append(scene_card(*SHORE))
     elif part == "sizes":
@@ -71,25 +84,26 @@ def build(window, part):
     else:
         for name, caption in GROWTH:
             page.append(scene_card(name, caption))
-    title = TITLES.get(part, TITLES["growth"])
-    clamp = Adw.Clamp(maximum_size=720, child=page)
+    title = TITLES.get(part.split("-")[0], TITLES["growth"])
+    clamp = Adw.Clamp(maximum_size=clamp_size, child=page)
     view = Adw.ToolbarView(content=Gtk.ScrolledWindow(child=clamp, vexpand=True))
     view.add_top_bar(Adw.HeaderBar(title_widget=Adw.WindowTitle(title=title)))
     window.set_content(view)
 
 
-def activate(app, part):
+def activate(app, part, hue):
     css = Gtk.CssProvider()
     css.load_from_path(str(Path(__file__).resolve().parents[1] / "pensum" / "style.css"))
     Gtk.StyleContext.add_provider_for_display(Gdk.Display.get_default(), css,
                                               Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
     window = Adw.ApplicationWindow(application=app, default_width=360, default_height=720)
     window.set_size_request(360, 294)
-    build(window, part)
+    build(window, part, hue)
     window.present()
 
 
 if __name__ == "__main__":
     app = Adw.Application(application_id="de.nexumia.Pensum.ArtDemo")
-    app.connect("activate", activate, sys.argv[1] if len(sys.argv) > 1 else "growth")
+    app.connect("activate", activate, sys.argv[1] if len(sys.argv) > 1 else "growth",
+                sys.argv[2] if len(sys.argv) > 2 else None)
     app.run([])
