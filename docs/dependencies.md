@@ -35,6 +35,15 @@ Productivity 19.3.1 (MIT, © 2018 Johannes Millan), installed with
 Pensum's package; its licence text goes to
 `/app/share/licenses/<app id>/super-productivity-defaults/`.
 
+# Tests only (not bundled)
+
+| What | Version | Licence | Used by |
+|---|---|---|---|
+| `playwright` (npm, `tests/real_app/package.json`) | 1.64.1 | Apache-2.0 | real-app test |
+| Super Productivity Docker image `johannesjo/super-productivity` | `v20.0.0` (digest in `tests/real_app/Dockerfile`) | MIT (© 2018 Johannes Millan) | real-app test, CI only |
+
+Dependabot updates both.
+
 # From the runtime (not bundled)
 
 `org.gnome.Platform//51` provides Python 3, PyGObject, GTK 4 and

@@ -34,8 +34,11 @@ def add_tag(ds, title, now=None, entity_id=None):
                created=now or dates.now_ms())
     ds.tag_entities[tag["id"]] = tag
     ds.data["tag"]["ids"].append(tag["id"])
+    # Super Productivity's addTag appends the tag to the tag tree, also to
+    # an empty one (menu-tree.reducer.ts). A new project goes into the
+    # project tree only when it has one; its menu fills an empty tree.
     tree = _tree(ds, "tagTree")
-    if tree:
+    if not any(n.get("k") == "t" and n.get("id") == tag["id"] for n in tree):
         tree.append({"id": tag["id"], "k": "t"})
     return tag
 

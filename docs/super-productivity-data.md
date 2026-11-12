@@ -8,7 +8,7 @@ sources:
   - id: sp
     title: Super Productivity 19.3.1, commit 590178d7 (2026-11-04)
     url: https://github.com/johannesjo/super-productivity/tree/590178d7b9f1214385457625efb9f6abbbe9f980
-generated: { by: claude-code/2.1.318, at: 2026-11-05T00:30:00Z }
+generated: { by: claude-code/2.1.318, at: 2026-11-12T15:00:00Z }
 ---
 
 Read from Super Productivity's source at version 19.3.1[^sp] (MIT,
@@ -241,8 +241,41 @@ e2e backups; Super Productivity accepts that.
   `frozen-state-v18.15.json`) and check that a round trip keeps every
   field.
 
+# Checked against a real Super Productivity
+
+CI (job `real-app`, [how to run it](dev-environment.md#real-app-test))
+imports Pensum's exports into Super Productivity **20.0.0** (Docker
+image pinned in `tests/real_app/Dockerfile`; first run by hand against
+the live web app, also 20.0.0, on 2026-11-12) through its own "Import
+from File", in a fresh profile each:
+
+- Super Productivity's fixture changed in Pensum (tasks added, subtasks,
+  done, time spent, tags, a planned later day, a daily repeat rule with
+  an archived and a new instance, a deleted project with its tasks,
+  Finish Day), a dataset started fresh in Pensum, and the demo dataset
+  with QuestArc's records;
+- each passes Super Productivity's typia type check and cross-model
+  check with no repair and no dialog: its import logs no validation
+  failure or repair. The fixture's own `globalConfig` is older than the
+  app and is auto-fixed exactly as when Super Productivity imports the
+  unchanged fixture; Pensum keeps that section as read;
+- the projects show in its menu; its own export, read back into Pensum,
+  has no `validate.problems()`, the task, project, tag and repeat-rule
+  counts and the checked fields as written, and no other difference
+  than what Super Productivity owns: settings it adds or retires,
+  `currentTaskId` (its `loadAllData` stops the timer), its UI state, and
+  an empty `menuTree` that its menu fills with every project and tag;
+- a broken export (a task in a missing project) fails the job.
+
+What the run found: Super Productivity 20 repairs an import without a
+dialog (it logs `Validation failed, attempting repair`), so the test
+reads its log instead of waiting for a dialog. Its `addTag` puts a new
+tag into the tag tree also when the tree is empty; Pensum did that only
+for a non-empty tree, and now does it the same way.
+
 # Not yet checked
 
-- An export of Pensum's has not been imported into a running Super
-  Productivity yet; the cross-model checks are ported and tested, the
-  typia type check is not ([#2](https://github.com/nexumia-de/pensum/issues/2)).
+- The data model above was read at 19.3.1; CI tests 20.0.0. A 19.3.x
+  app has not imported Pensum's files.
+- The round trip on the owner's own data and devices
+  ([#2](https://github.com/nexumia-de/pensum/issues/2)).

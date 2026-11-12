@@ -79,6 +79,18 @@ def test_parent_is_not_tracked_itself(ds):
     assert not tracking.set_current(ds, parent["id"])
 
 
+def test_new_tag_joins_the_tag_tree_like_super_productivity(ds):
+    # addTag in menu-tree.reducer.ts appends to the tree, also an empty
+    # one; found by the round trip through a real Super Productivity.
+    assert ds.data["menuTree"]["tagTree"] == []
+    first = contexts.add_tag(ds, "calls", NOW)
+    second = contexts.add_tag(ds, "errands", NOW)
+    assert ds.data["menuTree"]["tagTree"] == [{"id": first["id"], "k": "t"},
+                                              {"id": second["id"], "k": "t"}]
+    assert [t["id"] for t in ds.tags()] == [first["id"], second["id"]]
+    valid(ds)
+
+
 def test_schedule_move_and_tags(ds):
     task = tasks.add_task(ds, "Plan", Context.today(), NOW)
     tomorrow = dates.shift_day(ds.today(NOW), 1)
