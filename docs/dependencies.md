@@ -61,10 +61,14 @@ Licences read from each package's `LICENSE` file or licence metadata on
 # From the runtime (not bundled)
 
 `org.gnome.Platform//51` provides Python 3, PyGObject, GTK 4,
-libadwaita and libsecret (the WebDAV password in the keyring; without
-it the password is not remembered) and OpenSSL's libcrypto (AES-GCM for
-encrypted sync files, through ctypes). Reading WebDAV uses Python's
-`urllib` ([sync files](super-productivity-sync.md#file-envelope)).
+libadwaita, librsvg (LGPL-2.1-or-later; 2.63.2 with its `Rsvg-2.0`
+typelib in GNOME 51), which draws QuestArc's pictures
+(`pensum/ui/journey/art.py`, [journeys](journeys.md#pictures); on the
+Ubuntu host the typelib is the package `gir1.2-rsvg-2.0`), libsecret
+(the WebDAV password in the keyring; without it the password is not
+remembered) and OpenSSL's libcrypto (AES-GCM for encrypted sync files,
+through ctypes). Reading WebDAV uses Python's `urllib`
+([sync files](super-productivity-sync.md#file-envelope)).
 
 The tests need `argon2-cffi-bindings` too: CI installs the version
 pinned in `tests/requirements.txt` from PyPI (Ubuntu 24.04 has no

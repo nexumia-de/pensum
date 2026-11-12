@@ -83,6 +83,7 @@ python.install_sources(
 )
 python.install_sources(
   'pensum/ui/journey/__init__.py',
+  'pensum/ui/journey/art.py',
   'pensum/ui/journey/banners.py',
   'pensum/ui/journey/base.py',
   'pensum/ui/journey/card.py',

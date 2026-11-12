@@ -93,6 +93,72 @@ colour (done, met, current) or the dimmed text colour (ahead); every
 node also has its state in words. Closed banners are kept in Pensum's
 settings (`seen`).
 
+## Pictures
+
+QuestArc's pictures are symbolic SVG files in its `content/art/`
+(QuestArc decision [shared pictures](https://github.com/nexumia-de/QuestArc/blob/main/docs/decisions/shared-pictures.md),
+QuestArc#86, #97): no colours of their own, every shape marked with one
+of six roles (`art.ROLES`: `fg`, `accent`, `dim`, `bg`, `tint`,
+`tint-strong`), checked by QuestArc's picture checker. Day Planner draws the
+same files as the plugin, with librsvg from the GNOME runtime into Cairo
+(`pensum/ui/journey/art.py`): a stylesheet fills `fg` with the text
+colour, `accent` with the colour of libadwaita's `.accent` class (the
+app's indigo, lightened in dark style from libadwaita 1.6 on), `bg`
+with the surface the picture stands on (window or card), `dim` with the
+text colour mixed 30 % into it and `tint`/`tint-strong` with the accent
+mixed 16 %/40 % into it, all made opaque so overlapping shapes stay one
+colour. A scene (`<name>.scene.json`) places pictures at fixed spots in
+three depth bands, scales with the width and is clipped to its size; a
+picture in the far band is drawn with every role in `tint`, one
+silhouette with the ground (QuestArc's journey design, "Scenes of a
+region"). Titles become accessible labels. Pictures are found by
+name only (`content.art_path`); names cannot leave the folder.
+
+This is the spike: the journey pages do not use pictures yet. The demo
+`tests/art_demo.py growth|shore|sizes|sequence-crossing|journey-home|palette` shows a meadow at three moments,
+a shore, or every picture at 48, 32 and 24 px; `tests/test_art.py`
+checks that a scene is drawn only in the roles' colours, the far band in
+`tint`, and that every class in `content/art/` is a role Day Planner
+fills. Both need a
+QuestArc with `content/art/` (a checkout of QuestArc's `main` after
+QuestArc#86, or a release after 3.1.0); with the pinned 3.1.0 archive
+the tests are skipped.
+
+```sh
+PENSUM_QUESTARC_DIR=$PWD/../QuestArc /usr/bin/python3.12 tests/art_demo.py
+```
+
+**Ladders and hues** (QuestArc#42, QuestArc's journey design "Builds and
+ladders"): a journey builds one thing in versions, each whole, in the same
+slot of the same setting. `art.ladder_scene(ladder, version, progress,
+ready, marker, graduated)` composes the scene from `<ladder>.ladder.json`
+(`content.ladder`): the setting and its plants, the standing version in
+the `build` slot and, while a stage runs, its marker in the foreground:
+the first ceil(p × E) elements (`art.elements_shown`; plain posts first,
+then the hanging lanterns, pennants or flowers; a line once both its
+posts stand), p the stage's best progress so it never loses one; when
+`ready` every hanging element in its "on" form (`-lit` picture), the
+posts stay plain. `marker` picks the kind (the ladder's default if None);
+the lantern after graduation; never a count. `art.build_words` says the
+state under the row of versions ("… is on its way", "… is ready"); the
+row may show a zoomed part of each version (`row`, `art.draw_part`). A region may take a hue from
+`palette.json` (`content.palette`): `art.colours(widget, card, hue)` then
+takes `accent`, `tint` and `tint-strong` from the hue's light or dark
+value (by `Adw.StyleManager`'s dark state); `fg`, `bg` and `dim` stay
+libadwaita's. The demo's parts `sequence-<ladder>[-<marker>]`,
+`journey-<ladder>[-ready]` (a static mock of the journey screen; the real
+pages are unchanged) and
+`palette` are in `tests/ladder_demo.py`, a palette hue as the second
+argument. `tests/test_art.py` checks the composed scenes and that every
+hue keeps WCAG contrast against libadwaita's cards in light and dark
+(accent 3 : 1, tint-strong 1.5 : 1, the text colour on tint-strong
+3 : 1).
+
+Measured on the cloud host (x86_64): the test scene (15 pictures)
+takes about 1.8 ms per draw with cached handles and 3.7 ms on the first
+draw with parsing, the same with the host's librsvg 2.58 and the
+runtime's 2.63.2.
+
 ## Development
 
 The engine is found where `PENSUM_QUESTARC_DIR` points (a QuestArc

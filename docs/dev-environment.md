@@ -15,7 +15,8 @@ Reached from the cloud environment on 2026-11-05: `github.com`
 # Host packages (Ubuntu 24.04)
 
 After `bash ../phosh-toolkit/setup.sh`: `python3-pytest xvfb
-python3-gi-cairo` (the journey path draws with Cairo). The cloud image's
+python3-gi-cairo` (the journey path draws with Cairo) and
+`gir1.2-rsvg-2.0` (QuestArc's pictures, [journeys](journeys.md#pictures)). The cloud image's
 default `python3` has no `gi`; use `/usr/bin/python3.12`.
 
 # QuestArc's engine (journeys)
