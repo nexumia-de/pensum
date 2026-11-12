@@ -1,5 +1,8 @@
 # Directory Update Log
 
+## 2026-11-12
+* **Decision**: order of the plan, by the owner: read-only sync (#28, #29) before M3; an import of an older file warns and keeps QuestArc's records (#47); tests against a real Super Productivity run in CI (#46) instead of checks by hand ([roadmap](roadmap.md)).
+
 ## 2026-11-08
 * **Update**: `AGENTS.md` imports `agents/core.md` and `agents/gtk-app.md` from phosh-toolkit instead of its whole `AGENTS.md`; repeated shared rules removed (toolkit decision "lean agent rules", to use fewer tokens per session).
 

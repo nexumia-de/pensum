@@ -15,6 +15,14 @@ file keeps only the goals; which Super Productivity feature lands where
 is in [features](features.md). Workflow: the toolkit's
 [planning with issues and milestones](../../phosh-toolkit/docs/planning.md).
 
+**Order** (owner, 2026-11-12): M1, M2, then the read-only part of M4
+(#28, #29), then M3, then the writing part of M4. Until sync exists the
+phone and the desktop exchange whole files, and QuestArc's journeys run
+on both ([journeys](journeys.md)), so reading the desktop's sync folder
+matters more than the M3 features. Tests run against a real Super
+Productivity in CI (#46), so the owner does not check by hand what a
+test can check.
+
 # M1 – Daily use on the phone
 
 **Goal**: the owner plans the day and tracks time on the phone with the
@@ -46,8 +54,10 @@ menu folders.
 **Goal**: Pensum and Super Productivity share one WebDAV (or Nextcloud,
 or local) sync folder without manual export and import.
 
-**Exit criteria**: reads v2 and v3 sync files incl. compressed and
-encrypted ones; writes ops that Super Productivity replays to the same
+**Exit criteria**: first, before M3, read-only: reads v2 sync files
+incl. compressed and encrypted ones written by a real Super
+Productivity and never changes the folder (#28, #29). Then: reads v3;
+writes ops that Super Productivity replays to the same
 state, proven by end-to-end tests in both directions with concurrent
 edits ([sync files](super-productivity-sync.md)).
 
