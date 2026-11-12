@@ -210,10 +210,34 @@ the test means user-visible fields, not timestamps.
 Super Productivity 20 offers SuperSync first in its sync dialog; WebDAV,
 Dropbox and the local folder are behind "Other options" and a code
 comment calls them "legacy sync providers", but they are neither
-deprecated nor removed. SuperSync keeps only operations on the server,
-which requires end-to-end encryption, so the server cannot build a
-readable snapshot; a reader must decrypt and replay the ops like
-Super Productivity's reducers (#34, after #30).
+deprecated nor removed.
+
+Probed on 2026-11-12 with a test account on `sync.super-productivity.com`
+(live web app 20.0.0, [how](dev-environment.md#supersync-probe), #34):
+
+- The API answers `GET /api/sync/ops?sinceSeq=<n>&limit=<m>` with a
+  bearer token: `{ops: [{serverSeq, receivedAt, op}], hasMore,
+  latestSeq, serverTime, capabilities}`. Each `op` has `id`,
+  `clientId`, `actionType`, `opType`, `entityType`, `entityId`,
+  `payload`, `vectorClock`, `schemaVersion`, `timestamp`,
+  `isPayloadEncrypted`.
+- Encryption is mandatory (Super Productivity asks for the password on
+  setup). `payload` is encrypted exactly like an encrypted sync file
+  (`pensum.sync.crypto.decrypt` reads it) and decrypts to JSON.
+- Setting up SuperSync uploads one full-state op (`SYNC_IMPORT`, action
+  `[SP_ALL] Load(import) all data`) whose payload is the whole dataset:
+  read into Pensum it has `validate.problems()` empty. Every later change
+  is a single op with the NgRx action's payload, e.g. `CRT [Task Shared]
+  addTask` (`{actionPayload: {task, workContextId, …}}`) and `UPD [Task
+  Shared] updateTask` (`{actionPayload: {task: {id, changes}},
+  entityChanges}`).
+- So the current data = the newest full-state op + every later op
+  replayed through Super Productivity's reducers. The server cannot do
+  that (it cannot decrypt). Reading SuperSync therefore needs the op
+  replay of #30; without it Pensum could only show the data as of the
+  last full-state op, which would silently miss later changes.
+- The WebSocket (`/api/sync/ws?token=…`) carries the token in the URL;
+  it is only a push trigger and not needed for reading.
 
 # Not yet checked
 

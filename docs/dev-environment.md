@@ -145,6 +145,29 @@ Chromium treats loopback as secure and the proxy is bypassed for it.
 Hosts: `pypi.org` and `files.pythonhosted.org` (the server; reachable
 by default as package registries).
 
+# SuperSync probe
+
+Manual, not in CI (#34, [findings](super-productivity-sync.md#supersync)).
+Needs the SuperSync **test account's** access token as a network secret
+of the environment for `sync.super-productivity.com` (Authorization:
+Bearer); the proxy adds it to every request to that host, so scripts
+and the app only see a placeholder. Never use a real account.
+
+```sh
+node tests/real_app/sp_supersync.mjs ../supersync-probe 1
+```
+
+```sh
+python3 tests/real_app/read_supersync.py
+```
+
+`sp_supersync.mjs` round 1 (for an empty account) adds tasks and sets up
+SuperSync with encryption password "test password"; round 2 adds and
+completes tasks. `read_supersync.py` downloads the ops (GET only),
+decrypts them and prints the newest full-state op's counts and the
+later ops a reader would have to replay. Hosts:
+`sync.super-productivity.com` (allowed by the saved network secret).
+
 # Flatpak
 
 ```sh
