@@ -20,3 +20,5 @@ _build/
 # QuestArc engine fetched by CI (tests.yml)
 /.questarc/
 /questarc.tar.gz
+# Real-app test output (tests/real_app/run.sh)
+/tests/real_app/out/

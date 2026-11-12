@@ -1,5 +1,9 @@
 # Directory Update Log
 
+## 2026-11-12
+* **Decision**: order of the plan, by the owner: read-only sync (#28, #29) before M3; an import of an older file warns and keeps QuestArc's records (#47); tests against a real Super Productivity run in CI (#46) instead of checks by hand ([roadmap](roadmap.md)).
+* **Real-app test** (#46): `tests/real_app/` writes three exports with `pensum.store` (Super Productivity's fixture changed as #2 lists, a fresh dataset, the demo), imports each into a real Super Productivity through its "Import from File" with Playwright, checks that it logs no validation failure or repair and shows the projects, and reads its export back into Pensum (`validate.problems()` empty, counts and fields as written, no difference Pensum owns). Run against the live web app at Super Productivity 20.0.0: all three accepted, a broken export (task in a missing project) rejected. Found: Super Productivity 20 repairs an import silently, so the test reads its log; its `addTag` adds a new tag to an empty tag tree, which Pensum now does too. CI job `real-app` runs the image `v20.0.0` pinned by digest ([data](super-productivity-data.md), [development environment](dev-environment.md), [dependencies](dependencies.md)).
+
 ## 2026-11-08
 * **Update**: `AGENTS.md` imports `agents/core.md` and `agents/gtk-app.md` from phosh-toolkit instead of its whole `AGENTS.md`; repeated shared rules removed (toolkit decision "lean agent rules", to use fewer tokens per session).
 

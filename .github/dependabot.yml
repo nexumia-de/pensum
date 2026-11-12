@@ -10,3 +10,13 @@ updates:
     groups:
       actions:
         patterns: ['*']
+  # Playwright and the Super Productivity image of the real-app test.
+  - package-ecosystem: npm
+    directory: /tests/real_app
+    schedule:
+      interval: weekly
+    versioning-strategy: increase
+  - package-ecosystem: docker
+    directory: /tests/real_app
+    schedule:
+      interval: weekly

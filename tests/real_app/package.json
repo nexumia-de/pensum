@@ -1,0 +1,9 @@
+{
+  "name": "pensum-real-app-test",
+  "private": true,
+  "description": "Playwright for the real-app test (sp_import.mjs); CI only.",
+  "license": "AGPL-3.0-or-later",
+  "devDependencies": {
+    "playwright": "1.64.1"
+  }
+}
