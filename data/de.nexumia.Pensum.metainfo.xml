@@ -49,7 +49,64 @@
     <control>keyboard</control>
     <control>touch</control>
   </supports>
+  <screenshots>
+    <screenshot type="default">
+      <caption>Today's tasks with their time and estimates</caption>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.2.0/today-phone-light.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Today's tasks with their time and estimates</caption>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.2.0/today-desktop-light.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>A task with its timer running</caption>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.2.0/task-phone-light.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>A task with its timer running</caption>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.2.0/task-desktop-light.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Projects and tags</caption>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.2.0/lists-phone-light.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Projects and tags</caption>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.2.0/lists-desktop-light.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>A project's tasks</caption>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.2.0/project-phone-light.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>A project's tasks</caption>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.2.0/project-desktop-light.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>A habit journey, its current station and the path</caption>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.2.0/journey-phone-light.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>A habit journey, its current station and the path</caption>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.2.0/journey-desktop-light.png</image>
+    </screenshot>
+  </screenshots>
   <releases>
+    <release version="0.2.0" date="2026-11-09">
+      <description>
+        <ul>
+          <li>Journeys: turn a habit into small steps that grow, with QuestArc's journeys, calm or with game, on the same data as Super Productivity's QuestArc plugin.</li>
+          <li>Tasks can repeat: every day, Monday to Friday, weekly, monthly, yearly or on a custom schedule, the same way as in Super Productivity.</li>
+          <li>Adding tasks, search, new lists, Mark as Done and the timer moved to the bottom of the screen, where the thumb reaches them.</li>
+          <li>Deleting a task or a list and finishing the day can be undone from the message that follows.</li>
+          <li>The app is now called Day Planner.</li>
+          <li>Choosing another project on a task's page no longer closes the app.</li>
+          <li>The journey no longer opens after every change in your lists; it comes forward only when you tick off its station's task.</li>
+          <li>Swiping from the left edge goes back again, from a task to its list and from a list to the lists.</li>
+          <li>On the phone, a swipe from a list goes back to the overview of lists, as in Ephyra.</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.1.0" date="2026-11-05">
       <description>
         <p>First version: Today, projects and tags, tasks with subtasks and a timer, in Super Productivity's backup format.</p>
