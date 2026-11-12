@@ -93,6 +93,38 @@ colour (done, met, current) or the dimmed text colour (ahead); every
 node also has its state in words. Closed banners are kept in Pensum's
 settings (`seen`).
 
+## Pictures
+
+QuestArc's pictures are symbolic SVG files in its `content/art/`
+(QuestArc decision [shared pictures](https://github.com/nexumia-de/QuestArc/blob/main/docs/decisions/shared-pictures.md),
+QuestArc#86): no colours of their own, every shape marked `fg`, `accent`
+or `dim`, checked by QuestArc's picture checker. Day Planner draws the
+same files as the plugin, with librsvg from the GNOME runtime into Cairo
+(`pensum/ui/journey/art.py`): a stylesheet fills `fg` with the text
+colour, `accent` with the colour of libadwaita's `.accent` class (the
+app's indigo, lightened in dark style from libadwaita 1.6 on) and `dim`
+with the text colour mixed 30 % into the surface the picture stands on
+(window or card), all made opaque so overlapping shapes stay one colour.
+A scene (`<name>.scene.json`) places pictures at fixed spots and scales
+with the width. Titles become accessible labels. Pictures are found by
+name only (`content.art_path`); names cannot leave the folder.
+
+This is the spike: the journey pages do not use pictures yet. The demo
+`tests/art_demo.py` shows the test scene and every picture; `tests/test_art.py`
+checks that the scene is drawn only in the roles' colours. Both need a
+QuestArc with `content/art/` (a checkout of QuestArc's `main` after
+QuestArc#86, or a release after 3.1.0); with the pinned 3.1.0 archive
+the tests are skipped.
+
+```sh
+PENSUM_QUESTARC_DIR=$PWD/../QuestArc /usr/bin/python3.12 tests/art_demo.py
+```
+
+Measured on the cloud host (x86_64): the test scene (15 pictures)
+takes about 1.8 ms per draw with cached handles and 3.7 ms on the first
+draw with parsing, the same with the host's librsvg 2.58 and the
+runtime's 2.63.2.
+
 ## Development
 
 The engine is found where `PENSUM_QUESTARC_DIR` points (a QuestArc

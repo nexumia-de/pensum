@@ -46,6 +46,9 @@ Dependabot updates both.
 
 # From the runtime (not bundled)
 
-`org.gnome.Platform//51` provides Python 3, PyGObject, GTK 4 and
-libadwaita. M4 (sync) will need Argon2id and AES-GCM
+`org.gnome.Platform//51` provides Python 3, PyGObject, GTK 4,
+libadwaita and librsvg (LGPL-2.1-or-later; 2.63.2 with its `Rsvg-2.0`
+typelib in GNOME 51), which draws QuestArc's pictures
+(`pensum/ui/journey/art.py`, [journeys](journeys.md#pictures)). On the
+Ubuntu host the typelib is the package `gir1.2-rsvg-2.0`. M4 (sync) will need Argon2id and AES-GCM
 ([sync files](super-productivity-sync.md#file-envelope)).

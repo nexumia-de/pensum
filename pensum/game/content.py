@@ -65,3 +65,21 @@ def t(key, **params):
     text = _texts(str(directory())).get(key, key)
     return _PLACEHOLDER.sub(lambda m: str(params[m.group(1)])
                             if m.group(1) in params else m.group(0), text)
+
+
+def art_path(name):
+    """A picture of QuestArc's content/art/ by name (`tree` → tree.svg), or
+    None. Journeys name pictures; there are no other pictures."""
+    if not re.fullmatch(r"[a-z][a-z0-9]*(-[a-z0-9]+)*", name or ""):
+        return None
+    path = directory() / "content" / "art" / f"{name}.svg"
+    return path if path.is_file() else None
+
+
+def scene(name):
+    """A scene of content/art/ (`<name>.scene.json`): pictures at fixed
+    places, with its title in words; None if absent."""
+    path = directory() / "content" / "art" / f"{name}.scene.json"
+    if not re.fullmatch(r"[a-z][a-z0-9]*(-[a-z0-9]+)*", name or "") or not path.is_file():
+        return None
+    return json.loads(path.read_text(encoding="utf-8"))
