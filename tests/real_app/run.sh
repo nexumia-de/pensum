@@ -13,8 +13,8 @@ out=${1:-$here/out}
 python=${PYTHON:-python3}
 
 "$python" "$here/make_exports.py" "$out" --broken
-node "$here/sp_import.mjs" "$out" fixture fresh demo
-"$python" "$here/check_round_trip.py" "$out" fixture fresh demo
+node "$here/sp_import.mjs" "$out" fixture fresh demo imported
+"$python" "$here/check_round_trip.py" "$out" fixture fresh demo imported
 if node "$here/sp_import.mjs" "$out" broken; then
   echo "FAIL: the broken export (a task in a missing project) was accepted"
   exit 1

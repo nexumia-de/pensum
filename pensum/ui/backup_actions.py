@@ -1,10 +1,16 @@
 """Import and export of Super Productivity backups through the file
 chooser portal, so the Flatpak needs no file system access."""
+import logging
 from datetime import datetime
 
 from gi.repository import Gio, GLib, Gtk
 
+from pensum.game import records
+from pensum.store import dates, incoming
 from pensum.store.backup import BackupError
+from pensum.ui.dialogs import confirm_dialog
+
+log = logging.getLogger("pensum.import")
 
 
 def _json_filter():
@@ -29,23 +35,70 @@ def import_backup(window):
     dialog.open(window, None, chosen)
 
 
+def _count(number, word, words=None):
+    return f"{number} {word}" if number == 1 else f"{number} {words or word + 's'}"
+
+
+def _days(ds, completions, shown=3):
+    days = [dates.parse_day(ds.today(done_on)).strftime("%a %-d %b")
+            for _task_id, done_on in completions]
+    if len(days) > shown:
+        rest = len(days) - shown
+        return ", ".join(days[:shown]) + f" and {_count(rest, 'more day')}"
+    return days[0] if len(days) == 1 else ", ".join(days[:-1]) + " and " + days[-1]
+
+
+def warning(ds, loss):
+    """Heading and body of the import dialog for what the import would
+    lose (pensum.store.incoming.Loss); no loss, the plain question."""
+    keep = "A copy of the current data is kept in the backups folder."
+    if not loss:
+        return ("Replace All Tasks?",
+                "Your tasks, projects and tracked time are replaced by the "
+                f"backup's. {keep}")
+    parts = [_count(len(loss.tasks), "task")] if loss.tasks else []
+    if loss.records:
+        parts.append(_count(len(loss.records), "journey entry", "journey entries"))
+    lost = " and ".join(parts)
+    if loss.unrelated:
+        heading, body = ("Replace Other Data?",
+                         f"This file has none of the tasks on this device: {lost} would be lost.")
+    else:
+        heading, body = ("Import Older Data?",
+                         f"This file is older than what is on this device: {lost} would be lost.")
+    if loss.completions:
+        body += (" Among them is your journey's task, done on "
+                 f"{_days(ds, loss.completions)}.")
+    return heading, f"{body} {keep}"
+
+
 def confirm(window, path):
-    from pensum.ui.dialogs import confirm_dialog
+    window.flush()
+    try:
+        ds = window.files.read_import(path)
+    except (BackupError, OSError) as error:
+        window.toast(str(error))
+        return
+    loss = incoming.compare(window.ds.data, ds.data, records.PREFIX,
+                            records.journey_ids(window.ds))
+    # Ids and counts only; titles and notes never reach the log.
+    log.info("import would lose %d tasks (%d journey completions), %d records; "
+             "unrelated: %s", len(loss.tasks), len(loss.completions), len(loss.records),
+             loss.unrelated)
 
     def done():
         window.flush()
         try:
-            ds = window.files.import_file(path, window.ds)
-        except (BackupError, OSError) as error:
+            imported = window.files.import_dataset(ds, window.ds, records.PREFIX)
+        except OSError as error:
             window.toast(str(error))
             return
-        window.replace_dataset(ds)
+        window.replace_dataset(imported)
         window.toast("Backup imported")
 
-    confirm_dialog(window, "Replace All Tasks?",
-                   "Your tasks, projects and tracked time are replaced by "
-                   "the backup's. A copy of the current data is kept in the "
-                   "backups folder.", "Replace", done)
+    heading, body = warning(window.ds, loss)
+    return confirm_dialog(window, heading, body,
+                          "Import Anyway" if loss else "Replace", done)
 
 
 def export_backup(window):

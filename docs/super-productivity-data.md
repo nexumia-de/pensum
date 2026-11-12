@@ -234,6 +234,23 @@ e2e backups; Super Productivity accepts that.
   is newer (made by a newer Super Productivity) or older than 4.5
   (Super Productivity must migrate them first), and fills missing slices
   like `withDefaultModelSlices`.
+- **Import over newer data** (#47, `pensum/store/incoming.py`): before
+  replacing anything, the file is compared with the current dataset
+  (live and archived tasks by id). A task is lost when the file lacks it
+  or holds another version and the current one was made, changed or
+  done (`created`, `modified`, `doneOn`) later than the file's version;
+  a task the file lacks that is older than the file's newest change was
+  deleted on the other side and is not counted. A file that shares no
+  task is another dataset: every current task is lost. The dialog warns
+  with the counts. QuestArc's records (`questarc:<key>` in
+  `pluginUserData`) that only the current dataset has are added to the
+  imported one, one entry id each, as Super Productivity merges plugin
+  data in sync; a record on both sides takes the file's value, also a
+  withdrawn `''`, and counts as lost when it differs and the file is
+  older. Tasks are never merged (that is sync, M4). Other plugins' data
+  is taken from the file as read. Without a modification time on every
+  change this is a heuristic: a change that sets no `modified` (moving
+  a task between lists) is not seen.
 - **Export** writes a `CompleteBackup` with the full dataset, archives
   included, named `sp-backup-YYYY-MM-DD_HHMMSS.json`.
 - The tests read Super Productivity's own fixtures
@@ -252,8 +269,11 @@ from File", in a fresh profile each:
 - Super Productivity's fixture changed in Pensum (tasks added, subtasks,
   done, time spent, tags, a planned later day, a daily repeat rule with
   an archived and a new instance, a deleted project with its tasks,
-  Finish Day), a dataset started fresh in Pensum, and the demo dataset
-  with QuestArc's records;
+  Finish Day), a dataset started fresh in Pensum, the demo dataset
+  with QuestArc's records, and the changed fixture with a withdrawn
+  QuestArc record imported over the demo dataset, keeping the demo's
+  records (#47; passed against the live web app, 20.0.0, on
+  2026-11-12);
 - each passes Super Productivity's typia type check and cross-model
   check with no repair and no dialog: its import logs no validation
   failure or repair. The fixture's own `globalConfig` is older than the
