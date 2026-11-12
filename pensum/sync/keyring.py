@@ -1,4 +1,4 @@
-"""The WebDAV password in the system keyring (libsecret; in the Flatpak
+"""The WebDAV password and the sync encryption password in the system keyring (libsecret; in the Flatpak
 through the Secret portal), never in Pensum's own files. When no keyring
 is available the password is used once and not remembered."""
 import logging
@@ -44,7 +44,7 @@ def store(url, user, password):
     try:
         return Secret.password_store_sync(
             _schema(Secret), {"url": url, "user": user}, Secret.COLLECTION_DEFAULT,
-            "Day Planner: WebDAV sync folder", password, None)
+            "Day Planner: sync folder", password, None)
     except Exception as error:
         log.info("keyring store failed: %s", type(error).__name__)
         return False

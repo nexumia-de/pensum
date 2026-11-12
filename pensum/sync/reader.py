@@ -15,7 +15,7 @@ import logging
 from dataclasses import dataclass, field
 
 from pensum.store import backup
-from pensum.sync import SyncError, envelope
+from pensum.sync import SyncError, crypto, envelope
 
 log = logging.getLogger("pensum.sync")
 
@@ -37,11 +37,17 @@ class Snapshot:
     oldest_op_sync_version: int | None = None
 
 
-def read(source):
-    """The newest dataset in the folder; raises SyncError."""
+def read(source, password=None):
+    """The newest dataset in the folder; raises SyncError. `password`
+    decrypts encrypted files."""
+    cache = {}
+
+    def decode(text):
+        return envelope.decode(text, password, cache)
+
     ops_text = source.read(OPS_FILE)
     if ops_text is not None:
-        return _read_split(source, ops_text)
+        return _read_split(source, ops_text, decode)
     text = source.read(SYNC_FILE)
     if text is None:
         if source.read(LEGACY_META_FILE) is not None:
@@ -49,7 +55,7 @@ def read(source):
                             "or older. Sync it with a current Super "
                             "Productivity first.")
         raise SyncError("No Super Productivity sync files in this folder.")
-    payload, _ = envelope.decode(text)
+    payload, _ = decode(text)
     if payload.get("version") == 3 and payload.get("format") == "split":
         raise SyncError("The folder uses Surgical sync, but its operations "
                         "file is missing.")
@@ -62,8 +68,8 @@ def read(source):
     return snapshot
 
 
-def _read_split(source, ops_text):
-    ops_file, _ = envelope.decode(ops_text)
+def _read_split(source, ops_text, decode):
+    ops_file, _ = decode(ops_text)
     ref = ops_file.get("snapshotRef")
     if ops_file.get("version") != 3 or not isinstance(ref, dict):
         raise SyncError("The Surgical sync operations file is damaged.")
@@ -74,7 +80,9 @@ def _read_split(source, ops_text):
         if text is None:
             continue
         try:
-            candidate, _ = envelope.decode(text)
+            candidate, _ = decode(text)
+        except (envelope.NeedsPassword, crypto.WrongPassword):
+            raise
         except SyncError:
             continue
         if candidate.get("syncVersion") == ref.get("syncVersion") \

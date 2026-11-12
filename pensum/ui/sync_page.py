@@ -29,6 +29,12 @@ class SyncPage(Adw.NavigationPage):
         toolbar.add_top_bar(self.banner)
         page = Adw.PreferencesPage()
         page.add(self._folder_group())
+        encryption = Adw.PreferencesGroup(
+            description="Only when encryption is switched on in Super "
+                        "Productivity's sync settings.")
+        self.encryption_row = Adw.PasswordEntryRow(title="Encryption Password")
+        encryption.add(self.encryption_row)
+        page.add(encryption)
         self.result = Adw.PreferencesGroup(title="In the Sync Folder", visible=False)
         self.rows = {}
         for key, title in (("open", "Open Tasks"), ("done", "Done Tasks"),
@@ -142,11 +148,21 @@ class SyncPage(Adw.NavigationPage):
         source = WebDav(s.sync_url, s.sync_user, password, s.sync_folder)
         return source, f"webdav:{s.sync_url}|{s.sync_user}|{s.sync_folder}"
 
+    def _encryption_password(self, key):
+        """The password typed, remembered in the keyring for this source,
+        or the one remembered before."""
+        typed = self.encryption_row.get_text()
+        if typed:
+            keyring.store(f"encryption:{key}", "", typed)
+            return typed
+        return keyring.lookup(f"encryption:{key}", "")
+
     def read(self, wait=False):
         """Read the folder in a thread; `wait` reads at once (tests)."""
         self.banner.set_revealed(False)
         try:
             source, key = self._source()
+            password = self._encryption_password(key)
         except SyncError as error:
             self._show_error(str(error))
             return
@@ -156,7 +172,7 @@ class SyncPage(Adw.NavigationPage):
 
         def work():
             try:
-                result = reader.read(source)
+                result = reader.read(source, password)
             except SyncError as error:
                 result = error
             if wait:

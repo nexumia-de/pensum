@@ -2,7 +2,8 @@
 # The sync test (docs/dev-environment.md, sync test): a WebDAV test
 # server, Super Productivity syncing to it (sp_sync.mjs), and Pensum
 # reading the folder (check_sync.py), in two rounds; check_sync.py also
-# checks that wrong decodes fail and that reading changes no file.
+# checks that wrong decodes fail and that reading changes no file. Runs
+# twice: plain files, then compressed and encrypted ones (#29).
 #
 #   tests/real_app/run_sync.sh [OUT_DIR]
 #
@@ -26,9 +27,17 @@ until curl -s -o /dev/null -u test:test http://127.0.0.1:2345/; do
   [ $i -lt 30 ] || { echo "FAIL: the WebDAV server did not start"; cat "$out/webdav.log"; exit 1; }
   sleep 1
 done
-export PENSUM_DAV_URL=http://127.0.0.1:2345/
+export PENSUM_DAV_URL=http://127.0.0.1:2345/ PENSUM_DAV_ROOT="$out/dav"
 
-node "$here/sp_sync.mjs" "$out" 1
-"$python" "$here/check_sync.py" "$out" 1
-node "$here/sp_sync.mjs" "$out" 2
-"$python" "$here/check_sync.py" "$out" 2
+scenario() {
+  name=$1
+  echo "== $name"
+  mkdir -p "$out/$name"
+  for round in 1 2; do
+    PENSUM_DAV_FOLDER=$name node "$here/sp_sync.mjs" "$out/$name" $round
+    PENSUM_DAV_FOLDER=$name "$python" "$here/check_sync.py" "$out/$name" $round
+  done
+}
+
+PENSUM_SYNC_COMPRESS= PENSUM_SYNC_PASSWORD= scenario plain
+PENSUM_SYNC_COMPRESS=1 PENSUM_SYNC_PASSWORD="test password" scenario encrypted

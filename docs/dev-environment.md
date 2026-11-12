@@ -130,8 +130,15 @@ python3 -m venv ../webdav
 WSGIDAV=../webdav/bin/wsgidav PYTHON=/usr/bin/python3.12 tests/real_app/run_sync.sh
 ```
 
-Files go to `tests/real_app/out-sync/` (the folder in `dav/`, the
-browser profile in `profile/`). Like the real-app test it uses the
+It runs twice, `plain` and `encrypted` (compression and encryption on,
+password "test password"); files go to `tests/real_app/out-sync/`
+(the folders in `dav/plain` and `dav/encrypted`, each scenario's browser
+profile in `<scenario>/profile/`). The tests need Argon2id:
+
+```sh
+/usr/bin/python3.12 -m pip install --user --break-system-packages --no-deps -r tests/requirements.txt
+```
+ Like the real-app test it uses the
 live web app unless `PENSUM_SP_URL` names another; CI uses the pinned
 image. The live app (HTTPS) reaches the server on `127.0.0.1` because
 Chromium treats loopback as secure and the proxy is bypassed for it.

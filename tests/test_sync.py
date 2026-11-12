@@ -12,7 +12,7 @@ import pytest
 from pensum.store import validate
 from pensum.store.dataset import Dataset
 from pensum.store.files import Files
-from pensum.sync import SyncError, changes, envelope, reader, summary
+from pensum.sync import SyncError, changes, crypto, envelope, reader, summary
 from pensum.sync.local import LocalFolder
 from pensum.sync.webdav import WebDav, file_url
 
@@ -55,15 +55,66 @@ def test_envelope_plain():
 
 @pytest.mark.parametrize("text, message", [
     ("{}", "not in Super Productivity's format"),
-    ("pf_C2__H4sIAAAA", "compressed"),
-    ("pf_E2__AAAA", "encrypted"),
-    ("pf_CE2__AAAA", "encrypted"),
+    ("pf_C2__H4sIAAAA", "damaged \\(gzip\\)"),
+    ("pf_E2__AAAA", "encrypted. Enter"),
     ("pf_2__not json", "no JSON"),
     ("pf_2__[1]", "damaged"),
 ])
 def test_envelope_refuses(text, message):
     with pytest.raises(SyncError, match=message):
         envelope.decode(text)
+
+
+# Made independently of Pensum, with Node's WebCrypto (PBKDF2, AES-GCM)
+# and hash-wasm (Argon2id, the library Super Productivity uses), from the
+# layout in pensum/sync/crypto.py. Password "correct horse".
+PLAIN = {"hello": "wörld", "n": 1}
+PASSWORD = "correct horse"
+ARGON2_COMPRESSED = (
+    "pf_CE2__QtZ3oYX14Qkdo8wdlRum5//FZMUlzb89joPTWYTwaYhmwHJK+ZnOMQtfmQFomqZmApqTU"
+    "fdPRXQpuB4QKsMqGz/+KmJsmnnMhpZYhh3/n2knBnKV0bAUCxZlDA/QF6cxVzgPaHFwkRk=")
+LEGACY = ("pf_E2__/LjFIQe75KCFqkQ5cFD7QcxdjVnSNgQAPtXOja79VDRbTgiVJrdOteNMSSJOCI"
+          "qfI+o7Tg==")
+
+
+def test_compressed():
+    import base64
+    import gzip
+    text = "pf_C2__" + base64.b64encode(gzip.compress(json.dumps(PLAIN).encode())).decode()
+    assert envelope.decode(text)[0] == PLAIN
+
+
+def test_argon2id_key_matches_hash_wasm():
+    assert crypto.argon2id(b"pw", b"0123456789abcdef").hex() == \
+        "1aceaf0dca7f8157074f4e838d645ff9ca519c27590d032763bee4c2c4235e3a"
+
+
+def test_encrypted_and_compressed():
+    cache = {}
+    assert envelope.decode(ARGON2_COMPRESSED, PASSWORD, cache)[0] == PLAIN
+    assert len(cache) == 1  # the key is derived once per salt
+
+
+def test_encrypted_legacy_pbkdf2():
+    assert envelope.decode(LEGACY, PASSWORD)[0] == PLAIN
+
+
+@pytest.mark.parametrize("text", [ARGON2_COMPRESSED, LEGACY])
+def test_wrong_password(text):
+    with pytest.raises(crypto.WrongPassword):
+        envelope.decode(text, "wrong")
+
+
+def test_encrypted_needs_password():
+    with pytest.raises(envelope.NeedsPassword):
+        envelope.decode(LEGACY)
+
+
+def test_wrong_password_is_not_a_missing_v3_snapshot(tmp_path):
+    files = v3_files(sp_state())
+    files["sync-state__4__abc.json"] = LEGACY
+    with pytest.raises(crypto.WrongPassword):
+        reader.read(folder(tmp_path, files), "wrong")
 
 
 # --- v2 -------------------------------------------------------------------
@@ -277,3 +328,18 @@ def test_file_url(base, folder, url):
 def test_file_url_needs_scheme():
     with pytest.raises(SyncError, match="https://"):
         file_url("cloud.example.org", "", "f")
+
+
+def test_reads_encrypted_file_written_by_super_productivity():
+    """Compressed and encrypted by Super Productivity 20.0.0 itself
+    (tests/real_app/sp_sync.mjs, password "test password")."""
+    source = LocalFolder(FIXTURES / "sync-encrypted")
+    assert (FIXTURES / "sync-encrypted" / "sync-data.json").read_text().startswith("pf_CE2__")
+    snapshot = reader.read(source, "test password")
+    assert validate.problems(snapshot.data) == []
+    titles = {t["title"] for t in snapshot.data["task"]["entities"].values()}
+    assert "Sync test: water the plants" in titles
+    with pytest.raises(crypto.WrongPassword):
+        reader.read(source, "wrong")
+    with pytest.raises(envelope.NeedsPassword):
+        reader.read(source)

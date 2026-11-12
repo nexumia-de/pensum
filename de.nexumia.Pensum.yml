@@ -55,6 +55,123 @@ modules:
           url: https://api.github.com/repos/nexumia-de/QuestArc/releases/latest
           version-query: .tag_name | sub("^v"; "")
           url-query: .assets[] | select(.name | test("^questarc-engine-.*\\.tar\\.gz$")) | .browser_download_url
+  # Argon2id for encrypted sync files (#29, docs/dependencies.md), built
+  # from source: pure-Python build tools first (removed after the build),
+  # then pycparser, cffi and argon2-cffi-bindings from their sdists.
+  - name: python3-build-tools
+    buildsystem: simple
+    build-commands:
+      - pip3 install --no-index --find-links="file://${PWD}" --prefix=${FLATPAK_DEST}
+        --ignore-installed --no-build-isolation setuptools setuptools-scm scikit-build-core
+      - for d in ${FLATPAK_DEST}/lib/python3*/site-packages/*.dist-info; do
+          [ -d "$d/licenses" ] || continue;
+          n=$(basename "$d" .dist-info);
+          mkdir -p ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/python3-build-tools/$n;
+          cp -r "$d/licenses/." ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/python3-build-tools/$n/;
+        done
+    # Only needed to build the modules below; not shipped.
+    cleanup:
+      - /bin
+      - /lib/python3*/site-packages/setuptools*
+      - /lib/python3*/site-packages/_distutils_hack
+      - /lib/python3*/site-packages/distutils-precedence.pth
+      - /lib/python3*/site-packages/pkg_resources
+      - /lib/python3*/site-packages/vcs_versioning*
+      - /lib/python3*/site-packages/packaging*
+      - /lib/python3*/site-packages/scikit_build_core*
+      - /lib/python3*/site-packages/pathspec*
+    sources:
+      - type: file
+        url: https://files.pythonhosted.org/packages/ef/55/6dc6d6bb953bdfc52519a0059592c52b6e3b8ad51cf8256dffceb55b0610/setuptools-84.2.1-py3-none-any.whl
+        sha256: ca140b45d5325a9478f880e351484f62fef15f336462e449ca0c03c873d589c2
+        x-checker-data:
+          type: json
+          url: https://pypi.org/pypi/setuptools/json
+          version-query: .info.version
+          url-query: '[.urls[] | select(.packagetype == "bdist_wheel")] | first | .url'
+      - type: file
+        url: https://files.pythonhosted.org/packages/da/f5/54538a1f17ea753c42b0928dc2e62986d463f8c393340b9a1e602f2d4dd9/setuptools_scm-10.3.4-py3-none-any.whl
+        sha256: 82f34c3e3084fc2b57d397200637cc13f2338004052d2fee47baa5f0e902464e
+        x-checker-data:
+          type: json
+          url: https://pypi.org/pypi/setuptools-scm/json
+          version-query: .info.version
+          url-query: '[.urls[] | select(.packagetype == "bdist_wheel")] | first | .url'
+      - type: file
+        url: https://files.pythonhosted.org/packages/73/1d/ad4064bf12f4503bf61e65d74c93c523672776d25ee0a06aaf42ae09ef3f/vcs_versioning-2.6.0-py3-none-any.whl
+        sha256: f8bebd1302ebc12e67ceb30fc7dd698ec969414b6fa43b30c3f14ac9b1e72c41
+        x-checker-data:
+          type: json
+          url: https://pypi.org/pypi/vcs-versioning/json
+          version-query: .info.version
+          url-query: '[.urls[] | select(.packagetype == "bdist_wheel")] | first | .url'
+      - type: file
+        url: https://files.pythonhosted.org/packages/63/34/ba1c580383c9eada3711951fef0795c80b829a078d72188184bcab9dd527/packaging-26.3-py3-none-any.whl
+        sha256: d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c
+        x-checker-data:
+          type: json
+          url: https://pypi.org/pypi/packaging/json
+          version-query: .info.version
+          url-query: '[.urls[] | select(.packagetype == "bdist_wheel")] | first | .url'
+      - type: file
+        url: https://files.pythonhosted.org/packages/cb/8e/f13e5d7dc75fc979464d5bcc1bc762b07133df3d09d667c34727dfd8b0e8/scikit_build_core-1.1.2-py3-none-any.whl
+        sha256: 7f4f959a467692db50bdd1ea7ce1507f2c7972e6023b753ee302d169bc4cec85
+        x-checker-data:
+          type: json
+          url: https://pypi.org/pypi/scikit-build-core/json
+          version-query: .info.version
+          url-query: '[.urls[] | select(.packagetype == "bdist_wheel")] | first | .url'
+      - type: file
+        url: https://files.pythonhosted.org/packages/f1/d9/7fb5aa316bc299258e68c73ba3bddbc499654a07f151cba08f6153988714/pathspec-1.1.1-py3-none-any.whl
+        sha256: a00ce642f577bf7f473932318056212bc4f8bfdf53128c78bbd5af0b9b20b189
+        x-checker-data:
+          type: json
+          url: https://pypi.org/pypi/pathspec/json
+          version-query: .info.version
+          url-query: '[.urls[] | select(.packagetype == "bdist_wheel")] | first | .url'
+  - name: python3-pycparser
+    buildsystem: simple
+    build-commands:
+      - pip3 install --no-index --no-deps --no-build-isolation --prefix=${FLATPAK_DEST} .
+      - install -Dm644 LICENSE -t ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/python3-pycparser
+    sources:
+      - type: archive
+        url: https://files.pythonhosted.org/packages/cb/27/eeb9f307bf07060f3d9f9aa0fb8c15b01bdfded0a941e4b2719c7f94cacd/pycparser-3.12.tar.gz
+        sha256: f03387877eab82ce01bbdfd0ba7252ee55a90b1c708d5129e2ce915475cf1db6
+        x-checker-data:
+          type: json
+          url: https://pypi.org/pypi/pycparser/json
+          version-query: .info.version
+          url-query: '.urls[] | select(.packagetype == "sdist") | .url'
+  - name: python3-cffi
+    buildsystem: simple
+    build-commands:
+      - pip3 install --no-index --no-deps --no-build-isolation --prefix=${FLATPAK_DEST} .
+      - install -Dm644 LICENSE -t ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/python3-cffi
+    sources:
+      - type: archive
+        url: https://files.pythonhosted.org/packages/9e/ef/008a1939e372c06329a3fce4279c02f328488f3526744906eeec3da7ad5f/cffi-2.1.1.tar.gz
+        sha256: dd31f52ea1086513bb9df30f8fcee9b8918323ae067a3d5b78bc826a000712be
+        x-checker-data:
+          type: json
+          url: https://pypi.org/pypi/cffi/json
+          version-query: .info.version
+          url-query: '.urls[] | select(.packagetype == "sdist") | .url'
+  - name: python3-argon2-cffi-bindings
+    buildsystem: simple
+    build-commands:
+      - pip3 install --no-index --no-deps --no-build-isolation --prefix=${FLATPAK_DEST} .
+      - install -Dm644 LICENSE -t ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/python3-argon2-cffi-bindings
+      - install -Dm644 extras/libargon2/LICENSE -t ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/libargon2
+    sources:
+      - type: archive
+        url: https://files.pythonhosted.org/packages/0b/43/bb8b6e8708d49a5ab36781333af092d9f483b198a2710d01281204640055/argon2_cffi_bindings-26.1.0.tar.gz
+        sha256: 63505c71542a44b68b1e38060450fb006404170da375feb31af153e7f9c6205d
+        x-checker-data:
+          type: json
+          url: https://pypi.org/pypi/argon2-cffi-bindings/json
+          version-query: .info.version
+          url-query: '.urls[] | select(.packagetype == "sdist") | .url'
   - name: pensum
     buildsystem: meson
     sources:

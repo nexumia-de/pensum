@@ -84,9 +84,9 @@ and are not a Super Productivity feature: [journeys](journeys.md).
 | Automatic local backups | `backups/*.json` | **M1, done** |
 | Light and dark style | – (Pensum's own setting) | **M1, done** |
 | Day boundary ("start of next day") | `globalConfig.misc.startOfNextDay*` | **M1, done** |
-| Read a WebDAV/local-folder sync file | `sync-data.json` | **M4, done** (#28): WebDAV/Nextcloud (password in the keyring) or a local folder, v2 and current v3 snapshots, shown and offered as an import, tested against a real Super Productivity ([sync files](super-productivity-sync.md#what-pensum-reads-28)). Open: compressed and encrypted files (#29), v3 with ops newer than the snapshot (#31) |
+| Read a WebDAV/local-folder sync file | `sync-data.json` | **M4, done** (#28): WebDAV/Nextcloud (password in the keyring) or a local folder, v2 and current v3 snapshots, shown and offered as an import, tested against a real Super Productivity ([sync files](super-productivity-sync.md#what-pensum-reads-28)). Open: v3 with ops newer than the snapshot (#31) |
 | Sync as a client (WebDAV, Nextcloud) | ops in `recentOps` | M4 |
-| Encrypted and compressed sync files | `pf_CE…` envelope | M4 |
+| Encrypted and compressed sync files | `pf_CE…` envelope | **M4, done** (#29): gzip, Argon2id + AES-GCM and the older PBKDF2 layout, password in the keyring, tested with files Super Productivity wrote itself |
 | SuperSync server | – | backlog (after file sync) |
 | Dropbox, OneDrive | OAuth | backlog |
 

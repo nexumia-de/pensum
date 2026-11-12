@@ -48,9 +48,17 @@ the version is the file format version (`2`), e.g. `pf_C2__H4sIA…`.
   `encryption/argon2.ts`, `encryption/legacy.ts`). Compression is applied
   before encryption.
 
-Python needs `argon2-cffi` (or `cryptography` ≥ 44 with Argon2id) and
-`cryptography` for AES-GCM; neither is in the GNOME runtime, so M4
-bundles them (licences: MIT, Apache-2.0/BSD).
+Checked at 20.0.0 (`compression.ts`, `encryption.ts`,
+`encryption/argon2.ts`, `encryption/legacy.ts`, `encryption/web-crypto.ts`):
+compressed text is base64 of gzip; the encrypted part is the compressed
+(or plain) text; the Argon2id key uses the UTF-8 password, a 32-byte
+output and no secret or associated data; AES-GCM has no associated
+data. The older layout is `[iv 12][ciphertext + tag]` with
+PBKDF2-SHA256, salt = the password, 1000 rounds; Super Productivity
+falls back to it when the Argon2id layout fails, and so does Pensum.
+Pensum (`pensum/sync/crypto.py`, #29) takes Argon2id from the bundled
+`argon2-cffi-bindings` (built from source) and AES-GCM from the
+runtime's OpenSSL through ctypes; PBKDF2 from Python's `hashlib`.
 
 # v2: one file, `sync-data.json`
 
@@ -153,8 +161,11 @@ changed fields of one entity and resolves conflicts last-writer-wins.
   compaction; ops after it would have to be replayed through Super
   Productivity's reducers. Pensum reads v3 only while no op is newer
   than the snapshot and says so otherwise (full v3: #31).
-- Refused with a message: compressed or encrypted files (#29), a v16
-  `__meta_` folder, a v3 tombstone without ops file, an unknown version.
+- Compressed and encrypted files (#29): the encryption password is a
+  field on the page, kept in the keyring per folder; a missing or wrong
+  password is said as such.
+- Refused with a message: a v16 `__meta_` folder, a v3 tombstone
+  without ops file, an unknown version.
 - **Changes since the last read**: the ops with `sv` above the
   `syncVersion` read last from the same source (remembered in
   settings); task ids from `d`/`ds`, plus the subtasks a `DEL` op's
@@ -183,8 +194,11 @@ open/done in the read data; `validate.problems()` empty, also after an
 import; in round 2 the ops since round 1 name every task Super
 Productivity changed. Three wrong decodes must fail these checks and
 do: keeping the first snapshot, ignoring `recentOps`, and reading the
-previous file `sync-data.json.bak`. First run on 2026-11-12 against the
-live web app (20.0.0), green.
+previous file `sync-data.json.bak`. The whole run is done twice: with
+plain files, and with compression and encryption switched on in Super
+Productivity's own settings (#29; there a wrong or missing password
+must fail too). First runs on 2026-11-12 against the live web app
+(20.0.0), green; CI runs the pinned image.
 
 Found on the way: Super Productivity 20 itself moved a done task's
 `doneOn` by a few milliseconds between the export after round 1 and
@@ -206,4 +220,5 @@ Super Productivity's reducers (#34, after #30).
 - WebDAV from the Flatpak on the phone (`--share=network` is set), and
   the Secret portal on Phosh.
 - A real Nextcloud (the test server is wsgidav).
+- Argon2id speed on the phone (64 MiB, 3 passes; 0.14 s on the cloud host), and that the GNOME runtime's libcrypto loads as `libcrypto.so.3` in the Flatpak.
 - Which ETag strength the owner's WebDAV server gives.

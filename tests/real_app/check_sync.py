@@ -14,7 +14,10 @@ pensum.sync and check, for round N:
 
     python3 tests/real_app/check_sync.py DIR 1|2
 
-PENSUM_DAV_URL is the WebDAV server (default http://127.0.0.1:2345/).
+PENSUM_DAV_URL is the WebDAV server (default http://127.0.0.1:2345/),
+PENSUM_DAV_ROOT its directory on disk (default DIR/dav), PENSUM_DAV_FOLDER
+the sync folder (default super-productivity); with PENSUM_SYNC_PASSWORD
+the files must be compressed and encrypted, a wrong password must fail.
 Prints ids and counts, never titles. Exits 1 on a difference.
 """
 import hashlib
@@ -33,11 +36,12 @@ for toolkit in (ROOT.parent / "phosh-toolkit", ROOT / ".phosh-toolkit"):
 from pensum.store import backup, validate  # noqa: E402
 from pensum.store.dataset import Dataset  # noqa: E402
 from pensum.store.files import Files  # noqa: E402
-from pensum.sync import changes, envelope, reader  # noqa: E402
+from pensum.sync import SyncError, changes, crypto, envelope, reader  # noqa: E402
 from pensum.sync.local import LocalFolder  # noqa: E402
 from pensum.sync.webdav import WebDav  # noqa: E402
 
-FOLDER = "super-productivity"
+FOLDER = os.environ.get("PENSUM_DAV_FOLDER") or "super-productivity"
+PASSWORD = os.environ.get("PENSUM_SYNC_PASSWORD") or None
 TASK_FIELDS = ("title", "isDone", "projectId", "tagIds", "parentId", "subTaskIds",
                "timeEstimate", "timeSpent", "doneOn", "notes", "dueDay", "created")
 CONTEXT_FIELDS = ("title", "taskIds")
@@ -163,7 +167,7 @@ def follows(snapshot, seen, expected):
 
 def main(directory, round_):
     directory = Path(directory)
-    dav = directory / "dav"
+    dav = Path(os.environ.get("PENSUM_DAV_ROOT") or directory / "dav")
     url = os.environ.get("PENSUM_DAV_URL", "http://127.0.0.1:2345/")
     failures = []
 
@@ -176,8 +180,8 @@ def main(directory, round_):
             print(f"ok: {what}")
 
     before = hashes(dav)
-    over_webdav = reader.read(WebDav(url, "test", "test", FOLDER))
-    on_disk = reader.read(LocalFolder(dav / FOLDER))
+    over_webdav = reader.read(WebDav(url, "test", "test", FOLDER), PASSWORD)
+    on_disk = reader.read(LocalFolder(dav / FOLDER), PASSWORD)
     after = hashes(dav)
     check("folder unchanged by reading", [] if before == after else
           [f"{len(set(before.items()) ^ set(after.items()))} file entries differ"])
@@ -188,6 +192,22 @@ def main(directory, round_):
     print(f"round {round_}: {snapshot.format}, syncVersion {snapshot.sync_version}, "
           f"{len(snapshot.data['task']['ids'])} tasks, {len(snapshot.ops)} recent ops, "
           f"{len(before)} files in the folder")
+
+    prefix = (dav / FOLDER / "sync-data.json").read_text()[:8]
+    want = "pf_CE" if PASSWORD else "pf_2__"
+    check(f"files written {'compressed and encrypted' if PASSWORD else 'plain'}",
+          [] if prefix.startswith(want) else [f"prefix {prefix[:6]!r}"])
+    if PASSWORD:
+        try:
+            reader.read(LocalFolder(dav / FOLDER), "wrong password")
+            check("a wrong password fails", ["it was accepted"])
+        except crypto.WrongPassword:
+            check("a wrong password fails", [])
+        try:
+            reader.read(LocalFolder(dav / FOLDER))
+            check("no password fails", ["it was accepted"])
+        except SyncError:
+            check("no password fails", [])
 
     sp = backup.read(directory / f"round{round_}.sp.json")
     ui = json.loads((directory / f"round{round_}.ui.json").read_text())
@@ -218,7 +238,7 @@ def main(directory, round_):
         wrong["recentOps ignored"] = follows(no_ops, first["syncVersion"], expected)[0]
         bak = dav / FOLDER / "sync-data.json.bak"
         if bak.exists():
-            payload, _ = envelope.decode(bak.read_text())
+            payload, _ = envelope.decode(bak.read_text(), PASSWORD)
             wrong["the previous file (.bak)"] = compare(
                 backup.parse(json.dumps(payload["state"])), sp)
         else:

@@ -20,6 +20,17 @@ installs no licence files.
 | `phosh-toolkit` | tag `v0.3.0` (commit `c29a2a1`) | GPL-3.0-or-later (own code, same author) | `LICENSE` → `/app/share/licenses/<app id>/phosh-toolkit/` |
 | `questarc-engine` | release archive `v3.1.0` (sha256 `acb5a47f…`) | engine AGPL-3.0-or-later (same author); journeys in `content/journeys/` CC BY-SA 4.0 | `LICENSE` → `…/questarc-engine/`, `content/LICENSE` → `…/questarc-journeys/` |
 
+| `python3-build-tools` | wheels: setuptools 84.2.1, setuptools-scm 10.3.4, vcs-versioning 2.6.0, packaging 26.3, scikit-build-core 1.1.2, pathspec 1.1.1 | MIT; packaging Apache-2.0 OR BSD-2-Clause; scikit-build-core Apache-2.0; pathspec MPL-2.0 | each wheel's `dist-info/licenses/` → `…/python3-build-tools/<wheel>/`; the modules themselves are removed after the build (pure-Python build tools, not shipped) |
+| `python3-pycparser` | sdist 3.12 | BSD-3-Clause | `LICENSE` → `…/python3-pycparser/` |
+| `python3-cffi` | sdist 2.1.1 (uses the runtime's libffi) | MIT-0 | `LICENSE` → `…/python3-cffi/` |
+| `python3-argon2-cffi-bindings` | sdist 26.1.0, bundles the Argon2 reference C code (`extras/libargon2`) | MIT; libargon2 CC0-1.0 OR Apache-2.0 | `LICENSE` → `…/python3-argon2-cffi-bindings/`, `extras/libargon2/LICENSE` → `…/libargon2/` |
+
+The four Python modules (#29, Argon2id for encrypted sync files) are
+built from their sdists with the pure-Python build tools, as Flathub
+requires; Pensum calls `argon2_hash` of the bindings directly, so
+`argon2-cffi` itself is not needed. Licences read from the sdists' and
+wheels' files on 2026-11-12. `x-checker-data` asks PyPI's JSON API.
+
 Only `lib/phosh_toolkit/` is installed; Pensum uses `settings`
 (`JsonStore`, `app_dir`) and `style` (light/dark)
 ([shared code](../../phosh-toolkit/docs/shared-connection.md#used-by)).
@@ -51,7 +62,10 @@ Licences read from each package's `LICENSE` file or licence metadata on
 
 `org.gnome.Platform//51` provides Python 3, PyGObject, GTK 4,
 libadwaita and libsecret (the WebDAV password in the keyring; without
-it the password is not remembered). Reading WebDAV uses Python's
-`urllib`. Compressed and encrypted sync files (#29) will need Argon2id
-and AES-GCM
-([sync files](super-productivity-sync.md#file-envelope)).
+it the password is not remembered) and OpenSSL's libcrypto (AES-GCM for
+encrypted sync files, through ctypes). Reading WebDAV uses Python's
+`urllib` ([sync files](super-productivity-sync.md#file-envelope)).
+
+The tests need `argon2-cffi-bindings` too: CI installs the version
+pinned in `tests/requirements.txt` from PyPI (Ubuntu 24.04 has no
+package), with `python3-cffi` from Ubuntu.

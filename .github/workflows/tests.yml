@@ -44,8 +44,10 @@ jobs:
           apt=(sudo env DEBIAN_FRONTEND=noninteractive apt-get -o DPkg::Lock::Timeout=120)
           "${apt[@]}" update -q
           "${apt[@]}" install -y -q --no-install-recommends \
-            python3-pytest python3-gi python3-gi-cairo gir1.2-gtk-4.0 gir1.2-adw-1 gjs \
+            python3-pytest python3-gi python3-gi-cairo python3-cffi gir1.2-gtk-4.0 gir1.2-adw-1 gjs \
             xvfb xauth appstream desktop-file-utils
+          # Argon2id for encrypted sync files (#29), pinned; not in Ubuntu.
+          /usr/bin/python3 -m pip install --user --break-system-packages --no-deps -r tests/requirements.txt
       - name: Validate metadata
         run: |
           desktop-file-validate data/*.desktop
@@ -106,6 +108,8 @@ jobs:
         run: |
           python3 -m venv /tmp/webdav
           /tmp/webdav/bin/pip install --no-deps -r tests/real_app/requirements-webdav.txt
+          sudo apt-get install -y -q --no-install-recommends python3-cffi
+          /usr/bin/python3 -m pip install --user --break-system-packages --no-deps -r tests/requirements.txt
       - name: Sync with Super Productivity over WebDAV and read the folder
         env:
           PENSUM_SP_URL: http://localhost:8080/

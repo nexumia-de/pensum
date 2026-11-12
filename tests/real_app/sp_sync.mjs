@@ -12,7 +12,10 @@
 // Productivity's "Export Data") and DIR/roundN.ui.json (titles of the open
 // and done tasks it shows in Today). PENSUM_SP_URL picks the app (default:
 // the live web app), PENSUM_DAV_URL the WebDAV server (default
-// http://127.0.0.1:2345/, user and password "test"). Logs counts only.
+// http://127.0.0.1:2345/, user and password "test"), PENSUM_DAV_FOLDER the
+// folder on it (default super-productivity). PENSUM_SYNC_COMPRESS=1
+// switches compression on, PENSUM_SYNC_PASSWORD sets encryption with that
+// password at setup (#29). Logs counts only.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
@@ -22,7 +25,9 @@ const { chromium } = require('playwright');
 
 const BASE = process.env.PENSUM_SP_URL ?? 'https://app.super-productivity.com/';
 const DAV = process.env.PENSUM_DAV_URL ?? 'http://127.0.0.1:2345/';
-const FOLDER = 'super-productivity';
+const FOLDER = process.env.PENSUM_DAV_FOLDER ?? 'super-productivity';
+const COMPRESS = process.env.PENSUM_SYNC_COMPRESS === '1';
+const PASSWORD = process.env.PENSUM_SYNC_PASSWORD ?? '';
 const local = /^http:\/\/(localhost|127\.0\.0\.1)[:/]/.test(BASE);
 const [dir, round] = process.argv.slice(2);
 if (!dir || !['1', '2'].includes(round)) {
@@ -85,9 +90,25 @@ async function setupSync() {
   await page.locator('.e2e-userName input').fill('test');
   await page.locator('.e2e-password input').fill('test');
   await page.locator('.e2e-syncFolderPath input').fill(FOLDER);
+  if (COMPRESS) {
+    const header = cfg.locator('formly-collapsible .collapsible-header', { hasText: 'Advanced' });
+    if (!(await cfg.locator('formly-collapsible .collapsible-panel').isVisible())) await header.click();
+    const box = cfg.getByRole('checkbox', { name: /Enable compression/i });
+    await box.setChecked(true);
+  }
   await page.locator('mat-dialog-actions button[mat-flat-button]').click();
-  const skip = page.locator('.e2e-setup-encrypt-skip');
-  await skip.waitFor({ timeout: 10_000 }).then(() => skip.click()).catch(() => {});
+  if (PASSWORD) {
+    // "Encrypt before first upload?": set the password, so the first
+    // upload is already encrypted.
+    await page.locator('.e2e-setup-encrypt-password').waitFor({ timeout: 10_000 });
+    await page.locator('.e2e-setup-encrypt-password').fill(PASSWORD);
+    await page.locator('.e2e-setup-encrypt-confirm-password').click();
+    await page.locator('.e2e-setup-encrypt-confirm-password').fill(PASSWORD);
+    await page.locator('.e2e-setup-encrypt-submit').click();
+  } else {
+    const skip = page.locator('.e2e-setup-encrypt-skip');
+    await skip.waitFor({ timeout: 10_000 }).then(() => skip.click()).catch(() => {});
+  }
   await cfg.waitFor({ state: 'hidden', timeout: 15_000 });
 }
 

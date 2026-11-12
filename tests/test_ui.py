@@ -482,3 +482,23 @@ def test_sync_page_reads_folder_and_imports(app, tmp_path):
     assert {p.name: p.read_bytes() for p in folder.iterdir()} == before
     assert window.settings.sync_kind == "local"
     window.close()
+
+
+def test_sync_page_asks_for_encryption_password(app, tmp_path):
+    """An encrypted folder (#29): without the password the page says so,
+    with it the data is read."""
+    from pathlib import Path
+    window = new_window(app, tmp_path, demo.create())
+    window.settings.sync_kind = "local"
+    window.settings.sync_local_path = str(Path(__file__).parent / "fixtures" / "sync-encrypted")
+    window.show_sync()
+    iterate()
+    page = window.nav.get_visible_page()
+    page.read(wait=True)
+    assert page.banner.get_revealed() and "encryption password" in page.banner.get_title()
+    page.encryption_row.set_text("test password")
+    page.read(wait=True)
+    iterate()
+    assert not page.banner.get_revealed() and page.snapshot is not None
+    assert validate.problems(page.snapshot.data) == []
+    window.close()

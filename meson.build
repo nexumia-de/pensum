@@ -47,6 +47,7 @@ python.install_sources(
 python.install_sources(
   'pensum/sync/__init__.py',
   'pensum/sync/changes.py',
+  'pensum/sync/crypto.py',
   'pensum/sync/envelope.py',
   'pensum/sync/keyring.py',
   'pensum/sync/local.py',
