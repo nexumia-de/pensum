@@ -98,6 +98,14 @@ def crossing():
     return found
 
 
+@pytest.fixture
+def home():
+    found = content.ladder("home")
+    if found is None:
+        pytest.skip("no ladders in PENSUM_QUESTARC_DIR")
+    return found
+
+
 def _arts(ladder, version, **state):
     return [p["art"] for p in art.ladder_scene(ladder, version, **state)["pictures"]]
 
@@ -114,8 +122,7 @@ def test_ladder_scene_fills_the_build_slot(crossing):
     assert scene["title"] == "A plank bridge stands"
 
 
-def test_every_picture_of_every_marker_exists(crossing):
-    home = content.ladder("home")
+def test_every_picture_of_every_marker_exists(crossing, home):
     for ladder in (crossing, home):
         for kind in ("lanterns", "bunting", "flowers"):
             for state in ({"progress": 1.0}, {"ready": True}):
@@ -124,34 +131,32 @@ def test_every_picture_of_every_marker_exists(crossing):
 
 
 def test_the_marker_grows_one_element_at_a_time(crossing):
-    assert art.marker_elements(crossing) == 9
+    assert art.marker_elements(crossing) == 8
     assert art.elements_shown(crossing, 0) == 0
-    assert art.elements_shown(crossing, 3 / 9) == 3
-    assert _marks(crossing, 3, progress=1 / 9) == ["marker-lanterns-post"]
-    two = _arts(crossing, 3, progress=2 / 9)
+    assert art.elements_shown(crossing, 3 / 8) == 3
+    assert _marks(crossing, 3, progress=1 / 8) == ["marker-lanterns-post"]
+    two = _arts(crossing, 3, progress=2 / 8)
     assert sum("-post" in a for a in two) == 2 and sum("-cord-" in a for a in two) == 1
-    assert sum("-bead" in a for a in _marks(crossing, 3, progress=5 / 9)) == 2
+    assert sum("-bead" in a for a in _marks(crossing, 3, progress=4 / 8)) == 2
     assert art.ladder_scene(crossing, 3, 0.5)["title"] == \
         "A plank bridge stands, a stone bridge is on its way"
 
 
-def test_sides_leaves_the_middle_open():
-    home = content.ladder("home")
+def test_sides_leaves_the_middle_open(home):
     lines = [a for a in _arts(home, 3, progress=0.4) if "-cord-" in a]
     assert lines == ["setting-clearing-cord-1", "setting-clearing-cord-2"]
 
 
 def test_ready_shows_every_element_on_and_the_words(crossing):
     on = _marks(crossing, 3, progress=0.5, ready=True)
-    assert len(on) == 9 and sum(a.endswith("-bead-lit") for a in on) == 6
-    assert on.count("marker-lanterns-post") == 3
+    assert len(on) == 8 and sum(a.endswith("-bead-lit") for a in on) == 6
+    assert on.count("marker-lanterns-post") == 2
     assert art.ladder_scene(crossing, 3, ready=True)["title"] == \
         "A plank bridge stands, a stone bridge is ready"
     assert art.build_words(crossing, 1, 0.1) == "Stepping stones stand · a log is on its way"
 
 
-def test_another_marker_and_the_last_version(crossing):
-    home = content.ladder("home")
+def test_another_marker_and_the_last_version(crossing, home):
     assert _marks(home, 3, progress=0.1) == ["marker-bunting-post"]
     assert _marks(home, 3, progress=0.1, marker="flowers") == ["marker-flowers-post"]
     arts = _arts(crossing, 5, ready=True, graduated=True)
