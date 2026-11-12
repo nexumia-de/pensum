@@ -123,5 +123,5 @@ jobs:
           path: |
             tests/real_app/out/
             tests/real_app/out-sync/
-            !tests/real_app/out-sync/profile/
+            !tests/real_app/out-sync/*/profile/
           if-no-files-found: ignore

@@ -58,6 +58,14 @@ python.install_sources(
 )
 
 python.install_sources(
+  'pensum/sync/replay/__init__.py',
+  'pensum/sync/replay/config.py',
+  'pensum/sync/replay/ops.py',
+  'pensum/sync/replay/tasks.py',
+  subdir: 'pensum' / 'sync' / 'replay',
+)
+
+python.install_sources(
   'pensum/store/repeat/__init__.py',
   'pensum/store/repeat/instances.py',
   'pensum/store/repeat/rules.py',

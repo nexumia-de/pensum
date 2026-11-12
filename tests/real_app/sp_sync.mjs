@@ -15,7 +15,8 @@
 // http://127.0.0.1:2345/, user and password "test"), PENSUM_DAV_FOLDER the
 // folder on it (default super-productivity). PENSUM_SYNC_COMPRESS=1
 // switches compression on, PENSUM_SYNC_PASSWORD sets encryption with that
-// password at setup (#29). Logs counts only.
+// password at setup (#29), PENSUM_SYNC_SPLIT=1 switches on "Surgical sync"
+// (the v3 split files, #30/#31). Logs counts only.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
@@ -28,6 +29,7 @@ const DAV = process.env.PENSUM_DAV_URL ?? 'http://127.0.0.1:2345/';
 const FOLDER = process.env.PENSUM_DAV_FOLDER ?? 'super-productivity';
 const COMPRESS = process.env.PENSUM_SYNC_COMPRESS === '1';
 const PASSWORD = process.env.PENSUM_SYNC_PASSWORD ?? '';
+const SPLIT = process.env.PENSUM_SYNC_SPLIT === '1';
 const local = /^http:\/\/(localhost|127\.0\.0\.1)[:/]/.test(BASE);
 const [dir, round] = process.argv.slice(2);
 if (!dir || !['1', '2'].includes(round)) {
@@ -58,10 +60,18 @@ const page = context.pages()[0] ?? (await context.newPage());
 const log = { syncs: [], errors: [] };
 page.on('console', (message) => {
   const text = message.text();
-  const done = text.match(/Upload complete \(syncVersion=(\d+)/);
-  if (done) log.syncs.push(Number(done[1]));
+  // Every completed upload (both formats); the v2 adapter also names its
+  // syncVersion.
+  const uploaded = text.match(/SyncWrapperService: Upload complete\. uploaded=(\d+)/);
+  if (uploaded && Number(uploaded[1]) > 0) log.syncs.push(log.version ?? '?');
+  const version = text.match(/Upload complete \(syncVersion=(\d+)/);
+  if (version) log.version = Number(version[1]);
   if (/Sync complete, status=IN_SYNC/.test(text)) log.inSync = (log.inSync ?? 0) + 1;
-  if (/sync.*(error|failed)/i.test(text)) log.errors.push(text.slice(0, 160));
+  // Super Productivity marks expected misses itself, e.g. no previous
+  // snapshot to back up on the first Surgical sync upload.
+  if (/sync.*(error|failed)/i.test(text) && !/\(non-fatal\)/.test(text)) {
+    log.errors.push(text.slice(0, 160));
+  }
 });
 
 async function open() {
@@ -90,18 +100,32 @@ async function setupSync() {
   await page.locator('.e2e-userName input').fill('test');
   await page.locator('.e2e-password input').fill('test');
   await page.locator('.e2e-syncFolderPath input').fill(FOLDER);
-  if (COMPRESS) {
+  if (COMPRESS || SPLIT) {
     const header = cfg.locator('formly-collapsible .collapsible-header', { hasText: 'Advanced' });
     if (!(await cfg.locator('formly-collapsible .collapsible-panel').isVisible())) await header.click();
-    const box = cfg.getByRole('checkbox', { name: /Enable compression/i });
-    await box.setChecked(true);
+    if (COMPRESS) await cfg.getByRole('checkbox', { name: /Enable compression/i }).setChecked(true);
+    if (SPLIT) await cfg.getByRole('checkbox', { name: /Surgical sync/i }).setChecked(true);
   }
   await page.locator('mat-dialog-actions button[mat-flat-button]').click();
+  await skipOrSetPassword();
+  // The dialog sometimes ignores the first Save (Super Productivity's own
+  // e2e tests retry the same way).
+  const closed = await cfg.waitFor({ state: 'hidden', timeout: 8_000 }).then(() => true, () => false);
+  if (!closed) {
+    console.log('sync dialog still open, saving again');
+    await page.locator('mat-dialog-actions button[mat-flat-button]').click();
+    await skipOrSetPassword();
+    await cfg.waitFor({ state: 'hidden', timeout: 15_000 });
+  }
+}
+
+/** "Encrypt before first upload?": set the password, so the first upload
+ *  is already encrypted, or skip. */
+async function skipOrSetPassword() {
   if (PASSWORD) {
-    // "Encrypt before first upload?": set the password, so the first
-    // upload is already encrypted.
-    await page.locator('.e2e-setup-encrypt-password').waitFor({ timeout: 10_000 });
-    await page.locator('.e2e-setup-encrypt-password').fill(PASSWORD);
+    const field = page.locator('.e2e-setup-encrypt-password');
+    if (!(await field.waitFor({ timeout: 10_000 }).then(() => true, () => false))) return;
+    await field.fill(PASSWORD);
     await page.locator('.e2e-setup-encrypt-confirm-password').click();
     await page.locator('.e2e-setup-encrypt-confirm-password').fill(PASSWORD);
     await page.locator('.e2e-setup-encrypt-submit').click();
@@ -109,7 +133,6 @@ async function setupSync() {
     const skip = page.locator('.e2e-setup-encrypt-skip');
     await skip.waitFor({ timeout: 10_000 }).then(() => skip.click()).catch(() => {});
   }
-  await cfg.waitFor({ state: 'hidden', timeout: 15_000 });
 }
 
 /** Click the sync button and wait until Super Productivity uploaded. */
@@ -204,8 +227,18 @@ async function shown() {
 }
 
 async function exportData(out) {
-  await page.goto(`${BASE}#/config`, { waitUntil: 'networkidle' });
-  await page.locator('[role=tab]').filter({ hasText: 'cloud_sync' }).click();
+  // The live app's CDN sometimes fails a script chunk; loading again helps.
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      if (attempt === 1) await page.goto(`${BASE}#/config`, { waitUntil: 'networkidle' });
+      else await page.reload({ waitUntil: 'networkidle' });
+      await page.locator('[role=tab]').filter({ hasText: 'cloud_sync' }).click({ timeout: 30_000 });
+      break;
+    } catch (error) {
+      if (attempt === 3) throw error;
+      console.log(`settings did not load, attempt ${attempt}`);
+    }
+  }
   await page.getByText('Import/Export', { exact: true }).click();
   const [download] = await Promise.all([
     page.waitForEvent('download'),
@@ -238,6 +271,10 @@ try {
     for (const line of log.errors) console.log(`sync error: ${line}`);
     process.exitCode = 1;
   }
+} catch (error) {
+  // What the app showed, for the failure artifact (test data only).
+  await page.screenshot({ path: join(dir, `round${round}.error.png`) }).catch(() => {});
+  throw error;
 } finally {
   await context.close();
 }
