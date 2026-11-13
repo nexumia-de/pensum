@@ -1,6 +1,6 @@
 """The current station's card (QuestArc docs/behaviour.md, screen 4): the
 plan, the condition as a bar and in words, the last due days, the runs,
-in the game the guardian, a hint and the user's own reason. A gap shows
+a hint and the user's own reason. A gap shows
 as a gap, never as a loss."""
 from gi.repository import Gtk
 
@@ -40,7 +40,7 @@ def last_days(marks):
     return row
 
 
-def station_card(run, stage, index, station, rpg, today):
+def station_card(run, stage, index, station, today):
     card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8, margin_top=6,
                    margin_bottom=6)
     card.add_css_class("card")
@@ -60,13 +60,6 @@ def station_card(run, stage, index, station, rpg, today):
             r = station["run"]
             card.append(_label(t("ui.card.run", current=r["current"], best=r["best"],
                                  total=r["total"]), "caption", "dimmed"))
-    guardian = stage.get("guardian")
-    if rpg and guardian and station.get("guardian"):
-        g = station["guardian"]
-        name = t(guardian["name"])
-        card.append(_label(t("ui.card.guardian-defeated", name=name) if g["defeated"] else
-                           t("ui.card.guardian", name=name, left=max(0, g["hp"] - g["damage"]),
-                             hp=g["hp"]), "caption"))
     if station.get("acceptedDay") and station["acceptedDay"] > today:
         hint = t("ui.card.starts", date=short_date(station["acceptedDay"]))
     else:

@@ -25,7 +25,8 @@ Day Planner adds no second implementation.
   snapshot), `diff` (events between two views, for the toast) and
   `action` (the records a user action writes: `startJourney`,
   `bindStage`, `continueJourney`, `pauseJourney`, `resumeJourney`,
-  `endJourney`, `repeatPause`, `answerCheckin`, `setMode`, `withdraw`).
+  `endJourney`, `repeatPause`, `answerCheckin`, `chooseBuild`,
+  `withdraw`).
   So both hosts write the same records.
 - **Records:** QuestArc's choice records are entries of the dataset's
   `pluginUserData` slice with id `questarc:<key>`, the value as JSON
@@ -72,27 +73,24 @@ Day Planner adds no second implementation.
 `pensum/ui/journey/`, one file per page, every page pushed on the one
 navigation view so a swipe goes back:
 
-- **Journeys** (sidebar, `app.show-journey`): the welcome with calm or
-  game, the empty state with **Choose a Journey**, or the active
-  journey: banners (paused, a hard week, weekly look back, a new
-  nugget), the current station's card (plan, progress bar and words,
-  the last due days, runs, guardian in the game, hint, the user's
-  reason) and the path from the goal at the top to the start at the
-  bottom. **With the game the build replaces the path** (QuestArc#42,
-  #57; QuestArc behaviour, screen 4): on top the journey's build in its
-  setting and hue (the ladder's standing version, the marker of the
+- **Journeys** (sidebar, `app.show-journey`): the welcome (shown while
+  there is no QuestArc record at all; **Choose a Journey**), the empty
+  state with **Choose a Journey**, or the active journey (QuestArc#42,
+  #57, #61; QuestArc behaviour, screen 4): on top the journey's build in
+  its setting and hue (the ladder's standing version, the marker of the
   stage under way, its hanging elements "on" while the stage is ready),
   the row of versions that stand with the next one as an empty step, and
   one line of state in words ("A log stands · a plank bridge is on its
-  way"); then the banners and the card. Everything comes from the
-  engine's `build` view (`pensum/ui/journey/build.py`); an engine
-  without it (a QuestArc up to 3.1.0) or calm mode shows the path as
-  before. The bottom bar holds the main action (**Continue**, **Set Up
-  the Task**, **Change How Often**); the menu holds pause or resume,
-  end (with Undo), the shelf and how QuestArc motivates you, and with a
-  build **What you build** and **Stations** (the path as its own page,
-  `stations_page.py`). The level
-  is the title's subtitle in the game.
+  way"); then the banners (paused, a hard week, weekly look back, a new
+  nugget) and the current station's card (plan, progress bar and words,
+  the last due days, runs, hint, the user's reason). Everything of the
+  build comes from the engine's `build` view
+  (`pensum/ui/journey/build.py`); a ladder whose pictures are not here
+  leaves only the card. The bottom bar holds the main action
+  (**Continue**, **Set Up the Task**, **Change How Often**); the menu
+  holds **What you build**, **Stations** (the stations as a list with
+  their state in words, `stations_page.py`), pause or resume, end (with
+  Undo), the shelf and how QuestArc motivates you.
 - Choose and preview, start (own reason, start day), set up, continue
   and finished, station details, weekly look back (1–7 or skip), shelf,
   how it motivates you.
@@ -106,12 +104,16 @@ navigation view so a swipe goes back:
 - Still open from #57: the strip on Today, the moment of the tick in
   it, the choice on the start page, and the build beside the card at
   desktop width.
-- Preferences → Journeys: calm or game, and removing the journey data
-  (asks first: it cannot be undone).
+- Preferences → Journeys: removing the journey data (asks first: it
+  cannot be undone).
 
-The GTK path draws each station's node with Cairo in the theme's accent
-colour (done, met, current) or the dimmed text colour (ahead); every
-node also has its state in words. Closed banners are kept in Pensum's
+Since QuestArc 3.3 (QuestArc#110, #61) there is one look: no XP, no
+level, no guardians, no calm or game mode and no drawn path. Day Planner
+writes no `settings` record and reads none; a checkpoint is written by
+the engine's `continueJourney` as `{ day, dataFormat: 2 }`, so a journey
+continued here is read-only in a QuestArc older than 3.3 until that is
+updated. Messages use one text per event (`event.completion`, …) and
+say the real progress in words. Closed banners are kept in Pensum's
 settings (`seen`).
 
 ## Pictures
@@ -142,7 +144,7 @@ every picture at 48, 32 and 24 px and the ladders; `tests/test_art.py`
 checks that a ladder's scene is drawn only in the roles' colours, the
 far band in `tint`, and that every class in `content/art/` is a role
 Day Planner fills. Both need a QuestArc with `content/art/` (a checkout
-of QuestArc's `main`, or a release from 3.2.0 on, as the manifest
+of QuestArc's `main`, or a release from 3.3.0 on, as the manifest
 pins); with an older archive the tests are skipped.
 
 ```sh
@@ -185,8 +187,9 @@ The engine is found where `PENSUM_QUESTARC_DIR` points (a QuestArc
 release archive, or a QuestArc checkout after `npm ci && npm run build`)
 and run with `PENSUM_GJS` (default `gjs`); in the Flatpak it is
 `/app/share/questarc`, from the release archive the manifest pins
-(module `questarc-engine`, QuestArc 3.2.0, updated by the update check;
-3.2.0 is the first release with the pictures and the `build` view).
+(module `questarc-engine`, QuestArc 3.3.0, updated by the update check;
+Day Planner needs 3.3.0 or newer: older engines still have the mode and
+no build in every view).
 Without it the page says "Journeys Are Not Installed". On the cloud host gjs comes from Ubuntu's
 package or from the GNOME runtime through bwrap ([development environment](dev-environment.md)).
 Tests that need the engine are skipped without it; CI fetches the

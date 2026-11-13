@@ -1,5 +1,5 @@
-"""Small drawn shapes for the journey: a station's node on the path and a
-day's mark in the last due days. Colours come from the theme: the accent
+"""Small drawn shapes for the journey: a day's mark in the last due
+days. Colours come from the theme: the accent
 for what is done, the text colour (dimmed) for what is ahead. Every
 shape also has words next to it or as its accessible label."""
 import math
@@ -21,42 +21,6 @@ def accent(widget):
 
 def _rgba(cr, color, alpha=1.0):
     cr.set_source_rgba(color.red, color.green, color.blue, color.alpha * alpha)
-
-
-def node(state, line_above, line_below, done_below, done_above):
-    """A station's node: a vertical line through a circle. `state` is the
-    engine's station state."""
-    area = Gtk.DrawingArea(content_width=32, accessible_role=Gtk.AccessibleRole.PRESENTATION)
-    area.set_vexpand(True)
-
-    def draw(area, cr, width, height):
-        fg, acc = area.get_color(), accent(area)
-        x, y, r = width / 2, height / 2, 9
-        cr.set_line_width(3)
-        for show, done, y0, y1 in ((line_above, done_above, 0, y - r),
-                                   (line_below, done_below, y + r, height)):
-            if show:
-                _rgba(cr, acc if done else fg, 1 if done else 0.3)
-                cr.move_to(x, y0)
-                cr.line_to(x, y1)
-                cr.stroke()
-        cr.arc(x, y, r, 0, 2 * math.pi)
-        if state in ("done", "met"):
-            _rgba(cr, acc)
-            cr.fill()
-        elif state == "current":
-            _rgba(cr, acc)
-            cr.stroke_preserve()
-            _rgba(cr, acc, 0.35)
-            cr.fill()
-        else:
-            _rgba(cr, fg, 0.45)
-            if state in ("unbound", "unsupported-repeat"):
-                cr.set_dash([3, 3])
-            cr.stroke()
-
-    area.set_draw_func(draw)
-    return area
 
 
 def day_mark(mark):

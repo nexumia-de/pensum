@@ -31,5 +31,5 @@ actions = ["app.show-list('project:demo-garden')"]
 
 [[screenshots.shot]]
 name = "journey"
-caption = "A habit journey, its current station and the path"
+caption = "A habit journey: what it builds and its current station"
 actions = ["app.show-journey"]

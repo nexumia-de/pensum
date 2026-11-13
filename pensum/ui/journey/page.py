@@ -1,8 +1,7 @@
 """The journey page (QuestArc docs/behaviour.md, screens 1 and 4): the
-welcome with the choice between calm and game, the empty state, or the
-active journey with its banners, the current station's card and the
-path; in the game the journey's build stands on top and the path moves
-to "Stations" in the menu. The main action sits in the bottom bar; the
+welcome, the empty state, or the active journey with its build on top,
+its banners and the current station's card; the stations are a list
+under "Stations" in the menu. The main action sits in the bottom bar; the
 menu holds the shelf, how it motivates you, pausing and ending."""
 from gi.repository import Adw, Gio, Gtk
 
@@ -10,7 +9,6 @@ from pensum.game.content import t
 from pensum.ui.journey.banners import banners
 from pensum.ui.journey.build import build_header
 from pensum.ui.journey.card import station_card
-from pensum.ui.journey.path import journey_path
 
 
 class JourneyPage(Adw.NavigationPage):
@@ -59,9 +57,10 @@ class JourneyPage(Adw.NavigationPage):
 
     def _menu(self, run, built=False):
         menu = Gio.Menu()
-        if built:
+        if run:
             game = Gio.Menu()
-            game.append(t("ui.build.title"), "journey.build")
+            if built:
+                game.append(t("ui.build.title"), "journey.build")
             game.append(t("ui.build.stations"), "journey.stations")
             menu.append_section(None, game)
         if run:
@@ -94,7 +93,7 @@ class JourneyPage(Adw.NavigationPage):
                                       description="This build of Day Planner comes without "
                                                   "QuestArc's journeys."))
             return
-        if "settings" not in model.records():
+        if not model.records():
             self._menu(None)
             self._welcome(box)
             return
@@ -109,9 +108,6 @@ class JourneyPage(Adw.NavigationPage):
             model.refresh_now()
             if model.view is None:
                 return
-        rpg = model.mode() == "rpg"
-        if rpg:
-            self.title.set_subtitle(t("ui.level", level=model.view["level"]))
         current = model.current()
         if not current:
             self.title.set_title("Journeys")
@@ -123,15 +119,13 @@ class JourneyPage(Adw.NavigationPage):
             return
         run, journey, index, station, stage = current
         self.title.set_title(t(journey["title"]))
-        self.build = build_header(run.get("build")) if rpg else None
+        self.build = build_header(run.get("build"))
         self._menu(run, built=self.build is not None)
         if self.build:
             box.append(self.build)
         for banner in banners(self, run, journey, index):
             box.append(banner)
-        box.append(station_card(run, stage, index, station, rpg, model.view["todayStr"]))
-        if not self.build:
-            box.append(journey_path(run, journey, rpg, self.show_station))
+        box.append(station_card(run, stage, index, station, model.view["todayStr"]))
         state = station["state"]
         if run["paused"]:
             self._set_main(None, None)
@@ -147,21 +141,7 @@ class JourneyPage(Adw.NavigationPage):
         status = Adw.StatusPage(icon_name="mark-location-symbolic", title="Journeys",
                                 description=f"{t('ui.welcome.what')} {t('ui.welcome.how')}")
         box.append(status)
-        group = Adw.PreferencesGroup(title=t("ui.mode.title"),
-                                     description=t("ui.mode.change"))
-        self._mode = "calm"
-        first = None
-        for mode, title, text in (("calm", t("ui.mode.calm"), t("ui.mode.calm.text")),
-                                  ("rpg", t("ui.mode.rpg"), t("ui.mode.rpg.text"))):
-            check = Gtk.CheckButton(active=mode == "calm", group=first)
-            first = first or check
-            check.connect("toggled", lambda c, m=mode: c.get_active() and setattr(
-                self, "_mode", m))
-            row = Adw.ActionRow(title=title, subtitle=text, activatable_widget=check)
-            row.add_prefix(check)
-            group.add(row)
-        box.append(group)
-        self._set_main("Get Started", lambda: self.model.action("setMode", self._mode))
+        self._set_main(t("ui.home.choose"), self.show_choose)
 
     def _main_action(self):
         if self._main:

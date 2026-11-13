@@ -1,6 +1,5 @@
 """A station's details (QuestArc docs/behaviour.md): its arrival story,
-plan, schedule and condition, when it was finished, in the game its XP
-and guardian, and its "Try this" nugget."""
+plan, schedule and condition, when it was finished, and its "Try this" nugget."""
 from gi.repository import Adw
 
 from pensum.game.content import t
@@ -28,12 +27,6 @@ class StationPage(JourneySubpage):
         if station.get("doneDay"):
             group.add(Adw.ActionRow(title=t("ui.details.finished",
                                             date=short_date(station["doneDay"]))))
-        rpg = window.journeys.mode() == "rpg"
-        if rpg and station["xp"]:
-            group.add(Adw.ActionRow(title=t("ui.details.xp", xp=station["xp"])))
-        if rpg and stage.get("guardian"):
-            group.add(Adw.ActionRow(title=t("ui.details.guardian", name=t(stage["guardian"]["name"]),
-                                            hp=stage["guardian"]["hp"])))
         if stage.get("nugget") and station["state"] != "ahead":
             self.text(t("ui.details.try"), "heading")
             self.text(t(stage["nugget"]))

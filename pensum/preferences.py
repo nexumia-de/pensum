@@ -43,12 +43,7 @@ class PreferencesDialog(Adw.PreferencesDialog):
 
     def _journeys_group(self):
         from pensum.game.content import t
-        group = Adw.PreferencesGroup(title="Journeys", description=t("ui.mode.change"))
-        self.mode_row = Adw.ComboRow(title=t("ui.mode.title"), model=Gtk.StringList.new(
-            [t("ui.mode.calm"), t("ui.mode.rpg")]))
-        self.mode_row.set_selected(1 if self.window.journeys.mode() == "rpg" else 0)
-        self.mode_row.connect("notify::selected", self._on_mode)
-        group.add(self.mode_row)
+        group = Adw.PreferencesGroup(title="Journeys", description=t("ui.settings.data.text"))
         remove = Adw.ButtonRow(title=t("ui.settings.data.remove")) if hasattr(
             Adw, "ButtonRow") else Adw.ActionRow(title=t("ui.settings.data.remove"),
                                                   activatable=True)
@@ -56,9 +51,6 @@ class PreferencesDialog(Adw.PreferencesDialog):
         remove.connect("activated", self._on_remove)
         group.add(remove)
         return group
-
-    def _on_mode(self, row, *_):
-        self.window.journeys.action("setMode", "rpg" if row.get_selected() == 1 else "calm")
 
     def _on_remove(self, *_):
         from pensum.game.content import t
