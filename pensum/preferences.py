@@ -1,6 +1,6 @@
 """Preferences: style, the day boundary Super Productivity uses, how the
 journeys look and their data, and where the data and its backups are."""
-from gi.repository import Adw, GLib, Gtk
+from gi.repository import Adw, GLib
 from phosh_toolkit.style import style_row
 
 
