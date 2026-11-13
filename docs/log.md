@@ -1,6 +1,7 @@
 # Directory Update Log
 
 ## 2026-11-13
+* **Update**: the manifest pins QuestArc 3.2.0 (`questarc-engine-3.2.0.tar.gz`, sha256 `05283d4e…`, from the renamed repository `nexumia-de/quest-arc`), the first release with the ladders' pictures and the engine's `build` view, so the Flatpak shows the build and CI runs the ladder and build tests instead of skipping them. [Dependencies](dependencies.md) and [journeys](journeys.md) updated.
 * **Update** (#57, QuestArc#42): with the game the journey page shows the journey's build instead of the path: the ladder's standing version in its setting and hue with the marker of the stage under way, the row of versions and the state in words (`pensum/ui/journey/build.py`, from the engine's `build` view); the path is the page **Stations** (`stations_page.py`) and **What you build** (`build_page.py`) changes ladder, marker and hue through the engine's `chooseBuild`. Calm mode and an engine without builds (the pinned 3.1.0 archive) keep the path. QuestArc removed its region scenes: `content.scene` is gone, `tests/test_art.py` draws a ladder's scene, `tests/art_demo.py` lost `growth` and `shore`. Tested with the demo dataset against QuestArc's `main` and against the pinned 3.1.0 archive; checked at 360 × 720 light and dark and at 1000 × 700. Open in #57: the strip on Today, the choice on the start page, the desktop layout; the manifest pins 3.2.0 once it is released. [Journeys](journeys.md) and [development environment](dev-environment.md) (Ubuntu packages are enough for the engine and the UI tests) updated.
 
 ## 2026-11-12

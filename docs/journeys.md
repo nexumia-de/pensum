@@ -86,7 +86,7 @@ navigation view so a swipe goes back:
   one line of state in words ("A log stands · a plank bridge is on its
   way"); then the banners and the card. Everything comes from the
   engine's `build` view (`pensum/ui/journey/build.py`); an engine
-  without it (the pinned 3.1.0 archive) or calm mode shows the path as
+  without it (a QuestArc up to 3.1.0) or calm mode shows the path as
   before. The bottom bar holds the main action (**Continue**, **Set Up
   the Task**, **Change How Often**); the menu holds pause or resume,
   end (with Undo), the shelf and how QuestArc motivates you, and with a
@@ -142,8 +142,8 @@ every picture at 48, 32 and 24 px and the ladders; `tests/test_art.py`
 checks that a ladder's scene is drawn only in the roles' colours, the
 far band in `tint`, and that every class in `content/art/` is a role
 Day Planner fills. Both need a QuestArc with `content/art/` (a checkout
-of QuestArc's `main`, or a release after 3.1.0); with the pinned 3.1.0
-archive the tests are skipped.
+of QuestArc's `main`, or a release from 3.2.0 on, as the manifest
+pins); with an older archive the tests are skipped.
 
 ```sh
 PENSUM_QUESTARC_DIR=$PWD/../QuestArc /usr/bin/python3.12 tests/art_demo.py
@@ -185,10 +185,8 @@ The engine is found where `PENSUM_QUESTARC_DIR` points (a QuestArc
 release archive, or a QuestArc checkout after `npm ci && npm run build`)
 and run with `PENSUM_GJS` (default `gjs`); in the Flatpak it is
 `/app/share/questarc`, from the release archive the manifest pins
-(module `questarc-engine`, QuestArc 3.1.0, updated by the update check).
-That archive has no pictures and no `build` view, so the Flatpak shows
-the build only once the manifest pins the QuestArc release after 3.1.0
-(3.2.0); the tests that need ladders are skipped until then.
+(module `questarc-engine`, QuestArc 3.2.0, updated by the update check;
+3.2.0 is the first release with the pictures and the `build` view).
 Without it the page says "Journeys Are Not Installed". On the cloud host gjs comes from Ubuntu's
 package or from the GNOME runtime through bwrap ([development environment](dev-environment.md)).
 Tests that need the engine are skipped without it; CI fetches the
