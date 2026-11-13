@@ -25,15 +25,15 @@ def ds():
 
 def test_records_round_trip_with_compression(ds):
     long_why = "x" * 2000
-    records.write(ds, {"run:r": {"journeyId": "j", "why": long_why}, "settings": {"mode": "rpg"}})
+    records.write(ds, {"run:r": {"journeyId": "j", "why": long_why}, "build:r": {"hue": "sand"}})
     entry = next(e for e in ds.data["pluginUserData"] if e["id"] == "questarc:run:r")
     assert entry["data"].startswith("GZ1:")
     assert gzip.decompress(base64.b64decode(entry["data"][4:])).decode().startswith("{")
     ds.data["pluginUserData"].append({"id": "other-plugin:x", "data": "{}"})
     assert records.load(ds) == {"run:r": {"journeyId": "j", "why": long_why},
-                                "settings": {"mode": "rpg"}}
-    records.write(ds, {"settings": ""})
-    assert "settings" not in records.load(ds)
+                                "build:r": {"hue": "sand"}}
+    records.write(ds, {"build:r": ""})
+    assert "build:r" not in records.load(ds)
     assert validate.problems(ds.data) == []
 
 
@@ -67,7 +67,7 @@ def test_journeys_and_texts_come_from_questarc():
     ids = [j["id"] for j in content.journeys()]
     assert {"first-things-first", "gentle-morning"} <= set(ids)
     assert content.t("gentle-morning.title") == "A gentle morning"
-    assert content.t("ui.level", level=3) == "Level 3"
+    assert content.t("ui.build.stations") == "Stations"
     morning = content.journey("gentle-morning")
     assert sentences.plan_sentence(morning["stages"][0]) == \
         "After getting up, I will drink a glass of water (in the kitchen)."
@@ -76,7 +76,6 @@ def test_journeys_and_texts_come_from_questarc():
 @needs_engine
 def test_walk_a_journey_through_the_engine(ds):
     journey = content.journey("gentle-morning")
-    records.write(ds, engine.action("setMode", "rpg"))
     records.write(ds, engine.action("startJourney", {"runId": "run1", "journey": journey,
                                                      "startDay": "2026-11-04"}))
     view = engine.evaluate(ds, NOW)
@@ -91,9 +90,10 @@ def test_walk_a_journey_through_the_engine(ds):
 
     tasks.set_done(ds, task["id"], True, NOW)
     after, events = engine.evaluate_and_diff(ds, before, NOW)
-    assert after["totalXp"] > before["totalXp"]
+    assert after["active"]["stations"][0]["completions"] == 1
+    assert "totalXp" not in after and "mode" not in after
     message = sentences.message_for(events, after, content.journeys())
-    assert message.startswith("+10 XP")
+    assert message == "Drink a glass of water: done. 1 of 5 days."
 
     # The next days' instances are made by the repeat rule and count too.
     for day in ("2026-11-05", "2026-11-06", "2026-11-07", "2026-11-08"):

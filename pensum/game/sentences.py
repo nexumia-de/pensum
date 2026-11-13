@@ -79,9 +79,9 @@ def schedule_text(schedule):
 
 
 def message_for(events, view, journeys):
-    """One short message for the events of an evaluation: calm texts
-    without game words, game texts with XP and guardians; events without
-    a text for the mode add nothing."""
+    """One short message for the events of an evaluation: the real
+    progress in words, never what was added to the build; events without
+    a text (the build events) add nothing."""
     run = view.get("active")
     station = run["stations"][run["position"]["stage"]] if run else None
     journey = next((j for j in journeys if run and j["id"] == run["journeyId"]), None)
@@ -89,16 +89,10 @@ def message_for(events, view, journeys):
     shared = {
         "action": capitalise(t(stage["plan"]["action"])) if stage else "",
         "progress": progress_text(stage, station) if stage else "",
-        "guardian": t(stage["guardian"]["name"]) if stage and stage.get("guardian") else "",
     }
-    keys = {e["key"] for e in events}
     parts = []
     for event in events:
-        key = f"{event['key']}.{view['mode']}"
-        if key == "event.welcome-back.rpg" and "event.guardian-damaged" in keys:
-            key = "event.welcome-back.rpg-guardian"
-        if t(key) == key:
-            key = event["key"]
+        key = event["key"]
         if t(key) == key:
             continue
         parts.append(t(key, **{**shared, **(event.get("params") or {})}))

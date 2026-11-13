@@ -38,20 +38,3 @@
 .pensum-journey-why {
   font-style: italic;
 }
-
-/* Stations on the path are buttons; only the current one is bold. */
-.pensum-journey-path button label {
-  font-weight: normal;
-}
-
-.pensum-journey-path button label.heading {
-  font-weight: bold;
-}
-
-/* No padding between stations, so the path's line runs through. */
-.pensum-journey-path button {
-  padding-top: 0;
-  padding-bottom: 0;
-  margin: 0;
-  border-radius: 0;
-}

@@ -353,9 +353,8 @@ def test_walk_into_a_journey(app, tmp_path):
     iterate()
     page = visible(window)
     assert page.get_tag() == "journey"
-    assert page.main_button.get_label() == "Get Started"
-    page._main_action()  # calm
-    iterate()
+    # The welcome: no mode to choose and nothing written (pensum#61).
+    assert window.journeys.records() == {}
     assert page.main_button.get_label() == "Choose a journey"
     page._main_action()
     iterate()
@@ -410,7 +409,6 @@ def test_journey_comes_forward_only_for_its_own_task(app, tmp_path):
     from pensum.store import tasks
     window = new_window(app, tmp_path)
     journey = content.journey("gentle-morning")
-    records.write(window.ds, engine.action("setMode", "calm"))
     records.write(window.ds, engine.action("startJourney", {
         "runId": "r", "journey": journey, "startDay": window.ds.today()}))
     window.changed()
@@ -470,12 +468,12 @@ def _labels(widget):
 
 
 @needs_engine
-def test_game_journey_shows_its_build_and_calm_the_path(app, tmp_path):
-    """With the game the journey page shows the build (QuestArc#42,
-    pensum#57): the demo's second station of First Things First is a log
-    across the river with the next version under way; the path is under
-    Stations. Calm mode keeps the path and shows no build."""
-    from pensum.game import content, engine, records
+def test_journey_shows_its_build_and_the_stations_as_a_list(app, tmp_path):
+    """The journey page shows the build (QuestArc#42, pensum#57, #61): the
+    demo's second station of First Things First is a log across the river
+    with the next version under way; the stations are a list under
+    Stations, with no level, no mode and no drawn path."""
+    from pensum.game import content
     if not content.ladders():
         pytest.skip("no ladders in PENSUM_QUESTARC_DIR")
     window = new_window(app, tmp_path, demo.create())
@@ -489,22 +487,17 @@ def test_game_journey_shows_its_build_and_calm_the_path(app, tmp_path):
     words = _labels(page.build)
     assert "1" in words and "2" in words and "3" in words and "4" not in words
     assert any(w.startswith("A log stands") for w in words)
-    assert not any("pensum-journey-path" in w.get_css_classes()
-                   for w in _widgets(page.scroll))
+    assert page.title.get_subtitle() == ""
+    assert "mode" not in window.journeys.view and "level" not in window.journeys.view
     page.show_stations()
     iterate()
     stations = visible(window)
     assert stations.get_tag() == "journey-stations"
-    assert any("pensum-journey-path" in w.get_css_classes() for w in _widgets(stations))
+    rows = [w for w in _widgets(stations) if "pensum-journey-station" in w.get_css_classes()]
+    assert [r.get_subtitle() for r in rows][:2] == ["Station 1 of 5 · Done",
+                                                    "Station 2 of 5 · You are here"]
     window.nav.pop()
     iterate()
-
-    records.write(window.ds, engine.action("setMode", "calm"))
-    window.changed()
-    window.journeys.refresh_now()
-    iterate()
-    assert page.build is None
-    assert any("pensum-journey-path" in w.get_css_classes() for w in _widgets(page.scroll))
     window.close()
 
 

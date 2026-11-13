@@ -33,7 +33,7 @@ def version_row(ladder, hue, standing, total=None, card=False):
 
 def build_header(build):
     """The build, its row of versions and its state in words, or None when
-    there is no build to draw (calm mode, an engine without builds, a
+    there is no build to draw (an engine without builds, a
     ladder whose pictures are not here)."""
     ladder = content.ladder((build or {}).get("ladder"))
     if ladder is None:

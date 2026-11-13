@@ -120,13 +120,12 @@ def _journey(ds, now):
     if task:
         focus["lastTaskCreationDay"] = today
     records.write(ds, {
-        "settings": {"mode": "rpg"},
         "run:demo": {"journeyId": "first-things-first", "journeyVersion": 1,
                      "startDay": first[0], "why": "Fewer scattered mornings at work"},
         "stage:demo:one-thing": {"acceptedDay": first[0]},
         "binding:demo:one-thing": {"taskId": f"rpt_demo-one-thing_{first[-1]}",
                                    "repeatCfgId": "demo-one-thing", "day": first[0]},
-        "stage-done:demo:one-thing": {"day": stage_done, "xp": 50, "damage": 0},
+        "stage-done:demo:one-thing": {"day": stage_done, "dataFormat": 2},
         "stage:demo:focus-15": {"acceptedDay": stage_done},
         "binding:demo:focus-15": {"taskId": f"rpt_demo-focus-15_{today}",
                                   "repeatCfgId": "demo-focus-15", "day": stage_done},

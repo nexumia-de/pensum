@@ -18,7 +18,7 @@ class ContinuePage(JourneySubpage):
             self.text(t(story), "title-4")
         following = journey["stages"][index + 1] if index + 1 < len(journey["stages"]) else None
         if following:
-            group = self.group(t("ui.station.next"))
+            group = self.group("Next Station")
             from gi.repository import Adw
             group.add(Adw.ActionRow(title=plan_sentence(following), title_lines=0))
             self.text("Next you set up the task for this station. Your earlier task keeps "

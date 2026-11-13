@@ -172,6 +172,3 @@ class JourneyModel:
             return None
         return run, journey, index, run["stations"][index], journey["stages"][index]
 
-    def mode(self):
-        return (self.view or {}).get("mode") or (self.records().get("settings") or {}).get(
-            "mode") or "calm"
