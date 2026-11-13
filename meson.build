@@ -96,7 +96,6 @@ python.install_sources(
   'pensum/ui/journey/model.py',
   'pensum/ui/journey/motivates_page.py',
   'pensum/ui/journey/page.py',
-  'pensum/ui/journey/path.py',
   'pensum/ui/journey/setup_page.py',
   'pensum/ui/journey/shelf_page.py',
   'pensum/ui/journey/start_page.py',
