@@ -78,13 +78,34 @@ navigation view so a swipe goes back:
   nugget), the current station's card (plan, progress bar and words,
   the last due days, runs, guardian in the game, hint, the user's
   reason) and the path from the goal at the top to the start at the
-  bottom. The bottom bar holds the main action (**Continue**, **Set Up
+  bottom. **With the game the build replaces the path** (QuestArc#42,
+  #57; QuestArc behaviour, screen 4): on top the journey's build in its
+  setting and hue (the ladder's standing version, the marker of the
+  stage under way, its hanging elements "on" while the stage is ready),
+  the row of versions that stand with the next one as an empty step, and
+  one line of state in words ("A log stands · a plank bridge is on its
+  way"); then the banners and the card. Everything comes from the
+  engine's `build` view (`pensum/ui/journey/build.py`); an engine
+  without it (a QuestArc up to 3.1.0) or calm mode shows the path as
+  before. The bottom bar holds the main action (**Continue**, **Set Up
   the Task**, **Change How Often**); the menu holds pause or resume,
-  end (with Undo), the shelf and how QuestArc motivates you. The level
+  end (with Undo), the shelf and how QuestArc motivates you, and with a
+  build **What you build** and **Stations** (the path as its own page,
+  `stations_page.py`). The level
   is the title's subtitle in the game.
 - Choose and preview, start (own reason, start day), set up, continue
   and finished, station details, weekly look back (1–7 or skip), shelf,
   how it motivates you.
+- **What you build** (`build_page.py`, QuestArc behaviour, screen 3a):
+  what grows (a ladder), what hangs (lanterns, pennants, flowers;
+  flowers are disabled over water with "Only on land") and the colour
+  (the palette's hues by name with a swatch). Each change is written at
+  once through the engine's `chooseBuild`, only what the user picked; a
+  marker that no longer fits a changed ladder is dropped; **Use the
+  journey's suggestion** withdraws the record.
+- Still open from #57: the strip on Today, the moment of the tick in
+  it, the choice on the start page, and the build beside the card at
+  desktop width.
 - Preferences → Journeys: calm or game, and removing the journey data
   (asks first: it cannot be undone).
 
@@ -107,22 +128,22 @@ app's indigo, lightened in dark style from libadwaita 1.6 on), `bg`
 with the surface the picture stands on (window or card), `dim` with the
 text colour mixed 30 % into it and `tint`/`tint-strong` with the accent
 mixed 16 %/40 % into it, all made opaque so overlapping shapes stay one
-colour. A scene (`<name>.scene.json`) places pictures at fixed spots in
-three depth bands, scales with the width and is clipped to its size; a
-picture in the far band is drawn with every role in `tint`, one
-silhouette with the ground (QuestArc's journey design, "Scenes of a
-region"). Titles become accessible labels. Pictures are found by
+colour. A scene places pictures at fixed spots in three depth bands,
+scales with the width and is clipped to its size; a picture in the far
+band is drawn with every role in `tint`, one silhouette with the ground
+(QuestArc's journey design, "Look and depth bands"). Scenes are composed
+from a ladder file (below); QuestArc's first region scenes (a meadow, a
+shore) were removed after 3.1.0. Titles become accessible labels. Pictures are found by
 name only (`content.art_path`); names cannot leave the folder.
 
-This is the spike: the journey pages do not use pictures yet. The demo
-`tests/art_demo.py growth|shore|sizes|sequence-crossing|journey-home|palette` shows a meadow at three moments,
-a shore, or every picture at 48, 32 and 24 px; `tests/test_art.py`
-checks that a scene is drawn only in the roles' colours, the far band in
-`tint`, and that every class in `content/art/` is a role Day Planner
-fills. Both need a
-QuestArc with `content/art/` (a checkout of QuestArc's `main` after
-QuestArc#86, or a release after 3.1.0); with the pinned 3.1.0 archive
-the tests are skipped.
+The journey page draws the build with them. The demo
+`tests/art_demo.py sizes|sequence-crossing|journey-home|palette` shows
+every picture at 48, 32 and 24 px and the ladders; `tests/test_art.py`
+checks that a ladder's scene is drawn only in the roles' colours, the
+far band in `tint`, and that every class in `content/art/` is a role
+Day Planner fills. Both need a QuestArc with `content/art/` (a checkout
+of QuestArc's `main`, or a release from 3.2.0 on, as the manifest
+pins); with an older archive the tests are skipped.
 
 ```sh
 PENSUM_QUESTARC_DIR=$PWD/../QuestArc /usr/bin/python3.12 tests/art_demo.py
@@ -146,8 +167,7 @@ row may show a zoomed part of each version (`row`, `art.draw_part`). A region ma
 takes `accent`, `tint` and `tint-strong` from the hue's light or dark
 value (by `Adw.StyleManager`'s dark state); `fg`, `bg` and `dim` stay
 libadwaita's. The demo's parts `sequence-<ladder>[-<marker>]`,
-`journey-<ladder>[-ready]` (a static mock of the journey screen; the real
-pages are unchanged) and
+`journey-<ladder>[-ready]` (a static mock of the journey screen) and
 `palette` are in `tests/ladder_demo.py`, a palette hue as the second
 argument. `tests/test_art.py` checks the composed scenes and that every
 hue keeps WCAG contrast against libadwaita's cards in light and dark
@@ -165,9 +185,10 @@ The engine is found where `PENSUM_QUESTARC_DIR` points (a QuestArc
 release archive, or a QuestArc checkout after `npm ci && npm run build`)
 and run with `PENSUM_GJS` (default `gjs`); in the Flatpak it is
 `/app/share/questarc`, from the release archive the manifest pins
-(module `questarc-engine`, QuestArc 3.1.0, updated by the update check).
-Without it the page says "Journeys Are Not Installed". On the cloud host gjs comes from the GNOME
-runtime through bwrap ([development environment](dev-environment.md)).
+(module `questarc-engine`, QuestArc 3.2.0, updated by the update check;
+3.2.0 is the first release with the pictures and the `build` view).
+Without it the page says "Journeys Are Not Installed". On the cloud host gjs comes from Ubuntu's
+package or from the GNOME runtime through bwrap ([development environment](dev-environment.md)).
 Tests that need the engine are skipped without it; CI fetches the
 archive the manifest pins, installs gjs and sets
 `PENSUM_REQUIRE_ENGINE=1`, so they must pass there. Screenshots: the

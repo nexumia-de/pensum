@@ -23,9 +23,14 @@ default `python3` has no `gi`; use `/usr/bin/python3.12`.
 
 The journey pages need QuestArc's engine and gjs ([journeys](journeys.md)).
 With a QuestArc checkout next to this one, built with `npm ci && npm run
-build`, and gjs from the GNOME runtime (the cloud image has no `gjs`
-package; `flatpak run` does not work there, so a small wrapper runs it
-through bwrap):
+build`, and gjs. Where apt works (it did on the cloud image on
+2026-11-13), the packages of the CI job are enough: `python3-pytest
+python3-gi python3-gi-cairo python3-cffi gir1.2-gtk-4.0 gir1.2-adw-1
+gir1.2-rsvg-2.0 gjs`, and `libgtk-4-bin` for the screenshot script; then
+only `PENSUM_QUESTARC_DIR` is needed. Ubuntu 24.04 has libadwaita 1.5,
+older than the runtime's, so check the look in the Flatpak. Otherwise
+gjs comes from the GNOME runtime (`flatpak run` does not work on the
+cloud host, so a small wrapper runs it through bwrap):
 
 ```sh
 flatpak --user install -y flathub org.gnome.Platform//51

@@ -1,0 +1,1 @@
+Journeys with the game now build something: the journey page shows one thing that is whole at every station and grows with the next (stepping stones become a bridge, a fireplace a house), with lanterns, pennants or flowers in front while a station is under way; you can change what is built and its colour under "What you build".

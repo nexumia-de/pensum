@@ -1,9 +1,8 @@
-"""The pictures' demo (QuestArc#86, #97, #42): a region at three moments,
-a second region kind, every single picture at 48, 32 and 24 px and the
-ladders (tests/ladder_demo.py), drawn by pensum/ui/journey/art.py in
+"""The pictures' demo (QuestArc#86, #42): every single picture at 48, 32
+and 24 px and the ladders (tests/ladder_demo.py), drawn by pensum/ui/journey/art.py in
 libadwaita's colours. For screenshots; not part of the app. Needs
 PENSUM_QUESTARC_DIR with content/art/ (docs/journeys.md); the argument
-picks the part, `growth` (default), `shore`, `sizes`, `sequence-<ladder>`,
+picks the part, `sizes` (default), `sequence-<ladder>`,
 `sequence-<ladder>-<marker>`, `journey-<ladder>[-ready]` or `palette`; a second
 argument a palette hue:
 
@@ -24,31 +23,14 @@ from pensum.ui.journey import art  # noqa: E402
 
 import ladder_demo  # noqa: E402
 
-GROWTH = [("meadow-started", "Just started"), ("meadow-half", "Half built"),
-          ("meadow-finished", "Finished and graduated")]
-SHORE = ("shore-finished", "Finished and graduated")
-TITLES = {"growth": "A Meadow as It Grows", "shore": "Another Kind: a Shore",
-          "sizes": "Pictures at 48, 32 and 24 px", "sequence": "One Thing, Whole at Every Step",
+TITLES = {"sizes": "Pictures at 48, 32 and 24 px", "sequence": "One Thing, Whole at Every Step",
           "journey": "A Gentle Morning", "palette": "A Hue per Region"}
-
-
-def scene_card(name, caption):
-    scene = content.scene(name)
-    card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6, css_classes=["card"],
-                   overflow=Gtk.Overflow.HIDDEN)
-    if scene is None:
-        card.append(Gtk.Label(label=f"No scene {name}"))
-        return card
-    card.append(art.scene_area(scene, card=True))
-    card.append(Gtk.Label(label=caption, xalign=0, css_classes=["dimmed", "dim-label"],
-                          margin_start=12, margin_end=12, margin_bottom=10))
-    return card
 
 
 def sizes_card():
     folder = content.directory() / "content" / "art"
     names = sorted(p.stem for p in folder.glob("*.svg")
-                   if not p.stem.startswith("ground-") and "-cord-" not in p.stem)
+                   if "-cord-" not in p.stem)
     grid = Gtk.FlowBox(selection_mode=Gtk.SelectionMode.NONE, min_children_per_line=2,
                        max_children_per_line=4, homogeneous=True, css_classes=["card"])
     for name in names:
@@ -68,7 +50,7 @@ def build(window, part, hue=None):
     page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12,
                    margin_top=12, margin_bottom=12, margin_start=12, margin_end=12)
     clamp_size = 720
-    if content.scene(GROWTH[0][0]) is None:
+    if not content.ladders():
         page.append(Adw.StatusPage(title="No Pictures Installed",
                                    description="Set PENSUM_QUESTARC_DIR to a QuestArc with content/art."))
     elif part.startswith("sequence-"):
@@ -79,14 +61,9 @@ def build(window, part, hue=None):
     elif part == "palette":
         clamp_size = 1400
         ladder_demo.palette(page)
-    elif part == "shore":
-        page.append(scene_card(*SHORE))
-    elif part == "sizes":
-        page.append(sizes_card())
     else:
-        for name, caption in GROWTH:
-            page.append(scene_card(name, caption))
-    title = TITLES.get(part.split("-")[0], TITLES["growth"])
+        page.append(sizes_card())
+    title = TITLES.get(part.split("-")[0], TITLES["sizes"])
     clamp = Adw.Clamp(maximum_size=clamp_size, child=page)
     scroller = Gtk.ScrolledWindow(child=clamp, vexpand=True,
                                   hscrollbar_policy=Gtk.PolicyType.NEVER)

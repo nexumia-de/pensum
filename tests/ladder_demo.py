@@ -7,7 +7,8 @@ the last version with the lit lantern; the row of versions),
 `journey-<ladder>[-ready]` a static mock of the journey screen with the
 build on top (posts up and two elements hanging, or ready), `palette` every
 hue and each ladder in two hues.
-Not part of the app; the real journey pages are unchanged."""
+Not part of the app; the journey page draws the build with the same
+functions (pensum/ui/journey/build.py)."""
 import math
 
 import gi
@@ -18,6 +19,7 @@ from gi.repository import Gtk  # noqa: E402
 
 from pensum.game import content  # noqa: E402
 from pensum.ui.journey import art  # noqa: E402
+from pensum.ui.journey.build import version_row  # noqa: E402
 
 
 def _steps(ladder, version):
@@ -38,22 +40,6 @@ def _frame(ladder, hue, version, caption, width=300, **state):
                           css_classes=["dimmed", "dim-label"],
                           margin_start=12, margin_end=12, margin_bottom=10))
     return card
-
-
-def _version_row(ladder, hue, standing, card=True):
-    row = Gtk.Box(spacing=4, margin_start=8, margin_end=8, margin_top=8, margin_bottom=4)
-    for i, version in enumerate(ladder["versions"][:standing]):
-        cell = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
-        cell.append(art.picture_area(version["art"], 60, card=card, hue=hue, height=40,
-                                     part=ladder.get("row")))
-        cell.append(Gtk.Label(label=str(i + 1), css_classes=["caption", "dimmed", "dim-label"]))
-        row.append(cell)
-    if standing < len(ladder["versions"]):
-        cell = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2, valign=Gtk.Align.END)
-        cell.append(Gtk.Frame(width_request=56, height_request=36, margin_start=2, margin_end=2))
-        cell.append(Gtk.Label(label=str(standing + 1), css_classes=["caption", "dimmed", "dim-label"]))
-        row.append(cell)
-    return row
 
 
 def _flow(children, per_line=4):
@@ -97,7 +83,10 @@ def sequence(page, name, hue_name=None):
                          graduated=True))
     row = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, css_classes=["card"], width_request=300,
                   valign=Gtk.Align.START)
-    row.append(_version_row(ladder, hue, last))
+    inner = version_row(ladder, hue, last, card=True)
+    for side in ("start", "end", "top"):
+        getattr(inner, f"set_margin_{side}")(8)
+    row.append(inner)
     row.append(Gtk.Label(label="The row of versions, 60 × 40 px", xalign=0,
                          css_classes=["dimmed", "dim-label"], margin_start=12, margin_bottom=10))
     frames.append(row)
@@ -135,7 +124,9 @@ def journey(page, name, hue_name=None):
     page.set_margin_top(0)
     page.set_spacing(8)
     page.append(art.scene_area(art.ladder_scene(ladder, standing, midway, lit), hue=hue))
-    page.append(_version_row(ladder, hue, standing, card=False))
+    versions = version_row(ladder, hue, standing)
+    versions.set_margin_start(8)
+    page.append(versions)
     page.append(Gtk.Label(
         label=art.build_words(ladder, standing, midway, lit),
         xalign=0, wrap=True, css_classes=["dimmed", "dim-label"], margin_start=16, margin_end=16))

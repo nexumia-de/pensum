@@ -86,6 +86,8 @@ python.install_sources(
   'pensum/ui/journey/art.py',
   'pensum/ui/journey/banners.py',
   'pensum/ui/journey/base.py',
+  'pensum/ui/journey/build.py',
+  'pensum/ui/journey/build_page.py',
   'pensum/ui/journey/card.py',
   'pensum/ui/journey/checkin_page.py',
   'pensum/ui/journey/choose_page.py',
@@ -99,6 +101,7 @@ python.install_sources(
   'pensum/ui/journey/shelf_page.py',
   'pensum/ui/journey/start_page.py',
   'pensum/ui/journey/station_page.py',
+  'pensum/ui/journey/stations_page.py',
   subdir: 'pensum' / 'ui' / 'journey',
 )
 python.install_sources(

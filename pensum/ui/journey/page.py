@@ -1,12 +1,14 @@
 """The journey page (QuestArc docs/behaviour.md, screens 1 and 4): the
 welcome with the choice between calm and game, the empty state, or the
 active journey with its banners, the current station's card and the
-path. The main action sits in the bottom bar; the menu holds the shelf,
-how it motivates you, pausing and ending."""
+path; in the game the journey's build stands on top and the path moves
+to "Stations" in the menu. The main action sits in the bottom bar; the
+menu holds the shelf, how it motivates you, pausing and ending."""
 from gi.repository import Adw, Gio, Gtk
 
 from pensum.game.content import t
 from pensum.ui.journey.banners import banners
+from pensum.ui.journey.build import build_header
 from pensum.ui.journey.card import station_card
 from pensum.ui.journey.path import journey_path
 
@@ -38,6 +40,7 @@ class JourneyPage(Adw.NavigationPage):
         self._main = None
         self._actions = Gio.SimpleActionGroup()
         for name, callback in (("shelf", self.show_shelf), ("motivates", self.show_motivates),
+                               ("build", self.show_build), ("stations", self.show_stations),
                                ("pause", self._on_pause), ("resume", self._on_resume),
                                ("end", self._on_end)):
             action = Gio.SimpleAction.new(name, None)
@@ -54,8 +57,13 @@ class JourneyPage(Adw.NavigationPage):
 
     # --- showing -------------------------------------------------------
 
-    def _menu(self, run):
+    def _menu(self, run, built=False):
         menu = Gio.Menu()
+        if built:
+            game = Gio.Menu()
+            game.append(t("ui.build.title"), "journey.build")
+            game.append(t("ui.build.stations"), "journey.stations")
+            menu.append_section(None, game)
         if run:
             menu.append(t("ui.action.resume") if run["paused"] else t("ui.menu.pause"),
                         "journey.resume" if run["paused"] else "journey.pause")
@@ -77,6 +85,7 @@ class JourneyPage(Adw.NavigationPage):
                       margin_bottom=24, margin_start=12, margin_end=12)
         self.scroll.set_child(Adw.Clamp(child=box, maximum_size=600))
         self.title.set_subtitle("")
+        self.build = None
         if not model.available:
             self._menu(None)
             self._set_main(None, None)
@@ -114,11 +123,15 @@ class JourneyPage(Adw.NavigationPage):
             return
         run, journey, index, station, stage = current
         self.title.set_title(t(journey["title"]))
-        self._menu(run)
+        self.build = build_header(run.get("build")) if rpg else None
+        self._menu(run, built=self.build is not None)
+        if self.build:
+            box.append(self.build)
         for banner in banners(self, run, journey, index):
             box.append(banner)
         box.append(station_card(run, stage, index, station, rpg, model.view["todayStr"]))
-        box.append(journey_path(run, journey, rpg, self.show_station))
+        if not self.build:
+            box.append(journey_path(run, journey, rpg, self.show_station))
         state = station["state"]
         if run["paused"]:
             self._set_main(None, None)
@@ -174,6 +187,14 @@ class JourneyPage(Adw.NavigationPage):
     def show_station(self, index):
         from pensum.ui.journey.station_page import StationPage
         self._push(StationPage(self.window, index))
+
+    def show_build(self):
+        from pensum.ui.journey.build_page import BuildPage
+        self._push(BuildPage(self.window))
+
+    def show_stations(self):
+        from pensum.ui.journey.stations_page import StationsPage
+        self._push(StationsPage(self.window))
 
     def show_checkin(self):
         from pensum.ui.journey.checkin_page import CheckinPage
