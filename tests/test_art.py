@@ -1,7 +1,6 @@
 """QuestArc's pictures (content/art/) drawn with librsvg in the roles'
 colours (pensum/ui/journey/art.py). Skipped when the QuestArc content in
-PENSUM_QUESTARC_DIR has no pictures yet (they arrive with the QuestArc
-release after 3.1.0, QuestArc#86)."""
+PENSUM_QUESTARC_DIR has no pictures (QuestArc releases up to 3.1.0)."""
 import re
 
 import cairo
@@ -10,7 +9,6 @@ import pytest
 from pensum.game import content
 from pensum.ui.journey import art
 
-SCENE = "meadow-finished"
 # One pure colour per role, so every pixel tells which role drew it.
 ROLES = {"fg": (1.0, 0.0, 0.0), "accent": (0.0, 1.0, 0.0), "dim": (0.0, 0.0, 1.0),
          "bg": (1.0, 1.0, 0.0), "tint": (0.0, 1.0, 1.0), "tint-strong": (1.0, 0.0, 1.0)}
@@ -20,10 +18,12 @@ PURE = {(round(b * 255), round(g * 255), round(r * 255), 255): role
 
 @pytest.fixture
 def scene():
-    found = content.scene(SCENE)
-    if found is None:
+    """A ladder's scene with everything in it: the setting, a build and a
+    marker that is ready."""
+    ladder = content.ladder("home")
+    if ladder is None:
         pytest.skip("no content/art in PENSUM_QUESTARC_DIR")
-    return found
+    return art.ladder_scene(ladder, 3, ready=True)
 
 
 def render(scene, width=1280, height=480):
@@ -37,8 +37,8 @@ def render(scene, width=1280, height=480):
 def test_scene_is_drawn_only_in_the_roles_colours(scene):
     pixels = [p for p in render(scene) if p[3] == 255]
     seen = {PURE[p] for p in pixels if p in PURE}
-    # dim is kept for keepsakes; the scene uses the other five roles.
-    assert seen == set(ROLES) - {"dim"}
+    # A ladder's scene uses every role (dim is the line between the posts).
+    assert seen == set(ROLES)
     # Antialiased edges between two roles mix them; anything else would be
     # a colour of the picture's own (an unfilled shape is black).
     assert (0, 0, 0, 255) not in pixels
@@ -49,7 +49,7 @@ def test_far_band_is_one_silhouette_in_tint(scene):
     far = [p for p in scene["pictures"] if p.get("band") == "far"]
     assert far
     ground = scene["pictures"][0]
-    only_far = dict(scene, pictures=[dict(ground, art="stone", x=-400)] + far)  # off-scene filler
+    only_far = dict(scene, pictures=[dict(ground, art="tuft", x=-400)] + far)  # off-scene filler
     pixels = {p for p in render(only_far) if p[3] == 255}
     assert {PURE[p] for p in pixels if p in PURE} == {"tint"}
 
@@ -71,7 +71,7 @@ def test_every_class_in_content_art_is_a_role_pensum_fills(scene):
 def test_names_cannot_leave_the_folder(scene):
     assert content.art_path("../journeys/gentle-morning") is None
     assert content.art_path("Tree") is None
-    assert content.scene("../x") is None
+    assert content.ladder("../x") is None
 
 
 def test_stylesheet_has_the_roles():

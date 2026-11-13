@@ -83,12 +83,6 @@ def _art_json(name, suffix):
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def scene(name):
-    """A scene of content/art/ (`<name>.scene.json`): pictures at fixed
-    places, with its title in words; None if absent."""
-    return _art_json(name, ".scene.json")
-
-
 def ladder(name):
     """A ladder of content/art/ (`<name>.ladder.json`): the versions of one
     build, its default marker and the setting with its places; None if
@@ -100,3 +94,16 @@ def palette():
     """The region hues of content/art/palette.json: name → {title, light,
     dark}; empty if absent."""
     return _art_json("palette", ".json") or {}
+
+
+def ladders():
+    """Every ladder of content/art/ by name, in file-name order."""
+    folder = directory() / "content" / "art"
+    names = sorted(p.name[:-len(".ladder.json")] for p in folder.glob("*.ladder.json"))
+    return {name: found for name in names if (found := ladder(name)) is not None}
+
+
+def markers():
+    """What can hang on a marker (content/art/markers.json): kind →
+    {title, landOnly}; empty if absent."""
+    return _art_json("markers", ".json") or {}

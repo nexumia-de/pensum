@@ -38,6 +38,16 @@ def iterate(times=20):
             ctx.iteration(False)
 
 
+def _widgets(widget):
+    """A widget and everything below it."""
+    found = [widget]
+    child = widget.get_first_child()
+    while child:
+        found += _widgets(child)
+        child = child.get_next_sibling()
+    return found
+
+
 def new_window(app, tmp_path, ds=None):
     from pensum.window import Window
     files = Files(tmp_path / "data")
@@ -444,6 +454,96 @@ def test_journey_comes_forward_only_for_its_own_task(app, tmp_path):
     settle(window)
     assert visible(window) is window.journey_page
     assert window.journeys.active()["stations"][0]["completions"] == 1
+    window.flush()
+    assert validate.problems(backup.read(window.files.path)) == []
+    window.close()
+
+
+def _labels(widget):
+    """The text of every label below a widget."""
+    found = [widget.get_label()] if isinstance(widget, Gtk.Label) else []
+    child = widget.get_first_child()
+    while child:
+        found += _labels(child)
+        child = child.get_next_sibling()
+    return found
+
+
+@needs_engine
+def test_game_journey_shows_its_build_and_calm_the_path(app, tmp_path):
+    """With the game the journey page shows the build (QuestArc#42,
+    pensum#57): the demo's second station of First Things First is a log
+    across the river with the next version under way; the path is under
+    Stations. Calm mode keeps the path and shows no build."""
+    from pensum.game import content, engine, records
+    if not content.ladders():
+        pytest.skip("no ladders in PENSUM_QUESTARC_DIR")
+    window = new_window(app, tmp_path, demo.create())
+    window.journeys.refresh_now()
+    window.show_journey()
+    iterate()
+    page = visible(window)
+    build = window.journeys.active()["build"]
+    assert (build["ladder"], build["version"], build["versions"]) == ("crossing", 2, 6)
+    assert page.build is not None
+    words = _labels(page.build)
+    assert "1" in words and "2" in words and "3" in words and "4" not in words
+    assert any(w.startswith("A log stands") for w in words)
+    assert not any("pensum-journey-path" in w.get_css_classes()
+                   for w in _widgets(page.scroll))
+    page.show_stations()
+    iterate()
+    stations = visible(window)
+    assert stations.get_tag() == "journey-stations"
+    assert any("pensum-journey-path" in w.get_css_classes() for w in _widgets(stations))
+    window.nav.pop()
+    iterate()
+
+    records.write(window.ds, engine.action("setMode", "calm"))
+    window.changed()
+    window.journeys.refresh_now()
+    iterate()
+    assert page.build is None
+    assert any("pensum-journey-path" in w.get_css_classes() for w in _widgets(page.scroll))
+    window.close()
+
+
+@needs_engine
+def test_what_you_build_writes_only_the_choice(app, tmp_path):
+    """Changing the colour or what grows writes one build record with what
+    the user picked; flowers cannot hang over water; the journey's
+    suggestion withdraws it. The data stays valid."""
+    from pensum.game import content, records
+    if not content.ladders():
+        pytest.skip("no ladders in PENSUM_QUESTARC_DIR")
+    window = new_window(app, tmp_path, demo.create())
+    window.journeys.refresh_now()
+    window.show_journey()
+    iterate()
+    window.journey_page.show_build()
+    iterate()
+    page = visible(window)
+    assert page.get_tag() == "journey-build"
+    run = window.journeys.active()
+    page._choose(run, "hue", "slate")
+    iterate()
+    assert records.load(window.ds)["build:demo"] == {"hue": "slate"}
+    assert window.journeys.active()["build"]["hue"] == "slate"
+    run = window.journeys.active()
+    page._choose(run, "ladder", "home")
+    page._choose(window.journeys.active(), "marker", "flowers")
+    iterate()
+    assert records.load(window.ds)["build:demo"] == {"hue": "slate", "ladder": "home",
+                                                     "marker": "flowers"}
+    # Back over water the flowers no longer fit: the ladder's own marker applies.
+    page._choose(window.journeys.active(), "ladder", "crossing")
+    iterate()
+    assert records.load(window.ds)["build:demo"] == {"hue": "slate", "ladder": "crossing"}
+    build = window.journeys.active()["build"]
+    assert (build["ladder"], build["marker"], build["version"]) == ("crossing", "lanterns", 2)
+    window.journeys.action("chooseBuild", "demo", {})
+    iterate()
+    assert "build:demo" not in records.load(window.ds)
     window.flush()
     assert validate.problems(backup.read(window.files.path)) == []
     window.close()
