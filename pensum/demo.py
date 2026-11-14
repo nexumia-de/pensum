@@ -113,8 +113,12 @@ def _journey(ds, now):
         _archived_instance(ds, one, day)
     focus = _rule(ds, "demo-focus-15", "Sitting down at my desk: write down my one task "
                   "and give it 15 quiet minutes, notifications off", stage_done, today)
+    # One gap, never a loss. On a weekend today is no due day, so the last
+    # five due days are all decided; a second gap, not next to the first,
+    # keeps the station on its way (4 of 5 would finish it).
+    gaps = {second[-2]} if dates.parse_day(today).weekday() < 5 else {second[-2], second[-4]}
     for day in second:
-        if day != second[-2]:  # one gap, never a loss
+        if day not in gaps:
             _archived_instance(ds, focus, day)
     task = instances.create_for(ds, dict(focus, lastTaskCreationDay=second[-1]), today, now)
     if task:
