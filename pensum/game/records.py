@@ -70,3 +70,14 @@ def write(ds, changes):
             entry = {"id": entry_id, "data": data}
             entries.append(entry)
             by_id[entry_id] = entry
+
+
+def journey_ids(ds):
+    """Ids of the tasks and repeat rules a journey's stages are bound to
+    (`binding:<run>:<stage>` records)."""
+    found = set()
+    for key, value in load(ds).items():
+        if key.startswith("binding:") and isinstance(value, dict):
+            found.update(v for v in (value.get("taskId"), value.get("repeatCfgId"))
+                         if isinstance(v, str) and v)
+    return frozenset(found)

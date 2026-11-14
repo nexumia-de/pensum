@@ -2,6 +2,7 @@
 the task page with subtasks and timer, list menus and preferences. Needs
 a display (CI runs pytest under xvfb-run)."""
 import os
+import re
 
 import pytest
 
@@ -594,4 +595,55 @@ def test_sync_page_asks_for_encryption_password(app, tmp_path):
     iterate()
     assert not page.banner.get_revealed() and page.snapshot is not None
     assert validate.problems(page.snapshot.data) == []
+    window.close()
+
+
+def test_import_over_newer_data_warns_with_counts(app, tmp_path):
+    """#47: the dialog counts what an older file would lose and names the
+    journey's completions; Import Anyway keeps the records only here."""
+    from pensum.game import records
+    from pensum.store import tasks
+    from pensum.ui import backup_actions
+    from test_import import WORKDAY as now  # the journey's task exists on a workday
+    ds = demo.create(now)
+    older = tmp_path / "older.json"
+    backup.write(older, ds.data, now)
+    window = new_window(app, tmp_path, ds)
+    later = now + 6 * 3_600_000
+    tasks.add_task(window.ds, "Added after the export", Context.today(), later)
+    tasks.set_done(window.ds, records.load(window.ds)["binding:demo:focus-15"]["taskId"],
+                   True, later)
+    run = records.load(window.ds)["run:demo"]
+    records.write(window.ds, {"run:demo": dict(run, why="Calmer mornings"),
+                              "checkin:demo:w": {"answer": 3}})
+
+    dialog = backup_actions.confirm(window, str(older))
+    iterate()
+    assert dialog.get_heading() == "Import Older Data?"
+    body = dialog.get_body()
+    # At least the added task and the journey's; on another day than the
+    # dataset's the window has made that day's repeating tasks as well.
+    lost = re.search(r"(\d+) tasks and 1 journey entry would be lost", body)
+    assert lost and int(lost.group(1)) >= 2
+    assert "your journey's task, done on " in body
+    assert dialog.get_response_label("delete") == "Import Anyway"
+    dialog.emit("response", "delete")
+    iterate()
+    assert records.load(window.ds)["checkin:demo:w"] == {"answer": 3}
+    assert records.load(window.ds)["run:demo"] == run
+    assert validate.problems(window.ds.data) == []
+    window.close()
+
+
+def test_import_without_loss_asks_the_plain_question(app, tmp_path):
+    from pensum.ui import backup_actions
+    now = demo.demo_now()
+    ds = demo.create(now)
+    window = new_window(app, tmp_path, ds)
+    same = tmp_path / "same.json"
+    backup.write(same, window.ds.data, now)
+    dialog = backup_actions.confirm(window, str(same))
+    assert dialog.get_heading() == "Replace All Tasks?"
+    assert dialog.get_response_label("delete") == "Replace"
+    dialog.close()
     window.close()
