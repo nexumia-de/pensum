@@ -1,5 +1,8 @@
 # Directory Update Log
 
+## 2026-11-14
+* **Fix**: the demo's journey showed its second station as finished on Saturdays and Sundays, so `test_journey_shows_its_build_and_the_stations_as_a_list` failed on weekends: the journey's task repeats Monday to Friday, today is then no due day, and the last five due days held four completions. On a weekend the demo now leaves a second gap, not next to the first (`pensum/demo.py`). The suite passes with the clock on a Friday, Saturday, Sunday and Monday.
+
 ## 2026-11-13
 * **Fix** (#61): `meson.build` no longer lists the removed `pensum/ui/journey/path.py`; the Flatpak build failed on it after #62.
 * **Update** (#61, QuestArc#110): journeys follow QuestArc 3.3.0 (`questarc-engine-3.3.0.tar.gz`, sha256 `cb4075ff…`): no mode, level, XP, guardians or drawn path. Every journey page shows the build; the stations are a list (`stations_page.py`; `path.py` and the node drawing are removed); the welcome writes nothing and is shown while there is no QuestArc record; the mode row is gone from the preferences; messages use one text per event. [Journeys](journeys.md), [dependencies](dependencies.md).
