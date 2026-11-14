@@ -37,6 +37,7 @@ python.install_sources(
   'pensum/store/defaults.py',
   'pensum/store/files.py',
   'pensum/store/ids.py',
+  'pensum/store/incoming.py',
   'pensum/store/search.py',
   'pensum/store/short_syntax.py',
   'pensum/store/tasks.py',
