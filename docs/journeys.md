@@ -196,7 +196,7 @@ Tests that need the engine are skipped without it; CI fetches the
 archive the manifest pins, installs gjs and sets
 `PENSUM_REQUIRE_ENGINE=1`, so they must pass there. Screenshots: the
 demo dataset (`PENSUM_DEMO=1`) has "First Things First" in the game at
-its second station with one gap.
+its second station with one gap (two on a weekend, so it is still on its way).
 
 ## Open
 
