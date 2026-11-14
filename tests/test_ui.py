@@ -2,6 +2,7 @@
 the task page with subtasks and timer, list menus and preferences. Needs
 a display (CI runs pytest under xvfb-run)."""
 import os
+import re
 
 import pytest
 
@@ -603,7 +604,7 @@ def test_import_over_newer_data_warns_with_counts(app, tmp_path):
     from pensum.game import records
     from pensum.store import tasks
     from pensum.ui import backup_actions
-    now = demo.demo_now()
+    from test_import import WORKDAY as now  # the journey's task exists on a workday
     ds = demo.create(now)
     older = tmp_path / "older.json"
     backup.write(older, ds.data, now)
@@ -612,19 +613,24 @@ def test_import_over_newer_data_warns_with_counts(app, tmp_path):
     tasks.add_task(window.ds, "Added after the export", Context.today(), later)
     tasks.set_done(window.ds, records.load(window.ds)["binding:demo:focus-15"]["taskId"],
                    True, later)
-    records.write(window.ds, {"settings": {"mode": "calm"}, "checkin:demo:w": {"answer": 3}})
+    run = records.load(window.ds)["run:demo"]
+    records.write(window.ds, {"run:demo": dict(run, why="Calmer mornings"),
+                              "checkin:demo:w": {"answer": 3}})
 
     dialog = backup_actions.confirm(window, str(older))
     iterate()
     assert dialog.get_heading() == "Import Older Data?"
     body = dialog.get_body()
-    assert "2 tasks and 1 journey entry would be lost" in body
+    # At least the added task and the journey's; on another day than the
+    # dataset's the window has made that day's repeating tasks as well.
+    lost = re.search(r"(\d+) tasks and 1 journey entry would be lost", body)
+    assert lost and int(lost.group(1)) >= 2
     assert "your journey's task, done on " in body
     assert dialog.get_response_label("delete") == "Import Anyway"
     dialog.emit("response", "delete")
     iterate()
     assert records.load(window.ds)["checkin:demo:w"] == {"answer": 3}
-    assert records.load(window.ds)["settings"] == {"mode": "rpg"}
+    assert records.load(window.ds)["run:demo"] == run
     assert validate.problems(window.ds.data) == []
     window.close()
 

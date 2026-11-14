@@ -2,6 +2,7 @@
 that the file lacks, keeping QuestArc's records that exist only here,
 and a consistent dataset after every path."""
 import copy
+from datetime import datetime
 
 import pytest
 
@@ -15,9 +16,14 @@ from pensum.store.files import Files
 LATER = 6 * 3_600_000
 
 
+# A Friday at 10:30: the demo's journey task repeats Monday to Friday, so
+# on a weekend the made-up day has no instance of it to tick off.
+WORKDAY = int(datetime(2026, 11, 13, 10, 30).timestamp() * 1000)
+
+
 @pytest.fixture
 def now():
-    return demo.demo_now()
+    return WORKDAY
 
 
 @pytest.fixture
@@ -40,15 +46,20 @@ def compare(current, file):
                             records.journey_ids(current))
 
 
+def reworded(ds):
+    """The run record with another reason: a record both sides have."""
+    return dict(records.load(ds)["run:demo"], why="Calmer mornings")
+
+
 def changed_after_export(local, now):
     """The file is yesterday's export; since then this device added a
-    task, ticked off the journey's task, changed a setting record and
+    task, ticked off the journey's task, changed the journey's reason and
     answered a weekly look back (a record only here)."""
     file = export(local)
     later = now + LATER
     added = tasks.add_task(local, "Added after the export", Context.today(), later)
     tasks.set_done(local, journey_task(local), True, later)
-    records.write(local, {"settings": {"mode": "calm"},
+    records.write(local, {"run:demo": reworded(local),
                           "checkin:demo:2026-W45": {"answer": 4}})
     return file, added
 
@@ -58,7 +69,7 @@ def test_older_file_loses_tasks_completions_and_changed_records(local, now):
     loss = compare(local, file)
     assert set(loss.tasks) == {added["id"], journey_task(local)}
     assert [task_id for task_id, _ in loss.completions] == [journey_task(local)]
-    assert loss.records == ("questarc:settings",)
+    assert loss.records == ("questarc:run:demo",)
     assert not loss.unrelated
     # The record only here is not lost: the import keeps it.
     assert "questarc:checkin:demo:2026-W45" not in loss.records
@@ -69,7 +80,7 @@ def test_newer_file_loses_nothing(local, now):
     later = now + LATER
     tasks.add_task(file, "Added on the other device", Context.today(), later)
     tasks.set_done(file, journey_task(file), True, later)
-    records.write(file, {"settings": {"mode": "calm"}})
+    records.write(file, {"run:demo": reworded(file)})
     assert not compare(local, file)
 
 
@@ -115,7 +126,8 @@ def test_import_keeps_local_records_and_takes_the_files_values(local, now, tmp_p
     imported = files.import_dataset(file, local, records.PREFIX)
     kept = records.load(imported)
     assert kept["checkin:demo:2026-W45"] == {"answer": 4}  # only here: kept
-    assert kept["settings"] == {"mode": "rpg"}  # on both sides: the file's
+    assert kept["run:demo"] == records.load(file)["run:demo"]  # on both sides: the file's
+    assert kept["run:demo"] != reworded(file)
     ids = [e["id"] for e in imported.data["pluginUserData"]]
     assert len(ids) == len(set(ids))
     # Saved as imported, and the current data is in the backups folder.

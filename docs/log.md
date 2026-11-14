@@ -2,6 +2,7 @@
 
 ## 2026-11-14
 * **Fix**: the demo's journey showed its second station as finished on Saturdays and Sundays, so `test_journey_shows_its_build_and_the_stations_as_a_list` failed on weekends: the journey's task repeats Monday to Friday, today is then no due day, and the last five due days held four completions. On a weekend the demo now leaves a second gap, not next to the first (`pensum/demo.py`). The suite passes with the clock on a Friday, Saturday, Sunday and Monday.
+* **Update** (#47): the import pull request is rebased onto the sync work; a sync folder's import goes through `Files.import_dataset` too. Its tests no longer use the removed `settings` record (they reword the run's reason) and build the demo on a fixed Friday: the demo's journey task repeats Monday to Friday, so on a weekend there was no instance to tick off and five tests failed.
 
 ## 2026-11-13
 * **Fix** (#61): `meson.build` no longer lists the removed `pensum/ui/journey/path.py`; the Flatpak build failed on it after #62.
