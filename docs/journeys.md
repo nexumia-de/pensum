@@ -137,17 +137,28 @@ scales with the width and is clipped to its size; a picture in the far
 band is drawn with every role in `tint`, one silhouette with the ground
 (QuestArc's journey design, "Look and depth bands"). Scenes are composed
 from a ladder file (below); QuestArc's first region scenes (a meadow, a
-shore) were removed after 3.1.0. Titles become accessible labels. Pictures are found by
+shore) were removed after 3.1.0. Titles become accessible labels. QuestArc's pictures are compacted
+(QuestArc#137: several plain shapes of one role in one `path`, ellipses as arcs `A`, straight runs
+as absolute `H`/`V` steps); librsvg draws them as they are, and Day Planner parses only the
+`<title>` (a regex in `art.title`), so nothing needed to change.
+**Ladders on QuestArc `main`** (after v4.0.0, QuestArc#128/#141): Crossing and its water, river
+setting and `reeds` are gone; the ladders are Garden (flowers), Well (lanterns), Lookout (pennants)
+and Home, each with five versions and a land setting. No ladder has `water` now; the engine still
+supports it, so `build_page` keeps its flowers-over-water rule, tested with a fixture ladder.
+The pictures' own titles can differ from the ladder's version titles ("A well under a roof" /
+"A roofed well"); the scene uses the ladder's. **The run's hue is no longer read** by the engine
+on `main` (QuestArc#143: the hue belongs to the Valley place; `build:<runId>.hue` is ignored), so
+the Colour rows of the build page change nothing there; to be decided with the pin bump. Pictures are found by
 name only (`content.art_path`); names cannot leave the folder.
 
 The journey page draws the build with them. The demo
-`tests/art_demo.py sizes|sequence-crossing|journey-home|palette` shows
+`tests/art_demo.py sizes|sequence-well|journey-home|palette` shows
 every picture at 48, 32 and 24 px and the ladders; `tests/test_art.py`
 checks that a ladder's scene is drawn only in the roles' colours, the
 far band in `tint`, and that every class in `content/art/` is a role
 Day Planner fills. Both need a QuestArc with `content/art/` (a checkout
-of QuestArc's `main`, or a release from 3.3.0 on, as the manifest
-pins); with an older archive the tests are skipped.
+of QuestArc's `main`, whose ladders the tests name: Garden, Well, Lookout, Home; a release from 3.3.0 on
+has Crossing instead and fails them until the pin follows the first release with QuestArc#141); with an older archive the tests are skipped.
 
 ```sh
 PENSUM_QUESTARC_DIR=$PWD/../quest-arc /usr/bin/python3.12 tests/art_demo.py

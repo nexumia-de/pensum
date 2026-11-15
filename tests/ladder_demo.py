@@ -163,7 +163,7 @@ def palette(page):
     grid.add_css_class("card")
     page.append(grid)
     frames = []
-    for name, hues in (("crossing", ("water", "slate")), ("home", ("meadow", "rust"))):
+    for name, hues in (("well", ("water", "slate")), ("garden", ("moss", "rose")), ("lookout", ("rust", "heather")), ("home", ("meadow", "sand"))):
         ladder = content.ladder(name)
         for hue in hues:
             frames.append(_frame(ladder, hue, 4,

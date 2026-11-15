@@ -471,8 +471,8 @@ def _labels(widget):
 @needs_engine
 def test_journey_shows_its_build_and_the_stations_as_a_list(app, tmp_path):
     """The journey page shows the build (QuestArc#42, pensum#57, #61): the
-    demo's second station of First Things First is a log across the river
-    with the next version under way; the stations are a list under
+    demo's second station of First Things First is a well sweep (the
+    Well's second version) with the next version under way; the stations are a list under
     Stations, with no level, no mode and no drawn path."""
     from pensum.game import content
     if not content.ladders():
@@ -483,11 +483,11 @@ def test_journey_shows_its_build_and_the_stations_as_a_list(app, tmp_path):
     iterate()
     page = visible(window)
     build = window.journeys.active()["build"]
-    assert (build["ladder"], build["version"], build["versions"]) == ("crossing", 2, 6)
+    assert (build["ladder"], build["version"], build["versions"]) == ("well", 2, 6)
     assert page.build is not None
     words = _labels(page.build)
     assert "1" in words and "2" in words and "3" in words and "4" not in words
-    assert any(w.startswith("A log stands") for w in words)
+    assert any(w.startswith("A well sweep stands") for w in words)
     assert page.title.get_subtitle() == ""
     assert "mode" not in window.journeys.view and "level" not in window.journeys.view
     page.show_stations()
@@ -505,8 +505,9 @@ def test_journey_shows_its_build_and_the_stations_as_a_list(app, tmp_path):
 @needs_engine
 def test_what_you_build_writes_only_the_choice(app, tmp_path):
     """Changing the colour or what grows writes one build record with what
-    the user picked; flowers cannot hang over water; the journey's
-    suggestion withdraws it. The data stays valid."""
+    the user picked; flowers cannot hang over water (no QuestArc ladder has
+    water any more, the engine still supports it: a fixture ladder); the
+    journey's suggestion withdraws it. The data stays valid."""
     from pensum.game import content, records
     if not content.ladders():
         pytest.skip("no ladders in PENSUM_QUESTARC_DIR")
@@ -522,19 +523,28 @@ def test_what_you_build_writes_only_the_choice(app, tmp_path):
     page._choose(run, "hue", "slate")
     iterate()
     assert records.load(window.ds)["build:demo"] == {"hue": "slate"}
-    assert window.journeys.active()["build"]["hue"] == "slate"
+    # The engine no longer reads the run's hue (the place's does, QuestArc#143).
+    assert window.journeys.active()["build"]["hue"] == content.ladder("well")["hue"]
     run = window.journeys.active()
     page._choose(run, "ladder", "home")
     page._choose(window.journeys.active(), "marker", "flowers")
     iterate()
     assert records.load(window.ds)["build:demo"] == {"hue": "slate", "ladder": "home",
                                                      "marker": "flowers"}
-    # Back over water the flowers no longer fit: the ladder's own marker applies.
-    page._choose(window.journeys.active(), "ladder", "crossing")
-    iterate()
-    assert records.load(window.ds)["build:demo"] == {"hue": "slate", "ladder": "crossing"}
     build = window.journeys.active()["build"]
-    assert (build["ladder"], build["marker"], build["version"]) == ("crossing", "lanterns", 2)
+    assert (build["ladder"], build["marker"], build["version"]) == ("home", "flowers", 2)
+    # Over water the flowers no longer fit: the ladder's own marker applies.
+    # No ladder of QuestArc has water now; a fixture stands in for one.
+    real = content.ladder
+    content.ladder = lambda name: ({"title": "Pond", "water": True, "marker": "lanterns",
+                                    "versions": real("well")["versions"]}
+                                   if name == "pond" else real(name))
+    try:
+        page._choose(window.journeys.active(), "ladder", "pond")
+    finally:
+        content.ladder = real
+    iterate()
+    assert records.load(window.ds)["build:demo"] == {"hue": "slate", "ladder": "pond"}
     window.journeys.action("chooseBuild", "demo", {})
     iterate()
     assert "build:demo" not in records.load(window.ds)
