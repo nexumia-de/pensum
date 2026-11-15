@@ -90,20 +90,31 @@ def test_far_stylesheet_fills_every_role_with_tint():
 # while a stage runs a festive marker in front of it grows one element at a
 # time and is "on" while the stage is met. States, never counts.
 
-@pytest.fixture
-def crossing():
-    found = content.ladder("crossing")
+def _ladder(name):
+    found = content.ladder(name)
     if found is None:
-        pytest.skip("no ladders in PENSUM_QUESTARC_DIR")
+        pytest.skip(f"no {name} ladder in PENSUM_QUESTARC_DIR")
     return found
+
+
+@pytest.fixture
+def well():
+    return _ladder("well")
+
+
+@pytest.fixture
+def garden():
+    return _ladder("garden")
+
+
+@pytest.fixture
+def lookout():
+    return _ladder("lookout")
 
 
 @pytest.fixture
 def home():
-    found = content.ladder("home")
-    if found is None:
-        pytest.skip("no ladders in PENSUM_QUESTARC_DIR")
-    return found
+    return _ladder("home")
 
 
 def _arts(ladder, version, **state):
@@ -114,32 +125,32 @@ def _marks(ladder, version, **state):
     return [a for a in _arts(ladder, version, **state) if a.startswith("marker-")]
 
 
-def test_ladder_scene_fills_the_build_slot(crossing):
-    scene = art.ladder_scene(crossing, 3)
-    assert scene["pictures"][0]["art"] == "setting-river"
-    assert [a for a in _arts(crossing, 3) if a.startswith("build-")] == ["build-crossing-3"]
-    assert _marks(crossing, 3) == []
-    assert scene["title"] == "A plank bridge stands"
+def test_ladder_scene_fills_the_build_slot(well):
+    scene = art.ladder_scene(well, 3)
+    assert scene["pictures"][0]["art"] == "setting-green"
+    assert [a for a in _arts(well, 3) if a.startswith("build-")] == ["build-well-3"]
+    assert _marks(well, 3) == []
+    assert scene["title"] == "A well with a winch stands"
 
 
-def test_every_picture_of_every_marker_exists(crossing, home):
-    for ladder in (crossing, home):
+def test_every_picture_of_every_marker_exists(well, garden, lookout, home):
+    for ladder in (well, garden, lookout, home):
         for kind in ("lanterns", "bunting", "flowers"):
             for state in ({"progress": 1.0}, {"ready": True}):
                 for item in art.ladder_scene(ladder, 2, marker=kind, **state)["pictures"]:
                     assert content.art_path(item["art"]) is not None, item["art"]
 
 
-def test_the_marker_grows_one_element_at_a_time(crossing):
-    assert art.marker_elements(crossing) == 8
-    assert art.elements_shown(crossing, 0) == 0
-    assert art.elements_shown(crossing, 3 / 8) == 3
-    assert _marks(crossing, 3, progress=1 / 8) == ["marker-lanterns-post"]
-    two = _arts(crossing, 3, progress=2 / 8)
+def test_the_marker_grows_one_element_at_a_time(well):
+    assert art.marker_elements(well) == 10
+    assert art.elements_shown(well, 0) == 0
+    assert art.elements_shown(well, 3 / 10) == 3
+    assert _marks(well, 3, progress=1 / 10) == ["marker-lanterns-post"]
+    two = _arts(well, 3, progress=2 / 10)
     assert sum("-post" in a for a in two) == 2 and sum("-cord-" in a for a in two) == 1
-    assert sum("-bead" in a for a in _marks(crossing, 3, progress=4 / 8)) == 2
-    assert art.ladder_scene(crossing, 3, 0.5)["title"] == \
-        "A plank bridge stands, a stone bridge is on its way"
+    assert sum("-bead" in a for a in _marks(well, 3, progress=5 / 10)) == 1
+    assert art.ladder_scene(well, 3, 0.5)["title"] == \
+        "A well with a winch stands, a roofed well is on its way"
 
 
 def test_sides_leaves_the_middle_open(home):
@@ -147,39 +158,60 @@ def test_sides_leaves_the_middle_open(home):
     assert lines == ["setting-clearing-cord-1", "setting-clearing-cord-2"]
 
 
-def test_ready_shows_every_element_on_and_the_words(crossing):
-    on = _marks(crossing, 3, progress=0.5, ready=True)
-    assert len(on) == 8 and sum(a.endswith("-bead-lit") for a in on) == 6
-    assert on.count("marker-lanterns-post") == 2
-    assert art.ladder_scene(crossing, 3, ready=True)["title"] == \
-        "A plank bridge stands, a stone bridge is ready"
-    assert art.build_words(crossing, 1, 0.1) == "Stepping stones stand · a log is on its way"
+def test_ready_shows_every_element_on_and_the_words(well):
+    on = _marks(well, 3, progress=0.5, ready=True)
+    assert len(on) == 10 and sum(a.endswith("-bead-lit") for a in on) == 6
+    assert on.count("marker-lanterns-post") == 4
+    assert art.ladder_scene(well, 3, ready=True)["title"] == \
+        "A well with a winch stands, a roofed well is ready"
+    assert art.build_words(well, 1, 0.1) == "A water hole stands · a well sweep is on its way"
 
 
-def test_another_marker_and_the_last_version(crossing, home):
+def test_another_marker_and_the_last_version(well, garden, lookout, home):
     assert _marks(home, 3, progress=0.1) == ["marker-bunting-post"]
+    assert _marks(lookout, 3, progress=0.1) == ["marker-bunting-post"]
+    assert _marks(garden, 3, progress=0.1) == ["marker-flowers-post"]
     assert _marks(home, 3, progress=0.1, marker="flowers") == ["marker-flowers-post"]
-    arts = _arts(crossing, 5, ready=True, graduated=True)
-    assert _marks(crossing, 5, ready=True) == [] and arts.count("lantern") == 1
+    arts = _arts(well, 5, ready=True, graduated=True)
+    assert _marks(well, 5, ready=True) == [] and arts.count("lantern") == 1
 
 
-def test_the_row_of_versions_can_show_a_zoomed_part(crossing):
-    assert crossing["row"] == [30, 38, 60, 40]
+def test_the_row_of_versions_can_show_a_zoomed_part(well):
+    """A ladder may name `row`, a part of its pictures for the row of
+    versions (none of the current ladders does, so the part is given)."""
+    assert well.get("row") is None
+    part = [30, 38, 60, 40]
     surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, 60, 40)
     cr = cairo.Context(surface)
     css = art.stylesheet({role: (0.0, 0.0, 1.0) for role in ROLES})
-    assert art.draw_part(cr, "build-crossing-1", 60, 40, crossing["row"], css)
+    assert art.draw_part(cr, "build-well-3", 60, 40, part, css)
     data = surface.get_data()
     drawn = sum(data[i + 3] == 255 for i in range(0, len(data), 4))
-    assert drawn > 60 * 40 * 0.2  # the stones fill the cell, not a thin line
+    assert drawn > 60 * 40 * 0.05  # the winch is drawn in the cell, not nothing
 
 
-def test_ladder_scene_is_drawn_only_in_the_roles_colours(crossing):
-    for version in range(1, len(crossing["versions"]) + 1):
-        scene = art.ladder_scene(crossing, version, ready=True, graduated=version == 5)
-        pixels = [p for p in render(scene) if p[3] == 255]
-        assert (0, 0, 0, 255) not in pixels
-        assert sum(p in PURE for p in pixels) / len(pixels) > 0.95
+def test_ladder_scene_is_drawn_only_in_the_roles_colours(well, garden, lookout, home):
+    """Also the compacted pictures (QuestArc#137): several shapes in one
+    path, ellipses as arcs, straight runs as absolute H and V steps."""
+    for ladder in (well, garden, lookout, home):
+        for version in range(1, len(ladder["versions"]) + 1):
+            scene = art.ladder_scene(ladder, version, ready=True, graduated=version == 5)
+            pixels = [p for p in render(scene) if p[3] == 255]
+            assert (0, 0, 0, 255) not in pixels, (ladder["title"], version)
+            assert sum(p in PURE for p in pixels) / len(pixels) > 0.95, (ladder["title"], version)
+
+
+def test_compacted_pictures_draw_something_in_every_version(well, garden, lookout, home):
+    for ladder in (well, garden, lookout, home):
+        for version in ladder["versions"]:
+            surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, 120, 80)
+            cr = cairo.Context(surface)
+            css = art.stylesheet({role: (1.0, 0.0, 0.0) for role in ROLES})
+            assert art.draw(cr, version["art"], 0, 0, 120, 80, css)
+            data = surface.get_data()
+            drawn = sum(data[i + 3] == 255 for i in range(0, len(data), 4))
+            assert drawn > 120 * 80 * 0.05, version["art"]
+            assert art.title(version["art"])  # QuestArc's picture titles are the accessible labels
 
 
 def test_a_hue_replaces_accent_and_tints_only():
