@@ -504,7 +504,7 @@ def test_journey_shows_its_build_and_the_stations_as_a_list(app, tmp_path):
 
 @needs_engine
 def test_what_you_build_writes_only_the_choice(app, tmp_path):
-    """Changing the colour or what grows writes one build record with what
+    """Changing what grows or what hangs writes one build record with what
     the user picked; flowers cannot hang over water (no QuestArc ladder has
     water any more, the engine still supports it: a fixture ladder); the
     journey's suggestion withdraws it. The data stays valid."""
@@ -519,12 +519,12 @@ def test_what_you_build_writes_only_the_choice(app, tmp_path):
     iterate()
     page = visible(window)
     assert page.get_tag() == "journey-build"
-    run = window.journeys.active()
-    page._choose(run, "hue", "slate")
+    # No colour rows: the hue belongs to the place (QuestArc 4.1).
+    titles = [w.get_title() for w in _widgets(page) if hasattr(w, "get_title")]
+    assert "Meadow green" not in titles and "Colour" not in _labels(page)
+    # A hue record from an older version stays as it was read.
+    window.journeys.action("chooseBuild", "demo", {"hue": "slate"})
     iterate()
-    assert records.load(window.ds)["build:demo"] == {"hue": "slate"}
-    # The engine no longer reads the run's hue (the place's does, QuestArc#143).
-    assert window.journeys.active()["build"]["hue"] == content.ladder("well")["hue"]
     run = window.journeys.active()
     page._choose(run, "ladder", "home")
     page._choose(window.journeys.active(), "marker", "flowers")

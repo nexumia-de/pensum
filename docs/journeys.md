@@ -147,8 +147,10 @@ and Home, each with five versions and a land setting. No ladder has `water` now;
 supports it, so `build_page` keeps its flowers-over-water rule, tested with a fixture ladder.
 The pictures' own titles can differ from the ladder's version titles ("A well under a roof" /
 "A roofed well"); the scene uses the ladder's. **The run's hue is no longer read** by the engine
-on `main` (QuestArc#143: the hue belongs to the Valley place; `build:<runId>.hue` is ignored), so
-the Colour rows of the build page change nothing there; to be decided with the pin bump. Pictures are found by
+from 4.1.0 on (QuestArc#143: the hue belongs to the Valley place; `build:<runId>.hue` is ignored),
+so the build page has no Colour rows any more (owner's decision, #69); the hue shown is the
+ladder's default. Existing `build.hue` records stay as they are (the page writes back every field
+it read when the user picks a ladder or marker); the place's hue comes with pensum#68. Pictures are found by
 name only (`content.art_path`); names cannot leave the folder.
 
 The journey page draws the build with them. The demo

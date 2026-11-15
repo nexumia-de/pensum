@@ -1,7 +1,7 @@
 # Directory Update Log
 
 ## 2026-11-15
-* **Update** (#67, QuestArc#128/#141/#137): the picture tests, the ladder demo and the UI tests follow QuestArc `main`: Crossing is gone, the scene tests use Well, Garden, Lookout and Home, the compacted pictures are drawn and checked for every version, and the flowers-over-water rule is tested with a fixture ladder. The manifest pin stays at 3.3.0 until the first QuestArc release with #141; the tests need QuestArc `main` meanwhile. The engine on `main` ignores the run's hue (QuestArc#143), so the build page's Colour rows do nothing there.
+* **Update** (#67, QuestArc#128/#141/#137): the picture tests, the ladder demo and the UI tests follow QuestArc `main`: Crossing is gone, the scene tests use Well, Garden, Lookout and Home, the compacted pictures are drawn and checked for every version, and the flowers-over-water rule is tested with a fixture ladder. The manifest pin stays at 3.3.0 until the first QuestArc release with #141; the tests need QuestArc `main` meanwhile. The engine on `main` ignores the run's hue (QuestArc#143), so the owner decided to remove the build page's Colour rows (nothing writes `build.hue` now; old records stay untouched; the place's hue follows in #68).
 
 ## 2026-11-14
 * **Fix**: the demo's journey showed its second station as finished on Saturdays and Sundays, so `test_journey_shows_its_build_and_the_stations_as_a_list` failed on weekends: the journey's task repeats Monday to Friday, today is then no due day, and the last five due days held four completions. On a weekend the demo now leaves a second gap, not next to the first (`pensum/demo.py`). The suite passes with the clock on a Friday, Saturday, Sunday and Monday.
