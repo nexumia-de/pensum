@@ -33,3 +33,18 @@ def frozen_state(tmp_path):
     path = tmp_path / "2026-07-18_120000.json"
     path.write_text(json.dumps(state))
     return path
+
+
+@pytest.fixture(scope="session")
+def app():
+    """One application for all UI tests, in every test module: a second
+    one with the same id can't register on the session bus."""
+    import gi
+    gi.require_version("Gtk", "4.0")
+    gi.require_version("Adw", "1")
+    from gi.repository import Adw
+    from pensum.main import Application
+    application = Application()
+    application.register(None)
+    Adw.init()
+    yield application

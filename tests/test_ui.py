@@ -21,17 +21,6 @@ from pensum.store.dataset import Context  # noqa: E402
 from pensum.store.files import Files  # noqa: E402
 
 
-@pytest.fixture(scope="module")
-def app():
-    """One application for all tests: a second one with the same id can't
-    register on the session bus."""
-    from pensum.main import Application
-    application = Application()
-    application.register(None)
-    Adw.init()
-    yield application
-
-
 def iterate(times=20):
     ctx = GLib.MainContext.default()
     for _ in range(times):
