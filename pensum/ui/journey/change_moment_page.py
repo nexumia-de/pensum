@@ -2,9 +2,13 @@
 words and name (`nameAnchor`, written when editing ends: Enter, leaving
 the field or going back; no Save button), and where it stands in the day:
 the places in order, **Move Earlier** and **Move Later**, the side of the
-path and the colour (the eight hues, each a swatch with its name), **Use
-the suggestion** (only while something was chosen), and **Remove This
-Moment** where nothing stands. Each change of the place is written at
+path and the colour (the eight hues, each a swatch with its name), where
+a thing stands **What grows** (the kind of every thing at the place,
+also after it has grown; the version reached is kept) and, once a
+ladder lists more than one marker kind, **What hangs**, **Use the
+suggestion** (only while something was chosen; it also withdraws the
+kind chosen when the first journey started), and **Remove This Moment**
+where nothing stands. Each change of the place is written at
 once, as the engine's `movePlace`, `choosePlaceSide`, `choosePlaceHue`
 and `withdrawPlace` make it (`place:<anchorId>` records); the fields
 above keep what was typed. Undo, not confirm: only removing a moment
@@ -86,6 +90,9 @@ class ChangeMomentPage(JourneySubpage):
         self._order(places, place, view)
         self._side(place)
         self._colour(place)
+        if place["things"]:
+            self._kind(place)
+            self._marker(place)
         self._more(place, view)
 
     def _act(self, name, *args):
@@ -121,13 +128,47 @@ class ChangeMomentPage(JourneySubpage):
             group.add(_radio(first, entry["title"], place["hue"] == hue,
                              lambda h=hue: self._act("choosePlaceHue", h), swatch(hue)))
 
+    def _kind(self, place):
+        """What grows: one option per ladder with its first version as a
+        small picture; the journey's own is "Suggested by the journey"."""
+        group, first = self.group(t("ui.build.thing"), t("ui.place.kind.keeps")), {"first": None}
+        journey = content.journey(place["things"][0]["journeyId"]) or {}
+        suggested = (journey.get("build") or {}).get("ladder")
+        standing = place["things"][0]["ladder"]
+        for name, ladder in content.ladders().items():
+            row = _radio(first, ladder["title"], standing == name,
+                         lambda n=name: self._act("choosePlaceKind", n),
+                         art.picture_area(ladder["versions"][0]["art"], 60, card=True,
+                                          hue=place["hue"], height=40, part=ladder.get("row")))
+            if name == suggested:
+                row.set_subtitle(t("ui.build.suggested"))
+            group.add(row)
+
+    def _marker(self, place):
+        """What hangs: only where the place's kind draws more than one kind
+        of marker (flowers are the only one now, so nothing is shown)."""
+        kinds = (content.ladder(place["things"][0]["ladder"]) or {}).get("markers") or []
+        if len(kinds) < 2:
+            return
+        group, first = self.group(t("ui.place.marker")), {"first": None}
+        for index, kind in enumerate(kinds):
+            group.add(_radio(first, t("ui.place.marker.default") if index == 0
+                             else kind.capitalize(), place.get("marker", kinds[0]) == kind,
+                             lambda k=None if index == 0 else kind:
+                             self._act("choosePlaceMarker", k)))
+
     def _more(self, place, view):
         group = self.group()
-        if place["chosen"]:
+        # What the user picked: the place's record, and the kind chosen
+        # before the first journey's first version (`build:<run>`).
+        first = place["things"][0]["runId"] if place["things"] else None
+        picked = bool(place["chosen"]) or bool(
+            first and (records.load(self.window.ds).get(f"build:{first}") or {}).get("ladder"))
+        if picked:
             row = Adw.ButtonRow(title=t("ui.place.suggestion")) if hasattr(Adw, "ButtonRow") \
                 else Adw.ActionRow(title=t("ui.place.suggestion"), activatable=True)
-            row.connect("activated", lambda *_: self.model.action("withdrawPlace",
-                                                                  self.anchor_id))
+            row.connect("activated", lambda *_: self.model.action(
+                "withdrawPlace", self.anchor_id, self.model.view))
             group.add(row)
         anchor = moments.anchor(view, self.anchor_id) or {}
         if not (place["things"] or place["unbuilt"] or anchor.get("growing")
