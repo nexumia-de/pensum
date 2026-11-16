@@ -11,10 +11,9 @@ band is drawn as one silhouette in tint.
 A scene of a region may take its hue from QuestArc's palette
 (content/art/palette.json): then accent, tint and tint-strong come from
 the hue's light or dark value, fg, bg and dim stay libadwaita's. A
-ladder's scene (a build; in front of it, while a stage runs, a festive
-marker that grows one element at a time and is "on" while the stage is
-met; the lantern after graduation) is composed by ladder_scene from the
-ladder file's places.
+ladder's scene (a build; in front of it, while a stage runs, flowers that
+grow one at a time and open while the stage is met; the lantern after
+graduation) is composed by ladder_scene from the ladder file's places.
 Every picture and scene has its title as the accessible label."""
 import html
 import math
@@ -160,46 +159,39 @@ def draw_scene(cr, scene, width, height, roles):
     cr.restore()
 
 
-def build_words(ladder, version, progress=0, ready=False):
-    """The state in words, as under the row of versions: "A plank bridge
-    stands · a stone bridge is on its way" while the stage runs, "… is
-    ready" while it is met; never a count, never a building site."""
+def build_words(ladder, version):
+    """The state in words, as under the row of versions: only what
+    stands ("A hut stands"), never the next version (QuestArc #155)."""
     versions = ladder["versions"]
     now = versions[min(max(version, 1), len(versions)) - 1]["title"]
-    stands = "stands" if now.startswith("A ") else "stand"
-    if version >= len(versions) or (not ready and progress <= 0):
-        return f"{now} {stands}"
-    following = versions[version]["title"].lower()
-    return f"{now} {stands} · {following} {'is ready' if ready else 'is on its way'}"
+    return f"{now} {'stands' if now.startswith('A ') else 'stand'}"
 
 
 def marker_elements(ladder):
-    """E: how many elements the ladder's marker has (posts, then hanging ones)."""
+    """E: how many flowers the ladder's marker has."""
     return max((p["order"] for p in ladder["pictures"] if p.get("slot") == "marker"), default=0)
 
 
 def elements_shown(ladder, progress):
-    """How many elements stand at `progress` (0…1): the first ceil(p × E)."""
+    """How many flowers stand at `progress` (0…1): the first ceil(p × E)."""
     return max(0, math.ceil(min(max(progress, 0.0), 1.0) * marker_elements(ladder) - 1e-9))
 
 
-def ladder_scene(ladder, version, progress=0, ready=False, marker=None, graduated=False):
+def ladder_scene(ladder, version, progress=0, ready=False, versions=None, graduated=False):
     """The scene of a ladder (`<name>.ladder.json`) with `version` (from 1)
-    standing. While a stage runs its marker grows in the foreground one
-    element at a time, plain posts first, then the hanging elements: the first
-    ceil(p × E) of them, `progress` p the best progress reached in the stage,
-    so it never loses one; a line shows once both its posts stand. `ready`
-    while the stage's condition is met now: every element stands in its
-    "on" form (the posts stay plain). `marker` is a kind of markers.json, the ladder's default if
-    None. After the last version there is no marker; `graduated` adds the
-    lantern (QuestArc's journey design, "Builds and ladders")."""
-    versions = ladder["versions"]
-    standing = versions[min(max(version, 1), len(versions)) - 1]
-    last = version >= len(versions)
+    standing. While a stage runs flowers grow in the thing's yard one at a
+    time (QuestArc #152): the first ceil(p × E) of them, `progress` p the
+    best progress reached in the stage, so it never loses one; in bud, and
+    open while the stage's condition is met (`ready`). After the last
+    version (`versions` of the journey) there are none; `graduated` adds
+    the ladder's own lantern (QuestArc's journey design, "Builds and
+    ladders")."""
+    count = len(ladder["versions"])
+    standing = ladder["versions"][min(max(version, 1), count) - 1]
+    last = version >= (versions or count)
     ready = ready and not last
     shown = 0 if last else marker_elements(ladder) if ready else elements_shown(ladder, progress)
-    kind = marker or ladder["marker"]
-    title = build_words(ladder, version, 0 if last else progress, ready).replace(" · ", ", ")
+    title = build_words(ladder, version)
     if graduated:
         title += ", the lantern lit"
     pictures = []
@@ -212,10 +204,7 @@ def ladder_scene(ladder, version, progress=0, ready=False, marker=None, graduate
         elif slot == "lantern" and graduated:
             pictures.append(dict(place, art="lantern"))
         elif slot == "marker" and place["order"] <= shown:
-            lit = "-lit" if ready and place["part"] == "bead" else ""
-            name = place["art"] if place["part"] == "cord" else \
-                f"marker-{kind}-{place['part']}{lit}"
-            pictures.append(dict(place, art=name))
+            pictures.append(dict(place, art=place["art"] + ("-open" if ready else "")))
     return {"title": title, "width": ladder["width"], "height": ladder["height"],
             "pictures": pictures}
 

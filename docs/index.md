@@ -22,6 +22,7 @@ Change history is in [log.md](log.md).
 # Journeys
 
 * [QuestArc's journeys](journeys.md) - QuestArc's engine through gjs, the choice records in pluginUserData, stage tasks with their repeat rule, the journey pages, development.
+* [The Valley](valley.md) - The home of the journeys: moments as places along one path, drawn from the engine's `valley` view and layout; the growing card, moments at the start, the demo places.
 
 # Design
 

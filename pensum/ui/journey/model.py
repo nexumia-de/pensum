@@ -129,7 +129,7 @@ class JourneyModel:
             return
         self._notify()
         if any(e["key"] in OWN_COMPLETION for e in events or ()):
-            self.window.show_journey()
+            self.window.show_run()
 
     def _record_repeat_pause(self, view):
         """The bound rule was paused or resumed since the last look

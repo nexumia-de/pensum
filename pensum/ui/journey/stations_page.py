@@ -31,5 +31,5 @@ class StationsPage(JourneySubpage):
             row.add_css_class("pensum-journey-station")
             row.add_suffix(Gtk.Image(icon_name="go-next-symbolic"))
             row.connect("activated",
-                        lambda _r, i=index: self.window.journey_page.show_station(i))
+                        lambda _r, i=index: self.run_page().show_station(i))
             group.add(row)

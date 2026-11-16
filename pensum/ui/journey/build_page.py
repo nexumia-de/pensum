@@ -1,7 +1,7 @@
 """What you build (QuestArc docs/behaviour.md, screen 3a), from the
-journey's menu in the game: what grows (a ladder), what hangs on the
-marker (the colour belongs to the place, not the run, since
-QuestArc 4.1). Each change is written at once through the
+journey's menu in the game: what grows (a ladder). The colour belongs to
+the place (QuestArc 4.1) and flowers are the only marker (4.2): there is
+nothing else to choose. Each change is written at once through the
 engine's `chooseBuild`; only what the user picked is stored, the rest
 follows the journey. Nothing built is lost by changing: the same progress
 is drawn as the other thing."""
@@ -27,10 +27,6 @@ class BuildPage(JourneySubpage):
         if choice.get(field) == name:
             return
         choice[field] = name
-        ladder = content.ladder(choice.get("ladder") or run["build"]["ladder"]) or {}
-        kind = content.markers().get(choice.get("marker")) or {}
-        if kind.get("landOnly") and ladder.get("water"):
-            del choice["marker"]  # no longer fits: the ladder's own applies
         self.model.action("chooseBuild", run["runId"], choice)
 
     def _rows(self, group, run, field, options):
@@ -57,17 +53,11 @@ class BuildPage(JourneySubpage):
             return
         build, journey = run["build"], current[1]
         suggested = (journey.get("build") or {}).get("ladder")
-        water = (content.ladder(build["ladder"]) or {}).get("water")
         self._rows(self.group(t("ui.build.thing")), run, "ladder", [
             (name, ladder["title"], t("ui.build.suggested") if name == suggested else "",
              art.picture_area(ladder["versions"][0]["art"], 60, card=True, hue=build["hue"],
                               height=40, part=ladder.get("row")), True)
             for name, ladder in content.ladders().items()])
-        self._rows(self.group(t("ui.build.hangs")), run, "marker", [
-            (name, kind["title"], t("ui.build.land-only") if kind.get("landOnly") and water else "",
-             art.picture_area(f"marker-{name}-bead", 28, card=True, hue=build["hue"]),
-             not (kind.get("landOnly") and water))
-            for name, kind in content.markers().items()])
         group = self.group(description=t("ui.build.keeps"))
         if self._choice(run):
             row = Adw.ButtonRow(title=t("ui.build.suggestion")) if hasattr(Adw, "ButtonRow") \

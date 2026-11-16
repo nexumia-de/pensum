@@ -37,8 +37,9 @@ def render(scene, width=1280, height=480):
 def test_scene_is_drawn_only_in_the_roles_colours(scene):
     pixels = [p for p in render(scene) if p[3] == 255]
     seen = {PURE[p] for p in pixels if p in PURE}
-    # A ladder's scene uses every role (dim is the line between the posts).
-    assert seen == set(ROLES)
+    # A ladder's scene uses every role but dim: no picture of 4.2 uses it
+    # any more (the line between the posts is gone), and Pensum still fills it.
+    assert seen == set(ROLES) - {"dim"}
     # Antialiased edges between two roles mix them; anything else would be
     # a colour of the picture's own (an unfilled shape is black).
     assert (0, 0, 0, 255) not in pixels
@@ -87,8 +88,8 @@ def test_far_stylesheet_fills_every_role_with_tint():
 
 
 # The ladders (QuestArc#42): one build per ladder, whole at every version;
-# while a stage runs a festive marker in front of it grows one element at a
-# time and is "on" while the stage is met. States, never counts.
+# while a stage runs flowers grow in its yard one at a time (#152), in bud,
+# and open while the stage is met. States, never counts.
 
 def _ladder(name):
     found = content.ladder(name)
@@ -133,47 +134,34 @@ def test_ladder_scene_fills_the_build_slot(well):
     assert scene["title"] == "A well with a winch stands"
 
 
-def test_every_picture_of_every_marker_exists(well, garden, lookout, home):
+def test_every_flower_picture_exists(well, garden, lookout, home):
     for ladder in (well, garden, lookout, home):
-        for kind in ("lanterns", "bunting", "flowers"):
-            for state in ({"progress": 1.0}, {"ready": True}):
-                for item in art.ladder_scene(ladder, 2, marker=kind, **state)["pictures"]:
-                    assert content.art_path(item["art"]) is not None, item["art"]
+        for state in ({"progress": 1.0}, {"ready": True}):
+            for item in art.ladder_scene(ladder, 2, **state)["pictures"]:
+                assert content.art_path(item["art"]) is not None, item["art"]
 
 
-def test_the_marker_grows_one_element_at_a_time(well):
-    assert art.marker_elements(well) == 10
+def test_the_flowers_grow_one_at_a_time(well):
+    assert art.marker_elements(well) == 6
     assert art.elements_shown(well, 0) == 0
-    assert art.elements_shown(well, 3 / 10) == 3
-    assert _marks(well, 3, progress=1 / 10) == ["marker-lanterns-post"]
-    two = _arts(well, 3, progress=2 / 10)
-    assert sum("-post" in a for a in two) == 2 and sum("-cord-" in a for a in two) == 1
-    assert sum("-bead" in a for a in _marks(well, 3, progress=5 / 10)) == 1
-    assert art.ladder_scene(well, 3, 0.5)["title"] == \
-        "A well with a winch stands, a roofed well is on its way"
+    assert art.elements_shown(well, 3 / 6) == 3
+    assert _marks(well, 3, progress=1 / 6) == ["marker-flower-1"]
+    assert _marks(well, 3, progress=3 / 6) == [f"marker-flower-{k}" for k in (1, 2, 3)]
+    # The words say what stands, never what comes next (QuestArc #155).
+    assert art.ladder_scene(well, 3, 0.5)["title"] == "A well with a winch stands"
 
 
-def test_sides_leaves_the_middle_open(home):
-    lines = [a for a in _arts(home, 3, progress=0.4) if "-cord-" in a]
-    assert lines == ["setting-clearing-cord-1", "setting-clearing-cord-2"]
+def test_ready_opens_every_flower_and_the_words(well):
+    on = _marks(well, 3, progress=0.1, ready=True)
+    assert on == [f"marker-flower-{k}-open" for k in range(1, 7)]
+    assert art.build_words(well, 1) == "A water hole stands"
 
 
-def test_ready_shows_every_element_on_and_the_words(well):
-    on = _marks(well, 3, progress=0.5, ready=True)
-    assert len(on) == 10 and sum(a.endswith("-bead-lit") for a in on) == 6
-    assert on.count("marker-lanterns-post") == 4
-    assert art.ladder_scene(well, 3, ready=True)["title"] == \
-        "A well with a winch stands, a roofed well is ready"
-    assert art.build_words(well, 1, 0.1) == "A water hole stands · a well sweep is on its way"
-
-
-def test_another_marker_and_the_last_version(well, garden, lookout, home):
-    assert _marks(home, 3, progress=0.1) == ["marker-bunting-post"]
-    assert _marks(lookout, 3, progress=0.1) == ["marker-bunting-post"]
-    assert _marks(garden, 3, progress=0.1) == ["marker-flowers-post"]
-    assert _marks(home, 3, progress=0.1, marker="flowers") == ["marker-flowers-post"]
+def test_no_flowers_after_the_last_version_and_the_lantern(well):
     arts = _arts(well, 5, ready=True, graduated=True)
     assert _marks(well, 5, ready=True) == [] and arts.count("lantern") == 1
+    # A journey with fewer versions than the ladder has ends sooner.
+    assert _marks(well, 3, ready=True, versions=3) == []
 
 
 def test_the_row_of_versions_can_show_a_zoomed_part(well):

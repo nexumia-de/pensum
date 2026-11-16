@@ -357,7 +357,7 @@ def test_walk_into_a_journey(app, tmp_path):
     # The welcome: no mode to choose and nothing written (pensum#61).
     assert window.journeys.records() == {}
     assert page.main_button.get_label() == "Choose a journey"
-    page._main_action()
+    page.main_button.emit("clicked")
     iterate()
     choose = visible(window)
     assert choose.get_tag() == "journey-choose"
@@ -370,14 +370,21 @@ def test_walk_into_a_journey(app, tmp_path):
     start.why_row.set_text("Calmer mornings")
     start._main()
     iterate()
-    assert visible(window) is page
+    # The journey stands at a new moment in the user's words (QuestArc 4.0).
+    run_page = visible(window)
+    assert type(run_page).__name__ == "RunPage"
+    anchors = [k for k in window.journeys.records() if k.startswith("anchor:")]
+    assert len(anchors) == 1
+    assert window.journeys.records()[anchors[0]] == {"kind": "routine", "words": "getting up"}
+    assert window.journeys.view["valley"][0]["name"] == "getting up"
+    page = run_page
     assert page.main_button.get_label() == "Set up the task"
     page._main_action()
     iterate()
     setup = visible(window)
     setup._main()  # Create the task
     iterate(40)
-    assert visible(window) is page
+    assert type(visible(window)).__name__ == "RunPage"
     run = window.journeys.active()
     assert run["why"] == "Calmer mornings"
     assert run["stations"][0]["state"] == "current"
@@ -414,16 +421,17 @@ def test_journey_comes_forward_only_for_its_own_task(app, tmp_path):
         "runId": "r", "journey": journey, "startDay": window.ds.today()}))
     window.changed()
     window.journeys.refresh_now()
-    window.show_journey()
+    window.show_run()
     iterate()
     page = visible(window)
+    assert type(page).__name__ == "RunPage"
     page._main_action()  # Set up the task
     iterate()
     setup = visible(window)
     assert setup.get_tag() == "journey-setup"
     setup._main()  # Create the task
     iterate(40)
-    assert visible(window) is page
+    assert type(visible(window)).__name__ == "RunPage"
     stage_task = next(t["id"] for t in window.ds.tasks.values() if t.get("repeatCfgId"))
 
     # Unrelated actions keep the user where they are, though the set-up
@@ -443,7 +451,7 @@ def test_journey_comes_forward_only_for_its_own_task(app, tmp_path):
     tasks.update(window.ds, other, title="Water the roses")
     window.changed()
     settle(window)
-    assert visible(window).get_tag() != "journey"
+    assert type(visible(window)).__name__ != "RunPage"
 
     # Ticking off the station's own task brings the journey forward.
     window.show_list(Context.today())
@@ -451,7 +459,7 @@ def test_journey_comes_forward_only_for_its_own_task(app, tmp_path):
     tasks.set_done(window.ds, stage_task, True)
     window.changed()
     settle(window)
-    assert visible(window) is window.journey_page
+    assert type(visible(window)).__name__ == "RunPage"
     assert window.journeys.active()["stations"][0]["completions"] == 1
     window.flush()
     assert validate.problems(backup.read(window.files.path)) == []
@@ -479,14 +487,15 @@ def test_journey_shows_its_build_and_the_stations_as_a_list(app, tmp_path):
         pytest.skip("no ladders in PENSUM_QUESTARC_DIR")
     window = new_window(app, tmp_path, demo.create())
     window.journeys.refresh_now()
-    window.show_journey()
+    window.show_run()
     iterate()
     page = visible(window)
+    assert type(page).__name__ == "RunPage"
     build = window.journeys.active()["build"]
     assert (build["ladder"], build["version"], build["versions"]) == ("well", 2, 6)
     assert page.build is not None
     words = _labels(page.build)
-    assert "1" in words and "2" in words and "3" in words and "4" not in words
+    assert "1" in words and "2" in words and "3" not in words  # only what stands
     assert any(w.startswith("A well sweep stands") for w in words)
     assert page.title.get_subtitle() == ""
     assert "mode" not in window.journeys.view and "level" not in window.journeys.view
@@ -504,47 +513,34 @@ def test_journey_shows_its_build_and_the_stations_as_a_list(app, tmp_path):
 
 @needs_engine
 def test_what_you_build_writes_only_the_choice(app, tmp_path):
-    """Changing what grows or what hangs writes one build record with what
-    the user picked; flowers cannot hang over water (no QuestArc ladder has
-    water any more, the engine still supports it: a fixture ladder); the
+    """Changing what grows writes one build record with what the user
+    picked; there is nothing else to choose (no colour, no marker); the
     journey's suggestion withdraws it. The data stays valid."""
     from pensum.game import content, records
     if not content.ladders():
         pytest.skip("no ladders in PENSUM_QUESTARC_DIR")
     window = new_window(app, tmp_path, demo.create())
     window.journeys.refresh_now()
-    window.show_journey()
+    window.show_run()
     iterate()
-    window.journey_page.show_build()
+    visible(window).show_build()
     iterate()
     page = visible(window)
     assert page.get_tag() == "journey-build"
-    # No colour rows: the hue belongs to the place (QuestArc 4.1).
+    # No colour rows (the hue belongs to the place, QuestArc 4.1) and no
+    # "What hangs" (flowers are the only marker, QuestArc 4.2).
     titles = [w.get_title() for w in _widgets(page) if hasattr(w, "get_title")]
     assert "Meadow green" not in titles and "Colour" not in _labels(page)
+    assert "What hangs" not in _labels(page) and "Lanterns" not in titles
     # A hue record from an older version stays as it was read.
     window.journeys.action("chooseBuild", "demo", {"hue": "slate"})
     iterate()
     run = window.journeys.active()
     page._choose(run, "ladder", "home")
-    page._choose(window.journeys.active(), "marker", "flowers")
     iterate()
-    assert records.load(window.ds)["build:demo"] == {"hue": "slate", "ladder": "home",
-                                                     "marker": "flowers"}
+    assert records.load(window.ds)["build:demo"] == {"hue": "slate", "ladder": "home"}
     build = window.journeys.active()["build"]
-    assert (build["ladder"], build["marker"], build["version"]) == ("home", "flowers", 2)
-    # Over water the flowers no longer fit: the ladder's own marker applies.
-    # No ladder of QuestArc has water now; a fixture stands in for one.
-    real = content.ladder
-    content.ladder = lambda name: ({"title": "Pond", "water": True, "marker": "lanterns",
-                                    "versions": real("well")["versions"]}
-                                   if name == "pond" else real(name))
-    try:
-        page._choose(window.journeys.active(), "ladder", "pond")
-    finally:
-        content.ladder = real
-    iterate()
-    assert records.load(window.ds)["build:demo"] == {"hue": "slate", "ladder": "pond"}
+    assert (build["ladder"], build["version"]) == ("home", 2)
     window.journeys.action("chooseBuild", "demo", {})
     iterate()
     assert "build:demo" not in records.load(window.ds)
