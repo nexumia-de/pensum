@@ -40,6 +40,20 @@ def last_days(marks):
     return row
 
 
+def card_hint(run, station, today):
+    """The muted line under the card (QuestArc journey/card.ts): when the
+    journey starts, staying a while, started smaller, or the state's hint."""
+    state = station["state"]
+    if station.get("acceptedDay") and station["acceptedDay"] > today:
+        return t("ui.card.starts", date=short_date(station["acceptedDay"]))
+    if state == "current" and station.get("stepBackDay"):
+        return t("ui.card.smaller", date=short_date(station["stepBackDay"])).replace(
+            t("ui.card.hint"), PENSUM_HINTS["current"])
+    if state == "met" and (run.get("offer") or {}).get("quietUntil"):
+        return t("ui.card.staying")
+    return PENSUM_HINTS.get(state) or (t(HINTS[state]) if state in HINTS else "")
+
+
 def station_card(run, stage, index, station, today):
     card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8, margin_top=6,
                    margin_bottom=6)
@@ -47,7 +61,7 @@ def station_card(run, stage, index, station, today):
     card.add_css_class("pensum-journey-card")
     card.append(_label(t("ui.station.of", n=index + 1, total=len(run["stations"])),
                        "caption-heading", "dimmed"))
-    card.append(_label(plan_sentence(stage), "title-4"))
+    card.append(_label(plan_sentence(stage, station.get("pair"), run.get("anchor")), "title-4"))
     bound = station["state"] in ("current", "met")
     if bound:
         bar = Gtk.LevelBar(min_value=0, max_value=1, value=station["progress"])
@@ -60,13 +74,10 @@ def station_card(run, stage, index, station, today):
             r = station["run"]
             card.append(_label(t("ui.card.run", current=r["current"], best=r["best"],
                                  total=r["total"]), "caption", "dimmed"))
-    if station.get("acceptedDay") and station["acceptedDay"] > today:
-        hint = t("ui.card.starts", date=short_date(station["acceptedDay"]))
-    else:
-        hint = PENSUM_HINTS.get(station["state"]) or (
-            t(HINTS[station["state"]]) if station["state"] in HINTS else "")
+    hint = card_hint(run, station, today)
     if hint:
         card.append(_label(hint, "caption", "dimmed"))
-    if run.get("why"):
+    # The card after a long break shows the reason itself.
+    if run.get("why") and not run.get("comeBack"):
         card.append(_label(t("ui.card.why", why=run["why"]), "pensum-journey-why"))
     return card

@@ -10,6 +10,7 @@ from pensum.game.content import t
 from pensum.game.sentences import plan_sentence, schedule_text
 from pensum.store.repeat import rules
 from pensum.ui.journey.base import JourneySubpage
+from pensum.ui.journey.pair_row import pair_group
 from pensum.ui.repeat_page import describe
 
 
@@ -31,11 +32,12 @@ class SetupPage(JourneySubpage):
         current = self.model.current()
         if not current:
             return
-        run, _journey, _index, station, stage = current
+        run, journey, index, station, stage = current
         plan = self.group(t("ui.setup.plan"))
-        plan.add(Adw.ActionRow(title=plan_sentence(stage), title_lines=0,
-                               subtitle=t("ui.setup.suggested",
-                                          schedule=schedule_text(stage["schedule"]))))
+        plan_row = Adw.ActionRow(title=plan_sentence(stage, station.get("pair"), run.get("anchor")),
+                                 title_lines=0, subtitle=t("ui.setup.suggested",
+                                                           schedule=schedule_text(stage["schedule"])))
+        plan.add(plan_row)
         if station["state"] == "unsupported-repeat":
             cfg = stages.bound_rule(self.window.ds, self.model.view)
             self.text("Journeys work with tasks that repeat daily, every few days or on "
@@ -60,19 +62,42 @@ class SetupPage(JourneySubpage):
             row.add_suffix(Gtk.Image(icon_name="go-next-symbolic"))
             row.connect("activated", lambda _r, c=cfg: self._use(run, stage, c))
             group.add(row)
+        # I Already Do This (flow B step 5): not for the last stage, not once
+        # the station has a task, not for a station walked again.
+        if station["state"] == "unbound" and index + 1 < len(journey["stages"]) \
+                and station.get("stepBackDay") is None:
+            skip = self.group(None, t("ui.setup.skip"))
+            row = Adw.ButtonRow(title=t("ui.action.skip-stage")) if hasattr(Adw, "ButtonRow") \
+                else Adw.ActionRow(title=t("ui.action.skip-stage"), activatable=True)
+            row.add_css_class("pensum-journey-skip")
+            row.connect("activated", lambda *_: self._skip(run, journey))
+            skip.add(row)
+        pair_group(self, run, stage["id"], station.get("pair"), lambda pair: plan_row.set_title(
+            plan_sentence(stage, pair, run.get("anchor"))))
+
+    def _skip(self, run, journey):
+        """Pass the station without a task; the same page offers the next one."""
+        if self.model.action("skipStage", run, journey, self.model.view["todayStr"]):
+            self.refresh()
 
     def _start_day(self, station):
         today = self.window.ds.today()
         return max(station.get("acceptedDay") or today, today)
 
     def _create(self, run, stage, station):
-        stages.create_stage_task(self.window.ds, run["runId"], stage,
-                                 self._start_day(station))
-        self.window.changed()
-        self.model.refresh_now()
+        self._bind(lambda: stages.create_stage_task(
+            self.window.ds, run["runId"], stage, self._start_day(station),
+            view=self.model.view, anchor=run.get("anchor")))
 
     def _use(self, run, stage, cfg):
-        stages.bind_existing(self.window.ds, run["runId"], stage["id"], cfg["id"])
+        self._bind(lambda: stages.bind_existing(self.window.ds, run["runId"], stage["id"],
+                                                cfg["id"], view=self.model.view))
+
+    def _bind(self, bind):
+        def done():
+            bind()
+            return {}
+        self.model.apply(done, "bindStage")
         self.window.changed()
         self.model.refresh_now()
 

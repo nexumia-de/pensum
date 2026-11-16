@@ -216,5 +216,5 @@ class ChangeMomentPage(JourneySubpage):
         self.window.nav.pop()
         self.model.action("removeAnchor", self.model.view, self.anchor_id)
         toast = Adw.Toast(title="Moment removed", button_label=t("ui.action.undo"))
-        toast.connect("button-clicked", lambda *_: self.model.write(before))
+        toast.connect("button-clicked", lambda *_: self.model.apply(lambda: before, "undo"))
         self.window.toasts.add_toast(toast)

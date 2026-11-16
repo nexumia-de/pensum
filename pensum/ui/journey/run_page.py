@@ -8,7 +8,9 @@ from gi.repository import Adw, Gio, Gtk
 
 from pensum.game.content import t
 from pensum.ui.journey.banners import banners
+from pensum.ui.journey.habits import habit_banners
 from pensum.ui.journey import place_piece
+from pensum.ui.journey import read_only as read_only_page
 from pensum.ui.journey.build import build_header
 from pensum.ui.journey.place_piece import place_of_run
 from pensum.ui.journey.card import station_card
@@ -44,6 +46,7 @@ class RunPage(Adw.NavigationPage):
         self._actions = Gio.SimpleActionGroup()
         for name, callback in (("shelf", self.show_shelf), ("motivates", self.show_motivates),
                                ("build", self.show_build), ("stations", self.show_stations),
+                               ("plan-check", self.show_plan_check),
                                ("pause", self._on_pause), ("resume", self._on_resume),
                                ("end", self._on_end)):
             action = Gio.SimpleAction.new(name, None)
@@ -67,6 +70,7 @@ class RunPage(Adw.NavigationPage):
             if built:
                 game.append(t("ui.build.title"), "journey.build")
             game.append(t("ui.build.stations"), "journey.stations")
+            game.append(t("ui.check.title"), "journey.plan-check")
             menu.append_section(None, game)
         if run:
             menu.append(t("ui.action.resume") if run["paused"] else t("ui.menu.pause"),
@@ -78,8 +82,10 @@ class RunPage(Adw.NavigationPage):
         menu.append_section(None, rest)
         self.menu_button.set_menu_model(menu)
 
-    def _set_main(self, label, action):
+    def _set_main(self, label, action, quiet=False):
         self._main = action
+        (self.main_button.remove_css_class if quiet else self.main_button.add_css_class)(
+            "suggested-action")
         self.main_button.set_label(label or "")
         self.bottom.set_visible(bool(label))
 
@@ -95,6 +101,13 @@ class RunPage(Adw.NavigationPage):
             if model.view is None:
                 return
         current = model.current()
+        read_only = model.read_only()
+        if read_only:
+            self._menu(None)
+            self._set_main(None, None)
+            self.title.set_title(read_only_page.title(read_only))
+            box.append(read_only_page.status_page(read_only))
+            return
         if not current:
             self._menu(None)
             self._set_main(None, None)
@@ -113,12 +126,16 @@ class RunPage(Adw.NavigationPage):
             box.append(self.build)
         for banner in banners(self, run, journey, index):
             box.append(banner)
+        for banner in habit_banners(self):
+            box.append(banner)
         box.append(station_card(run, stage, index, station, model.view["todayStr"]))
         state = station["state"]
         if run["paused"]:
             self._set_main(None, None)
         elif state == "met":
-            self._set_main(t("ui.action.continue"), self.show_continue)
+            # While the user stays a while, Continue is a quiet action.
+            staying = bool((run.get("offer") or {}).get("quietUntil"))
+            self._set_main(t("ui.action.continue"), self.show_continue, quiet=staying)
         elif state in ("unbound", "unsupported-repeat"):
             self._set_main(t("ui.action.setup") if state == "unbound"
                            else t("ui.action.change-repeat"), self.show_setup)
@@ -154,13 +171,29 @@ class RunPage(Adw.NavigationPage):
         from pensum.ui.journey.build_page import BuildPage
         self._push(BuildPage(self.window))
 
+    def show_plan_check(self):
+        from pensum.ui.journey.plan_check import PlanCheckPage
+        self._push(PlanCheckPage(self.window))
+
     def show_stations(self):
         from pensum.ui.journey.stations_page import StationsPage
         self._push(StationsPage(self.window))
 
-    def show_checkin(self):
+    def show_smaller(self):
+        from pensum.ui.journey.smaller_page import SmallerPage
+        self._push(SmallerPage(self.window))
+
+    def show_checkin(self, run_id=None):
         from pensum.ui.journey.checkin_page import CheckinPage
-        self._push(CheckinPage(self.window))
+        self._push(CheckinPage(self.window, run_id))
+
+    def show_graduate(self, run_id):
+        from pensum.ui.journey.graduate_page import GraduatePage
+        self._push(GraduatePage(self.window, run_id))
+
+    def show_still(self, run_id):
+        from pensum.ui.journey.still_page import StillPage
+        self._push(StillPage(self.window, run_id))
 
     def show_shelf(self):
         from pensum.ui.journey.shelf_page import ShelfPage

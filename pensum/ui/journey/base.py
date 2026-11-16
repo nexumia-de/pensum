@@ -13,16 +13,24 @@ class JourneySubpage(Adw.NavigationPage):
         toolbar.add_top_bar(Adw.HeaderBar())
         self.page = Adw.PreferencesPage()
         toolbar.set_content(self.page)
-        bar = Gtk.Box(margin_top=6, margin_bottom=6, margin_start=12, margin_end=12)
+        bar = Gtk.Box(margin_top=6, margin_bottom=6, margin_start=12, margin_end=12,
+                      spacing=6, homogeneous=True)
         self.main_button = Gtk.Button(hexpand=True)
         self.main_button.add_css_class("suggested-action")
         self.main_button.add_css_class("pensum-bar-button")
         self.main_button.connect("clicked", lambda *_: self._main and self._main())
         bar.append(self.main_button)
+        # A second choice of the same size beside the first (Continue and
+        # Stay Here a While are equals, QuestArc behaviour flow C).
+        self.other_button = Gtk.Button(hexpand=True, visible=False)
+        self.other_button.add_css_class("pensum-bar-button")
+        self.other_button.connect("clicked", lambda *_: self._other and self._other())
+        bar.append(self.other_button)
         self.bottom = Adw.Clamp(child=bar, maximum_size=480, visible=False)
         toolbar.add_bottom_bar(self.bottom)
         self.set_child(toolbar)
         self._main = None
+        self._other = None
         self._groups = []
 
     def listen(self, callback):
@@ -50,7 +58,22 @@ class JourneySubpage(Adw.NavigationPage):
     def set_main(self, label, action):
         self._main = action
         self.main_button.set_label(label or "")
+        self.main_button.add_css_class("suggested-action")
+        self.other_button.set_visible(False)
         self.bottom.set_visible(bool(label))
+
+    def set_choices(self, first, second):
+        """Two equal choices in the bottom bar, each (label, action,
+        suggested): the suggested one is filled, the other outlined; with
+        no suggestion both are outlined."""
+        for button, (label, action, suggested) in ((self.main_button, first),
+                                                   (self.other_button, second)):
+            button.set_label(label)
+            (button.add_css_class if suggested else button.remove_css_class)(
+                "suggested-action")
+        self._main, self._other = first[1], second[1]
+        self.other_button.set_visible(True)
+        self.bottom.set_visible(True)
 
     def clear(self):
         for group in self._groups:
@@ -70,6 +93,18 @@ class JourneySubpage(Adw.NavigationPage):
             label.add_css_class(name)
         group.add(label)
         return label
+
+    def show_checkin(self, run_id=None):
+        from pensum.ui.journey.checkin_page import CheckinPage
+        self.window.nav.push(CheckinPage(self.window, run_id))
+
+    def show_graduate(self, run_id):
+        from pensum.ui.journey.graduate_page import GraduatePage
+        self.window.nav.push(GraduatePage(self.window, run_id))
+
+    def show_still(self, run_id):
+        from pensum.ui.journey.still_page import StillPage
+        self.window.nav.push(StillPage(self.window, run_id))
 
     def back_to_journey(self):
         """Back to the journey's own page (on top of the Valley)."""

@@ -148,3 +148,35 @@ def test_demo_places_are_valid_with_and_without_questarc_content(monkeypatch):
         assert not any(k.startswith("run:") and k != "run:demo" for k in records.load(ds))
     finally:
         content._journeys.cache_clear()
+
+
+@needs_engine
+def test_questarc_speaks_german_with_a_german_locale(monkeypatch):
+    """QuestArc's texts follow the locale through the engine's `texts`
+    request (#64, QuestArc#39); the plan sentence uses a journey's `.plan`
+    form, and the user's moment and pairing."""
+    journey = content.journey("walk-after-lunch")
+    stage = journey["stages"][1]
+    monkeypatch.setenv("LANG", "de_DE.UTF-8")
+    assert content.t("ui.continue.title") == "Weitergehen"
+    assert content.t("walk-after-lunch.title") != journey["title"]
+    sentence = sentences.plan_sentence(stage, "meinem Podcast",
+                                       {"kind": "routine", "words": "dem Mittagessen"})
+    assert sentence.startswith("Nach dem Mittagessen gehe ich")
+    assert sentence.endswith(", mit meinem Podcast.")
+    monkeypatch.setenv("LANG", "C.UTF-8")
+    assert content.t("ui.continue.title") == "Continue"
+    assert sentences.plan_sentence(stage, None, {"kind": "time", "time": "12:30"}).startswith(
+        "At 12:30, I will")
+
+
+def test_reminders_are_recorded_only_when_they_change():
+    from pensum.game import reminders
+    view = {"active": {"runId": "r", "position": {"stage": 0},
+                       "stations": [{"stageId": "s"}], "reminder": {"set": True}},
+            "finished": [{"runId": "f", "habit": {"stageId": "h", "reminder": {"set": False}}}]}
+    assert reminders.due(view, {}) == [("r", "s", True)]
+    assert reminders.due(view, {"reminder-seen:r:s": {"on": True, "day": "x"}}) == []
+    assert reminders.due(view, {"reminder-seen:r:s": {"on": True, "day": "x"},
+                                "reminder-seen:f:h": {"on": True, "day": "x"}}) == [
+        ("f", "h", False)]

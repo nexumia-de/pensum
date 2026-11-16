@@ -27,7 +27,18 @@ Day Planner adds no second implementation.
   `bindStage`, `continueJourney`, `pauseJourney`, `resumeJourney`,
   `endJourney`, `repeatPause`, `answerCheckin`, `chooseBuild`,
   `withdraw`).
-  So both hosts write the same records.
+  So both hosts write the same records. Every write passes the engine's
+  last check first (`guardWrite`, QuestArc data model §2, pensum#58):
+  a change that touches a journey of a newer QuestArc, or a record kind
+  this engine does not write, is refused as a whole and nothing is
+  written (`engine.Refused`, `JourneyModel.write`); only removing all of
+  QuestArc's data in the preferences skips it. Records Day Planner does
+  not understand stay untouched, also `GZ1:` packed ones. A
+  read-only active journey (`view.readOnly`, state `active`) shows its
+  title and one calm sentence instead of the home and the journey
+  (`read_only.py`): no progress, no main action, no Pause or End.
+  What QuestArc offers and Day Planner does not yet:
+  [QuestArc coverage](questarc-coverage.md).
 - **Records:** QuestArc's choice records are entries of the dataset's
   `pluginUserData` slice with id `questarc:<key>`, the value as JSON
   text, `GZ1:<base64 gzip>` from 1024 characters on, `''` for a

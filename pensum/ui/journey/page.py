@@ -11,7 +11,9 @@ from pensum.game import engine, moments
 from pensum.game.content import t
 from pensum.ui.journey.banners import banners
 from pensum.ui.journey.confirm_card import confirm_cards
+from pensum.ui.journey import read_only as read_only_page
 from pensum.ui.journey.growing_card import growing_card
+from pensum.ui.journey.habits import habit_banners
 from pensum.ui.journey.valley import MAX_WIDTH, ValleyScene
 
 
@@ -125,6 +127,13 @@ class JourneyPage(Adw.NavigationPage):
 
     def _home(self):
         view = self.model.view
+        # A read-only active journey takes the place of the home (QuestArc
+        # behaviour, screen 4): it stands at no moment and nothing is written.
+        read_only = self.model.read_only()
+        if read_only:
+            self._show(read_only_page.status_page(read_only))
+            self._set_main(None)
+            return
         places = view.get("valley", [])
         titles = [moments.place_title(view, p) for p in places]
         units = self._scene_units(not places)
@@ -144,7 +153,9 @@ class JourneyPage(Adw.NavigationPage):
             right.append(self.card)
             for banner in banners(self, run, journey, index):
                 right.append(banner)
-        elif not places:
+        for banner in habit_banners(self):
+            right.append(banner)
+        if not current and not places:
             right.append(Adw.StatusPage(title=t("ui.home.empty.title"),
                                         description=t("ui.home.empty.text")))
         self._show(left, right)
@@ -171,9 +182,21 @@ class JourneyPage(Adw.NavigationPage):
         from pensum.ui.journey.choose_page import ChoosePage
         self._push(ChoosePage(self.window))
 
-    def show_checkin(self):
+    def show_smaller(self):
+        from pensum.ui.journey.smaller_page import SmallerPage
+        self._push(SmallerPage(self.window))
+
+    def show_checkin(self, run_id=None):
         from pensum.ui.journey.checkin_page import CheckinPage
-        self._push(CheckinPage(self.window))
+        self._push(CheckinPage(self.window, run_id))
+
+    def show_graduate(self, run_id):
+        from pensum.ui.journey.graduate_page import GraduatePage
+        self._push(GraduatePage(self.window, run_id))
+
+    def show_still(self, run_id):
+        from pensum.ui.journey.still_page import StillPage
+        self._push(StillPage(self.window, run_id))
 
     def show_shelf(self):
         from pensum.ui.journey.shelf_page import ShelfPage

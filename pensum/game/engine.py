@@ -117,6 +117,30 @@ def action(name, *args):
     return answer
 
 
+class Refused(EngineError):
+    """The engine's last check refused a write (QuestArc data model §2,
+    data format): it touches a read-only run or a kind this engine does
+    not write. Nothing was written; `keys` names the refused records."""
+
+    def __init__(self, keys):
+        super().__init__(f"{len(keys)} record change(s) refused")
+        self.keys = list(keys)
+
+
+def guard_write(view, changes):
+    """The changes the engine allows (`guardWrite`): all of them, or
+    Refused when one touches a run of a newer engine or a kind this
+    engine does not write, so a write is never half done."""
+    if not changes:
+        return {}
+    answer = run({"guardWrite": {"view": view or {"readOnly": []}, "changes": changes}})
+    if not isinstance(answer, dict) or "changes" not in answer:
+        raise EngineError("the engine gave no answer to guardWrite")
+    if answer.get("refused"):
+        raise Refused(answer["refused"])
+    return answer["changes"]
+
+
 def valley_layout(sides, things, width=360, height=720):
     """The Valley's geometry from the engine (QuestArc journey design,
     "The place piece"): the path and, per place, its slot, boxes for every
