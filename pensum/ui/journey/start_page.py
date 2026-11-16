@@ -1,7 +1,7 @@
 """Starting a journey (QuestArc docs/behaviour.md, screen 3): the moment
 it starts from (one of the user's, or a new one in their words), the
-user's own reason, optional and never focused when the page opens, and a
-self-chosen start day. Starting while another journey runs pauses it."""
+user's own reason, optional and never focused when the page opens, a
+self-chosen start day (or a picked date) and what the journey builds. Starting while another journey runs pauses it."""
 import secrets
 
 from gi.repository import Adw, Gtk
@@ -10,7 +10,7 @@ from pensum.game import content, engine, moments
 from pensum.game.content import t
 from pensum.game.sentences import (capitalise, find_stage, first_of_next_month, next_monday,
                                    short_date)
-from pensum.ui.journey import plan_check
+from pensum.ui.journey import plan_check, start_build
 from pensum.ui.journey.base import JourneySubpage
 from pensum.ui.journey.moment_rows import MomentRows
 
@@ -30,6 +30,18 @@ class StartPage(JourneySubpage):
         self.why_row = Adw.EntryRow(title=t(self.journey.get("why") or "ui.start.why"))
         why.add(self.why_row)
         self.plan_rows = plan_check.start_expander(self.group())
+        self._when_group(today)
+        self.build = start_build.BuildPart(self, self.journey, lambda: self.anchor_id)
+        active = self.model.current()
+        label = t("ui.start.start")
+        if active:
+            self.text(t("ui.start.pauses", title=t(active[1]["title"])), "dimmed")
+            label = t("ui.start.pause-and-start")
+        self.set_main(label, self._start)
+
+    def _when_group(self, today):
+        """Today, next Monday, the first of next month, or **Pick a date**
+        (today or later)."""
         when = self.group(t("ui.start.when"))
         self.day = today
         first = None
@@ -37,19 +49,42 @@ class StartPage(JourneySubpage):
                            (t("ui.start.monday", date=short_date(next_monday(today))),
                             next_monday(today)),
                            (t("ui.start.month", date=short_date(first_of_next_month(today))),
-                            first_of_next_month(today))):
+                            first_of_next_month(today)),
+                           (t("ui.start.date"), None)):
             check = Gtk.CheckButton(active=day == today, group=first)
             first = first or check
-            check.connect("toggled", lambda c, d=day: c.get_active() and setattr(self, "day", d))
             row = Adw.ActionRow(title=label, activatable_widget=check)
             row.add_prefix(check)
             when.add(row)
-        active = self.model.current()
-        label = t("ui.start.start")
-        if active:
-            self.text(t("ui.start.pauses", title=t(active[1]["title"])), "dimmed")
-            label = t("ui.start.pause-and-start")
-        self.set_main(label, self._start)
+            if day is None:
+                self.date_check, self.date_row = check, row
+                self.picked = today
+                check.connect("toggled", lambda c: c.get_active() and self._pick(self.picked))
+                calendar = Gtk.Calendar()
+                calendar.connect("day-selected", self._on_calendar)
+                button = Gtk.MenuButton(icon_name="x-office-calendar-symbolic",
+                                        popover=Gtk.Popover(child=calendar),
+                                        valign=Gtk.Align.CENTER, tooltip_text=t("ui.start.date"))
+                button.add_css_class("flat")
+                button.update_property([Gtk.AccessibleProperty.LABEL], [t("ui.start.date")])
+                row.add_suffix(button)
+            else:
+                check.connect("toggled", lambda c, d=day: c.get_active()
+                              and setattr(self, "day", d))
+
+    def _on_calendar(self, calendar):
+        value = calendar.get_date()
+        self._pick(f"{value.get_year():04d}-{value.get_month():02d}-"
+                   f"{value.get_day_of_month():02d}")
+
+    def _pick(self, day):
+        """A picked day before today starts today, as in QuestArc (min today)."""
+        today = self.window.ds.today()
+        self.picked = max(day, today)
+        self.day = self.picked
+        self.date_row.set_subtitle(short_date(self.picked))
+        if not self.date_check.get_active():
+            self.date_check.set_active(True)
 
     def _moment_group(self):
         """Your moment: the user's own as options, then a new one with
@@ -82,6 +117,8 @@ class StartPage(JourneySubpage):
         self.after = None
         if hasattr(self, "chain"):
             self._show_chain()
+        if hasattr(self, "build"):
+            self.build.refresh()
 
     def _show_chain(self):
         """At a moment where a habit stands, the new step may be tied to that
@@ -130,6 +167,7 @@ class StartPage(JourneySubpage):
                 if anchor else {}
             found.update(engine.action("startJourney", start))
             found.update(self._plan_check(start["runId"]))
+            found.update(self.build.changes(start["runId"]))
             return found
         if self.model.apply(changes, "startJourney"):
             self.back_to_journey()

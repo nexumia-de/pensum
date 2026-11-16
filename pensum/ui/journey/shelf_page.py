@@ -1,7 +1,8 @@
 """The shelf (QuestArc docs/behaviour.md, screen 7): waiting journeys to
 resume; **Habits that stay**, the habits of finished journeys still
 followed, with their last days, run and the quiet actions **Let It
-Graduate** and the weekly look back; **Running by themselves**, the
+Graduate** and the weekly look back, or **Set up the task** when its
+task no longer repeats; **Running by themselves**, the
 graduated habits with **Answer One Question** or **Bring It Back**; and
 the finished journeys."""
 from gi.repository import Adw, Gtk
@@ -94,7 +95,11 @@ class ShelfPage(JourneySubpage):
         if habit["state"] == "maintained":
             box.append(_label(t("ui.shelf.maintained"), "caption", "dimmed"))
         else:
-            box.append(_label(t("ui.shelf.no-task"), "caption", "dimmed"))
+            unbound = habit["state"] == "unbound"
+            box.append(_label(t("ui.shelf.no-task" if unbound else "ui.card.unsupported"),
+                              "caption", "dimmed"))
+            box.append(_quiet(t("ui.action.setup" if unbound else "ui.action.change-repeat"),
+                              lambda: self._push_setup(run["runId"])))
         if habit.get("backDay"):
             box.append(_label(t("ui.shelf.back", date=short_date(habit["backDay"])),
                               "caption", "dimmed"))
@@ -117,6 +122,10 @@ class ShelfPage(JourneySubpage):
         label = t("ui.shelf.still") if graduated.get("checkDue") else t("ui.action.bring-back")
         box.append(_quiet(label, lambda: self._push_still(run["runId"])))
         return box
+
+    def _push_setup(self, run_id):
+        from pensum.ui.journey.setup_page import SetupPage
+        self.window.nav.push(SetupPage(self.window, run_id))
 
     def _push_graduate(self, run_id):
         from pensum.ui.journey.graduate_page import GraduatePage

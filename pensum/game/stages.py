@@ -107,8 +107,36 @@ def bound_rule(ds, view):
     if not run:
         return None
     station = run["stations"][run["position"]["stage"]]
-    binding = records.load(ds).get(f"binding:{run['runId']}:{station['stageId']}")
+    return rule_of_binding(ds, run["runId"], station["stageId"])
+
+
+def rule_of_binding(ds, run_id, stage_id):
+    """The repeat rule a stage's binding names, ended or not; else None."""
+    binding = records.load(ds).get(f"binding:{run_id}:{stage_id}")
     if not isinstance(binding, dict):
         return None
     cfg_id = binding.get("repeatCfgId") or (ds.task(binding.get("taskId")) or {}).get("repeatCfgId")
     return ds.data["taskRepeatCfg"]["entities"].get(cfg_id)
+
+
+def binding_problem(ds, run_id, stage_id, today):
+    """Why an unbound station has no task (QuestArc flow G): "ended" when
+    the bound rule's repeat ended before today, "gone" when the bound
+    task and rule no longer exist; None otherwise."""
+    binding = records.load(ds).get(f"binding:{run_id}:{stage_id}")
+    if not isinstance(binding, dict):
+        return None
+    cfg_id = binding.get("repeatCfgId") or (ds.task(binding.get("taskId")) or {}).get("repeatCfgId")
+    cfg = (ds.data.get("taskRepeatCfg") or {}).get("entities", {}).get(cfg_id)
+    until = (cfg or {}).get("repeatUntilDay")
+    if cfg and isinstance(until, str) and until and until < today:
+        return "ended"
+    if not cfg and not ds.task(binding.get("taskId")):
+        return "gone"
+    return None
+
+
+def task_of_rule(ds, cfg):
+    """The newest live task of a repeat rule, or None."""
+    live = instances.live_instances(ds, cfg["id"]) if cfg else []
+    return live[-1]["id"] if live else None

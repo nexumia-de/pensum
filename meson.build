@@ -119,6 +119,7 @@ python.install_sources(
   'pensum/ui/journey/setup_page.py',
   'pensum/ui/journey/shelf_page.py',
   'pensum/ui/journey/smaller_page.py',
+  'pensum/ui/journey/start_build.py',
   'pensum/ui/journey/start_page.py',
   'pensum/ui/journey/station_page.py',
   'pensum/ui/journey/stations_page.py',

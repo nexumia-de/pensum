@@ -22,8 +22,9 @@ Planner covers it. Day Planner pins QuestArc 4.3.1's engine and writes
 records only through its actions[^actions] ([journeys](journeys.md)).
 
 Status: **covered**, **partly** (what is missing is said), **missing**,
-**n/a** (belongs to Super Productivity's plugin host only). Files are
-under `pensum/ui/journey/` unless a path says otherwise.
+**n/a** (belongs to Super Productivity's plugin host only, or not in
+QuestArc's screens either), **waits** (on a Day Planner feature named by
+its issue). Files are under `pensum/ui/journey/` unless a path says otherwise.
 
 ## Engine requests and actions
 
@@ -31,30 +32,30 @@ under `pensum/ui/journey/` unless a path says otherwise.
 | --- | --- | --- | --- |
 | `evaluateHost`, `diff` | everything shown; the toast after a change | covered | `model.py`, `pensum/game/engine.py` |
 | `guardWrite` | (every write checked; a newer QuestArc's run is never written) | covered | `model.write`, `pensum/game/stages.py` |
-| `texts` | QuestArc in German | missing (#64) | — |
+| `texts` | QuestArc in German (locale from `LC_ALL`, `LC_MESSAGES`, `LANG`) | covered | `pensum/game/content.py` |
 | `valley` | the Valley's geometry | covered | `page.py`, `place_piece.py` |
 | `nameAnchor` | name or rename a moment | covered | `start_page.py`, `change_moment_page.py` |
-| `anchorRun` | tie a new step to a step at the same moment (a chain) | missing (#64) | — |
+| `anchorRun` | tie a new step to a step at the same moment (a chain) | covered | `start_page.py` (`startJourney`'s `anchor.after`) |
 | `confirmAnchor` | confirm the moment of a journey from before moments | covered | `confirm_card.py` |
 | `removeAnchor` | remove a moment where nothing stands | covered | `change_moment_page.py` |
 | `movePlace`, `choosePlaceSide`, `choosePlaceHue` | earlier or later, side, colour of a place | covered | `change_moment_page.py` |
 | `choosePlaceKind`, `withdrawPlaceKind`, `withdrawPlace` | what grows at a place; the suggestion | covered | `change_moment_page.py`, `build_page.py` |
 | `choosePlaceMarker` | what hangs (hidden while only flowers exist) | covered | `change_moment_page.py` |
-| `startJourney` | start a journey at a moment, reason, start day | covered | `start_page.py` |
-| `bindStage` | Create the task, use an existing one | covered | `setup_page.py`, `pensum/game/stages.py` |
+| `startJourney` | start a journey at a moment, reason, start day or a picked date | covered | `start_page.py` |
+| `bindStage` | Create the task, use an existing one; also for a habit whose task is gone | covered | `setup_page.py`, `pensum/game/stages.py` |
 | `continueJourney` | Continue at a met station; finish the journey | covered | `continue_page.py` |
-| `stayHere` | Stay Here a While | missing (#64) | — |
-| `skipStage`, `undoSkip` | I Already Do This; Do This Station After All | missing (#64) | — |
-| `carryOn`, `callItAPause`, `stepBack` | the card after a long break; Start Smaller | missing (#64) | — |
+| `stayHere` | Stay Here a While | covered | `continue_page.py` |
+| `skipStage`, `undoSkip` | I Already Do This; Do This Station After All | covered | `setup_page.py`, `station_page.py` |
+| `carryOn`, `callItAPause`, `stepBack` | the card after a long break; Start Smaller | covered | `come_back.py`, `smaller_page.py` |
 | `pauseJourney`, `resumeJourney`, `endJourney` (+ Undo) | pause, resume, end | covered | `run_page.py`, `banners.py`, `shelf_page.py` |
 | `repeatPause` | (pausing the bound repeat pauses the journey) | covered | `model.py` |
-| `reminderSeen` | (the reminder of a followed task is recorded) | missing (#64) | — |
-| `answerCheckin` | the weekly look back | covered | `checkin_page.py` |
-| `graduate`, `graduateLater` | Let It Graduate; Not Now | missing (#64) | — |
-| `answerStill`, `bringBack` | "Does it still run by itself?"; Bring It Back | missing (#64) | — |
-| `chooseBuild` | what a journey without a moment builds | covered | `build_page.py` |
-| `checkPlan` | the plan check at the start and from the menu | missing (#64) | — |
-| `pairStage` | Pair it with | missing (#64) | — |
+| `reminderSeen` | (the reminder of a followed task or habit is recorded) | covered | `model.py`, `pensum/game/reminders.py` |
+| `answerCheckin` | the weekly look back, also a habit's | covered | `checkin_page.py` |
+| `graduate`, `graduateLater` | Let It Graduate (keep repeating or end the repeat); Not Now | covered | `graduate_page.py`, `habits.py` |
+| `answerStill`, `bringBack` | "Does it still run by itself?"; Bring It Back | covered | `still_page.py` |
+| `chooseBuild` | what a journey builds: at the start, and from the menu without a moment | covered | `start_build.py`, `build_page.py` |
+| `checkPlan` | the plan check at the start and from the menu | covered | `start_page.py`, `plan_check.py` |
+| `pairStage` | Pair it with | covered | `pair_row.py` (set-up, station details) |
 | `withdraw` | Undo (end, change of moment), suggestion | covered | `run_page.py`, `change_moment_page.py` |
 
 ## Screens
@@ -62,46 +63,51 @@ under `pensum/ui/journey/` unless a path says otherwise.
 | QuestArc screen / flow | Status | Where / what is missing |
 | --- | --- | --- |
 | 0 Home: the Valley, growing card, A New Moment | covered | `page.py`, `valley.py`, `growing_card.py` |
-| 0 Home: habit banners (still, graduate, habit look back, habit fade) | missing (#64) | — |
+| 0 Home: habit banners (still, graduate, habit look back) | covered | `habits.py` |
+| 0 Home: habit fade (reminder no longer needed) | waits (#13) | QuestArc flow H: Day Planner suggests no reminders until it has its own |
 | 0a Change this moment | covered | `change_moment_page.py` |
 | 0b The place, Extend This Moment | covered | `place_page.py`, `place_piece.py` |
 | 1 Welcome | covered | `page.py` |
 | 2 Choose a journey, preview | covered | `choose_page.py` |
 | 3 Start: moment, reason, start day | covered | `start_page.py` |
-| 3 Start: **Pick a date** | missing | — |
-| 3 Start: **Tie the new step to** (chain) | missing (#64) | — |
-| 3 Start: plan check (optional) | missing (#64) | — |
-| 3 Start: what you build, **Change** | missing (#57) | — |
+| 3 Start: **Pick a date** (today or later) | covered | `start_page.py` |
+| 3 Start: **Tie the new step to** (chain) | covered | `start_page.py` |
+| 3 Start: plan check (optional) | covered | `plan_check.py` |
+| 3 Start: what you build, **Change**; "builds another of the same kind" | covered | `start_build.py` |
 | 3a What you build | covered | `build_page.py` |
-| 3b Plan check page (menu) | missing (#64) | — |
+| 3b Plan check page (menu) | covered | `plan_check.py` |
 | 4 Journey: build in its place, versions, state in words | covered | `run_page.py`, `place_piece.py`, `build.py` |
-| 4 Journey: plan sentence with the moment's words and the pairing | missing (#64) | `card.py` uses the journey's own anchor |
-| 4 Journey: "already yours" under a skipped version | missing (#64) | — |
-| 4 Journey: staying / started smaller hints on the card | missing (#64) | — |
+| 4 Journey: plan sentence with the moment's words and the pairing | covered | `pensum/game/sentences.py` |
+| 4 Journey: "already yours" under a skipped version | covered | `build.py` |
+| 4 Journey: staying / started smaller hints on the card | covered | `card.py` |
 | 4 Journey: the moment of the tick (animation), build beside the card at 720 px | missing (#57) | — |
 | 4 Journey: read-only journey | covered | `read_only.py` (#58) |
-| 4 Banners: paused, hard week, look back, nugget | covered | `banners.py` |
-| 4 Banners: hard week with the plan for the obstacle | missing (#64) | — |
-| 4 Banners: reminder suggestion and fade | missing (#64) | — |
-| 5 Station details | partly (#64) | `station_page.py`; missing: skipped, undo skip, left, pair field, plan for the obstacle |
-| 6 Weekly look back | partly (#64) | `checkin_page.py`; missing: last days, answers row and trend, the habit's look back, every four weeks |
-| 7 Shelf | partly (#64) | `shelf_page.py`; missing: habits' last days and run, graduated habits, Let It Graduate, Bring It Back, set up a habit's task, brought back |
+| 4 Banners: paused, hard week (with the plan for the obstacle), look back, nugget | covered | `banners.py` |
+| 4 Banners: reminder suggestion and fade | waits (#13) | QuestArc flow H |
+| 5 Station details (skipped, undo skip, left, pair field, plan for the obstacle) | covered | `station_page.py` |
+| 6 Weekly look back (last days, answers row, the habit's, every four weeks) | covered | `checkin_page.py`, `answers_row.py` |
+| 7 Shelf (habits with last days and run, Let It Graduate, graduated habits, Bring It Back, brought back) | covered | `shelf_page.py` |
+| 7 Shelf: **Set up the task** for a habit whose task no longer repeats | covered | `shelf_page.py`, `setup_page.py` |
 | 8 Settings: remove QuestArc's data | covered | `pensum/preferences.py` |
 | 8 Settings: build in the side panel | n/a | Super Productivity's side panel |
 | 9 How it motivates you | covered | `motivates_page.py` |
 | B Set up the task, unsupported repeat | covered | `setup_page.py` |
-| B I Already Do This | missing (#64) | — |
-| B Pair it with | missing (#64) | — |
-| B reminder sentence | missing (#64) | — |
-| C Continue and Stay Here a While, the suggestion | partly (#64) | `continue_page.py` has Continue only |
-| C after a step back: take up the step left | missing (#64) | — |
-| C finished: "the weekly question goes on" | partly | `continue_page.py` |
-| D long break card; Start Smaller page | missing (#64) | — |
+| B the task is gone; its repeat ended (after Start Smaller) | covered | `setup_page.py`, `stages.binding_problem` |
+| B the earlier station's task stays (**Open the earlier task**) | covered | `setup_page.py` |
+| B I Already Do This | covered | `setup_page.py` |
+| B Pair it with | covered | `pair_row.py` |
+| B reminder sentence | waits (#13) | QuestArc flow H |
+| C Continue and Stay Here a While, the suggestion | covered | `continue_page.py` |
+| C after a step back: take up the step left | covered | `continue_page.py` |
+| C finished: "the weekly question goes on" | covered | `continue_page.py` |
+| D long break card; Start Smaller page | covered | `come_back.py`, `smaller_page.py` |
 | E pause and resume | covered | `run_page.py`, `banners.py` |
-| F graduation, the question, bring back | missing (#64) | — |
-| H reminders | missing (#64) | — |
+| F graduation, the question, bring back | covered | `graduate_page.py`, `still_page.py`, `habits.py` |
+| H reminders: recorded for graduation | covered | `pensum/game/reminders.py` |
+| H reminders: suggested, faded | waits (#13) | Day Planner has no reminders while it is closed yet |
 | G problems: engine missing or failing | covered | `page.py` |
-| G problems: a page out of date | partly | pages return to the journey |
+| G problems: a page out of date | covered | pages return to the journey or say "gone" (`ui.error.gone`) |
+| G problems: "This journey was updated; you continue at …" | n/a | in behaviour.md, but no text or screen in QuestArc 4.3.1 |
 | Messages after a completion (one text per event) | covered | `pensum/game/sentences.py` |
 | Strip on Today | missing (#57) | — |
 | Plugin's context menu "Use for current station", side panel, settings entry | n/a | Super Productivity only |
@@ -111,5 +117,13 @@ under `pensum/ui/journey/` unless a path says otherwise.
 | What | Status | Where |
 | --- | --- | --- |
 | QuestArc's English texts (`content/i18n/en.json`, journeys' `en`) | covered | `pensum/game/content.py` |
-| German (`de.json`, journeys' `de`), the plan form `.plan` | missing (#64) | — |
-| Sentences about Super Productivity's menus replaced by Day Planner wording | covered | `card.py`, `setup_page.py`, `continue_page.py` |
+| German (`de.json`, journeys' `de`), the plan form `.plan` | covered | `texts` request, `pensum/game/sentences.py` |
+| Sentences about Super Productivity's menus replaced by Day Planner wording | covered (English only, like the rest of Day Planner) | `card.py`, `setup_page.py`, `smaller_page.py`, `continue_page.py` |
+
+## Still open
+
+- #57: the strip on Today, the moment of the tick, the build beside the
+  card at desktop width.
+- #13: reminders while Day Planner is closed; until then the reminder
+  suggestion, its fade and the habit fade banner are not shown (QuestArc
+  flow H says so).
