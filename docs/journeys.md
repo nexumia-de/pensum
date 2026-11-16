@@ -75,34 +75,34 @@ Day Planner adds no second implementation.
 `pensum/ui/journey/`, one file per page, every page pushed on the one
 navigation view so a swipe goes back:
 
-- **Journeys** (sidebar, `app.show-journey`): the welcome (shown while
-  there is no QuestArc record at all; **Choose a Journey**), the empty
-  state with **Choose a Journey**, or the active journey (QuestArc#42,
-  #57, #61; QuestArc behaviour, screen 4): on top the journey's build in
-  its setting and hue (the ladder's standing version, the marker of the
-  stage under way, its hanging elements "on" while the stage is ready),
-  the row of versions that stand with the next one as an empty step, and
-  one line of state in words ("A log stands · a plank bridge is on its
-  way"); then the banners (paused, a hard week, weekly look back, a new
-  nugget) and the current station's card (plan, progress bar and words,
-  the last due days, runs, hint, the user's reason). Everything of the
-  build comes from the engine's `build` view
+- **Journeys** (sidebar, `app.show-journey`): the **Valley**, the home
+  (QuestArc behaviour, screen 0; [Valley](valley.md)): the welcome while
+  there is no QuestArc record at all, else one path through the day with
+  a place for every moment and the growing step as a card below it. The
+  card and the growing place open the journey's own page
+  (`run_page.py`, QuestArc screen 4): on top the journey's build in its
+  setting and hue (the ladder's standing version, the flowers of the
+  stage under way, open while the stage is ready), the row of the
+  versions that stand (nothing of what comes next), and one line of state
+  in words ("A log stands"); then the banners (paused, a hard week,
+  weekly look back, a new nugget) and the current station's card (plan,
+  progress bar and words, the last due days, runs, hint, the user's
+  reason). Everything of the build comes from the engine's `build` view
   (`pensum/ui/journey/build.py`); a ladder whose pictures are not here
-  leaves only the card. The bottom bar holds the main action
-  (**Continue**, **Set Up the Task**, **Change How Often**); the menu
-  holds **What you build**, **Stations** (the stations as a list with
-  their state in words, `stations_page.py`), pause or resume, end (with
-  Undo), the shelf and how QuestArc motivates you.
+  leaves only the card. The bottom bar of the journey's page holds its
+  main action (**Continue**, **Set Up the Task**, **Change How Often**);
+  its menu holds **What you build**, **Stations** (the stations as a list
+  with their state in words, `stations_page.py`), pause or resume, end
+  (with Undo), the shelf and how QuestArc motivates you.
 - Choose and preview, start (own reason, start day), set up, continue
   and finished, station details, weekly look back (1–7 or skip), shelf,
   how it motivates you.
 - **What you build** (`build_page.py`, QuestArc behaviour, screen 3a):
-  what grows (a ladder), what hangs (lanterns, pennants, flowers;
-  flowers are disabled over water with "Only on land") and the colour
-  (the palette's hues by name with a swatch). Each change is written at
-  once through the engine's `chooseBuild`, only what the user picked; a
-  marker that no longer fits a changed ladder is dropped; **Use the
-  journey's suggestion** withdraws the record.
+  what grows (a ladder, each in its first version). There is no choice of
+  what hangs (flowers are the only marker since QuestArc 4.2) and no
+  colour (the place's). Each change is written at once through the
+  engine's `chooseBuild`, only what the user picked; **Use the journey's
+  suggestion** withdraws the record.
 - Still open from #57: the strip on Today, the moment of the tick in
   it, the choice on the start page, and the build beside the card at
   desktop width.
@@ -169,27 +169,26 @@ PENSUM_QUESTARC_DIR=$PWD/../quest-arc /usr/bin/python3.12 tests/art_demo.py
 **Ladders and hues** (QuestArc#42, QuestArc's journey design "Builds and
 ladders"): a journey builds one thing in versions, each whole, in the same
 slot of the same setting. `art.ladder_scene(ladder, version, progress,
-ready, marker, graduated)` composes the scene from `<ladder>.ladder.json`
+ready, versions, graduated)` composes the scene from `<ladder>.ladder.json`
 (`content.ladder`): the setting and its plants, the standing version in
-the `build` slot and, while a stage runs, its marker in the foreground:
-the first ceil(p × E) elements (`art.elements_shown`; plain posts first,
-then the hanging lanterns, pennants or flowers; a line once both its
-posts stand), p the stage's best progress so it never loses one; when
-`ready` every hanging element in its "on" form (`-lit` picture), the
-posts stay plain. `marker` picks the kind (the ladder's default if None);
-the lantern after graduation; never a count. `art.build_words` says the
-state under the row of versions ("… is on its way", "… is ready"); the
-row may show a zoomed part of each version (`row`, `art.draw_part`). A region may take a hue from
+the `build` slot and, while a stage runs, flowers in the thing's yard
+(QuestArc #152): the first ceil(p × E) of them (`art.elements_shown`), p
+the stage's best progress so it never loses one, in bud; when `ready`
+every flower open (`-open` picture); none after the journey's last
+version; the lantern after graduation; never a count. `art.build_words`
+says what stands under the row of versions ("A well sweep stands"), never
+what comes next (QuestArc #155). The row may show a zoomed part of each
+version (`row`, `art.draw_part`). A region may take a hue from
 `palette.json` (`content.palette`): `art.colours(widget, card, hue)` then
 takes `accent`, `tint` and `tint-strong` from the hue's light or dark
 value (by `Adw.StyleManager`'s dark state); `fg`, `bg` and `dim` stay
-libadwaita's. The demo's parts `sequence-<ladder>[-<marker>]`,
-`journey-<ladder>[-ready]` (a static mock of the journey screen) and
-`palette` are in `tests/ladder_demo.py`, a palette hue as the second
-argument. `tests/test_art.py` checks the composed scenes and that every
-hue keeps WCAG contrast against libadwaita's cards in light and dark
-(accent 3 : 1, tint-strong 1.5 : 1, the text colour on tint-strong
-3 : 1).
+libadwaita's (no picture of QuestArc 4.2 uses `dim` any more). The demo's
+parts `sequence-<ladder>`, `journey-<ladder>[-ready]` (a static mock of the
+journey screen) and `palette` are in `tests/ladder_demo.py`, a palette hue
+as the second argument. `tests/test_art.py` checks the composed scenes
+and that every hue keeps WCAG contrast against libadwaita's cards in
+light and dark (accent 3 : 1, tint-strong 1.5 : 1, the text colour on
+tint-strong 3 : 1).
 
 Measured on the cloud host (x86_64): the test scene (15 pictures)
 takes about 1.8 ms per draw with cached handles and 3.7 ms on the first
@@ -202,16 +201,19 @@ The engine is found where `PENSUM_QUESTARC_DIR` points (a QuestArc
 release archive, or a QuestArc checkout after `npm ci && npm run build`)
 and run with `PENSUM_GJS` (default `gjs`); in the Flatpak it is
 `/app/share/questarc`, from the release archive the manifest pins
-(module `questarc-engine`, QuestArc 4.1.0, updated by the update check;
-Day Planner needs 4.1.0 or newer: older engines still read the run's hue and
-have Crossing, which the tests no longer know).
+(module `questarc-engine`, QuestArc 4.2.0, updated by the update check;
+Day Planner needs 4.2.0 or newer: the Valley (`valley` view and layout),
+the flowers and the retired markers are in the pictures and the engine
+of 4.2.0).
 Without it the page says "Journeys Are Not Installed". On the cloud host gjs comes from Ubuntu's
 package or from the GNOME runtime through bwrap ([development environment](dev-environment.md)).
 Tests that need the engine are skipped without it; CI fetches the
 archive the manifest pins, installs gjs and sets
 `PENSUM_REQUIRE_ENGINE=1`, so they must pass there. Screenshots: the
 demo dataset (`PENSUM_DEMO=1`) has "First Things First" in the game at
-its second station with one gap (two on a weekend, so it is still on its way).
+its second station with one gap (two on a weekend, so it is still on its way),
+at the moment "sitting down at my desk", with other places around it
+(`PENSUM_DEMO_VALLEY=1|3|6|6-stacked`, default 3: [Valley](valley.md)).
 
 ## Open
 

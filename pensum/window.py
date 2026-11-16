@@ -241,12 +241,17 @@ class Window(Adw.ApplicationWindow):
         self.nav.push(SyncPage(self))
 
     def show_journey(self):
-        """The journey is shown like a list: the split view's content."""
+        """The Valley is shown like a list: the split view's content."""
         from pensum.ui.journey.page import JourneyPage
         if getattr(self, "journey_page", None) is None:
             self.journey_page = JourneyPage(self)
         self._show_content(self.journey_page)
         self.sidebar.select(Context("journey", "questarc"))
+
+    def show_run(self):
+        """The active journey's own page, on top of the Valley."""
+        self.show_journey()  # pops to the main page
+        self.journey_page.show_run()
 
     def show_task(self, task_id):
         if task_id not in self.ds.tasks:

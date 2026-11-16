@@ -3,7 +3,7 @@ and 24 px and the ladders (tests/ladder_demo.py), drawn by pensum/ui/journey/art
 libadwaita's colours. For screenshots; not part of the app. Needs
 PENSUM_QUESTARC_DIR with content/art/ (docs/journeys.md); the argument
 picks the part, `sizes` (default), `sequence-<ladder>`,
-`sequence-<ladder>-<marker>`, `journey-<ladder>[-ready]` or `palette`; a second
+`journey-<ladder>[-ready]` or `palette`; a second
 argument a palette hue:
 
     PENSUM_QUESTARC_DIR=../quest-arc /usr/bin/python3.12 tests/art_demo.py sequence-well slate

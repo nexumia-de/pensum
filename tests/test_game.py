@@ -127,3 +127,24 @@ def test_engine_error_without_questarc(monkeypatch, tmp_path):
     monkeypatch.setenv("PENSUM_QUESTARC_DIR", str(tmp_path))
     with pytest.raises(engine.EngineError):
         engine.run({"evaluate": {}})
+
+
+def test_demo_places_are_valid_with_and_without_questarc_content(monkeypatch):
+    """The demo (also the real-app exports, which have no QuestArc content)
+    writes valid data in every Valley scenario; without the journeys only
+    the moments and the places' records are written."""
+    from pensum import demo
+    from pensum.game import content, records
+    for scenario in ("1", "3", "6", "6-stacked"):
+        monkeypatch.setenv("PENSUM_DEMO_VALLEY", scenario)
+        ds = demo.create()
+        assert validate.problems(ds.data) == []
+        assert any(k.startswith("anchor:") for k in records.load(ds))
+    monkeypatch.setenv("PENSUM_QUESTARC_DIR", "/nonexistent")
+    content._journeys.cache_clear()
+    try:
+        ds = demo.create()
+        assert validate.problems(ds.data) == []
+        assert not any(k.startswith("run:") and k != "run:demo" for k in records.load(ds))
+    finally:
+        content._journeys.cache_clear()

@@ -101,9 +101,3 @@ def ladders():
     folder = directory() / "content" / "art"
     names = sorted(p.name[:-len(".ladder.json")] for p in folder.glob("*.ladder.json"))
     return {name: found for name in names if (found := ladder(name)) is not None}
-
-
-def markers():
-    """What can hang on a marker (content/art/markers.json): kind →
-    {title, landOnly}; empty if absent."""
-    return _art_json("markers", ".json") or {}

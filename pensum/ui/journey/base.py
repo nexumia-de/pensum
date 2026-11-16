@@ -42,6 +42,11 @@ class JourneySubpage(Adw.NavigationPage):
         stack = self.window.nav.get_navigation_stack()
         return [stack.get_item(i) for i in range(stack.get_n_items())]
 
+    def run_page(self):
+        """The journey's own page below this one on the stack."""
+        from pensum.ui.journey.run_page import RunPage
+        return next(page for page in self._stack() if isinstance(page, RunPage))
+
     def set_main(self, label, action):
         self._main = action
         self.main_button.set_label(label or "")
@@ -67,4 +72,5 @@ class JourneySubpage(Adw.NavigationPage):
         return label
 
     def back_to_journey(self):
-        self.window.show_journey()
+        """Back to the journey's own page (on top of the Valley)."""
+        self.window.show_run()

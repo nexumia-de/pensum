@@ -1,11 +1,11 @@
 """The ladders' pages of the pictures' demo (QuestArc#42), for the owner to
 judge, the same as QuestArc's preview (packages/plugin/preview/ladders.ts):
-`sequence-<ladder>[-<marker>]` shows one ladder as it grows (each version,
-then its marker growing element by element: every element for the first
-stage, a few sampled steps for the others; ready; then the next version;
-the last version with the lit lantern; the row of versions),
+`sequence-<ladder>` shows one ladder as it grows (each version, then its
+flowers growing one by one: every flower for the first stage, a few
+sampled steps for the others; open; then the next version; the last
+version with the lit lantern; the row of versions),
 `journey-<ladder>[-ready]` a static mock of the journey screen with the
-build on top (posts up and two elements hanging, or ready), `palette` every
+build on top (some flowers in bud, or open), `palette` every
 hue and each ladder in two hues.
 Not part of the app; the journey page draws the build with the same
 functions (pensum/ui/journey/build.py)."""
@@ -25,10 +25,9 @@ from pensum.ui.journey.build import version_row  # noqa: E402
 def _steps(ladder, version):
     """Every element for the first stage, a few sampled steps for the others."""
     every = art.marker_elements(ladder)
-    posts = len(ladder["posts"])
     if version == 1:
         return list(range(1, every + 1))
-    return [1, posts, posts + math.ceil((every - posts) / 2), every]
+    return [1, math.ceil(every / 2), every]
 
 
 def _frame(ladder, hue, version, caption, width=300, **state):
@@ -58,15 +57,13 @@ def _hue(ladder, name):
 
 
 def sequence(page, name, hue_name=None):
-    ladder_name, _, kind = name.partition("-")
-    ladder = content.ladder(ladder_name)
+    ladder = content.ladder(name)
     if ladder is None:
         page.append(Gtk.Label(label=f"No ladder {name}"))
         return
     hue = _hue(ladder, hue_name)
-    kind = kind or ladder["marker"]
     last = len(ladder["versions"])
-    page.append(Gtk.Label(label=f"{ladder['title']} with {kind}", xalign=0,
+    page.append(Gtk.Label(label=ladder["title"], xalign=0,
                           css_classes=["title-4"]))
     frames = []
     for v in range(1, last + 1):
@@ -74,11 +71,9 @@ def sequence(page, name, hue_name=None):
         if v < last:
             every = art.marker_elements(ladder)
             for shown in _steps(ladder, v):
-                words = art.build_words(ladder, v, shown / every)
-                frames.append(_frame(ladder, hue, v, f"{shown} of {every} · {words}",
-                                     progress=shown / every, marker=kind))
-            frames.append(_frame(ladder, hue, v, f"ready · {art.build_words(ladder, v, ready=True)}",
-                                 ready=True, marker=kind))
+                frames.append(_frame(ladder, hue, v, f"{shown} of {every} flowers in bud",
+                                     progress=shown / every))
+            frames.append(_frame(ladder, hue, v, "ready: every flower open", ready=True))
     frames.append(_frame(ladder, hue, last, f"{last} · after graduation: the lantern lit",
                          graduated=True))
     row = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, css_classes=["card"], width_request=300,
@@ -118,7 +113,7 @@ def journey(page, name, hue_name=None):
     hue = _hue(ladder, hue_name)
     standing = 3
     lit = flag == "ready"
-    midway = (len(ladder["posts"]) + 2) / art.marker_elements(ladder)
+    midway = 0.5
     page.set_margin_start(0)
     page.set_margin_end(0)
     page.set_margin_top(0)
@@ -128,7 +123,7 @@ def journey(page, name, hue_name=None):
     versions.set_margin_start(8)
     page.append(versions)
     page.append(Gtk.Label(
-        label=art.build_words(ladder, standing, midway, lit),
+        label=art.build_words(ladder, standing),
         xalign=0, wrap=True, css_classes=["dimmed", "dim-label"], margin_start=16, margin_end=16))
     card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8, css_classes=["card"],
                    margin_start=8, margin_end=8)

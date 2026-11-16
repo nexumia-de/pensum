@@ -72,6 +72,17 @@ Mutter at 360 × 720, touch through its remote-desktop API): a swipe from
 Today, from Journeys and from a task goes back, also when the window
 starts wide and is maximised later. To be confirmed on the phone (#5).
 
+# The Valley
+
+The home of the journeys is one picture, the Valley ([Valley](valley.md)):
+the pictures' colours come from libadwaita's roles and each place's hue
+from QuestArc's palette, so light and dark follow the system, and the
+only colour of the app's own is the accent in `style.css`. Names stand on
+tinted ground in the text colour (QuestArc checks 4.5 : 1 for every hue,
+light and dark, on libadwaita's cards). The growing place's name is bold:
+shape, not colour, says which one grows. Every place is a 44 px button;
+nothing scrolls sideways at 360 px.
+
 # Not yet done
 
 Drag to reorder, swipe actions on rows,

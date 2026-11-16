@@ -2,6 +2,7 @@
 recorded values, never live data. No GTK."""
 from datetime import datetime, timedelta
 
+from pensum import demo_valley
 from pensum.game import records
 from pensum.store import contexts, dates, defaults, tasks, tracking
 from pensum.store.dataset import Context, Dataset
@@ -134,6 +135,7 @@ def _journey(ds, now):
         "binding:demo:focus-15": {"taskId": f"rpt_demo-focus-15_{today}",
                                   "repeatCfgId": "demo-focus-15", "day": stage_done},
     })
+    demo_valley.add(ds, today)
     # The first stage's task was replaced by the next stage's; paused so it
     # makes no more instances in the demo.
     one["isPaused"] = True

@@ -115,3 +115,13 @@ def action(name, *args):
     if isinstance(answer, dict) and set(answer) == {"error"}:
         raise EngineError(answer["error"])
     return answer
+
+
+def valley_layout(sides, things, width=360, height=720):
+    """The Valley's geometry from the engine (QuestArc journey design,
+    "The place piece"): the path and, per place, its slot, boxes for every
+    thing, bay, doorstep, name box and joints, in units of a scene
+    `width` wide. Nothing is laid out here. `things` is how many things
+    stand at each place (1 to 3)."""
+    return run({"valley": {"sides": list(sides), "things": list(things),
+                           "width": width, "height": height}})
