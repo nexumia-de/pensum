@@ -8,6 +8,7 @@ from gi.repository import Adw
 
 from pensum.game.content import t
 from pensum.game.sentences import short_date
+from pensum.ui.journey.come_back import come_back_card
 
 
 def iso_week(day):
@@ -50,6 +51,10 @@ def banners(page, run, journey, index):
                                None, None))
         return out
 
+    # After a long break one card stands alone instead of the banners.
+    if run.get("comeBack"):
+        return [come_back_card(page, run, journey)]
+
     key = f"fallback:{run['runId']}:{today}"
     if run["offerFallback"] and key not in seen:
         previous = journey["stages"][index - 1] if index > 0 else None
@@ -57,6 +62,9 @@ def banners(page, run, journey, index):
             else t("ui.banner.fallback-first")
         if run.get("why"):
             text += " " + t("ui.banner.why", why=run["why"])
+        plan = (run.get("planCheck") or {}).get("plan")
+        if plan:
+            text += " " + t("ui.check.yours", plan=plan)
         out.append(_banner(text, t("ui.action.good-to-know"), lambda: close(key)))
 
     week_key = f"checkin:{run['runId']}:{stage['id']}:{iso_week(today)}"

@@ -67,11 +67,9 @@ def things(place, run_id=None):
             box.append(Gtk.Label(label=t(journey["title"]), xalign=0, wrap=True,
                                  css_classes=["caption", "dimmed"]))
         standing = max(1, min(thing["version"], len(ladder["versions"])))
-        box.append(version_row(ladder, place["hue"], standing, card=False))
+        box.append(version_row(ladder, place["hue"], standing, card=False,
+                               skipped=thing.get("skipped") or ()))
         words = art.build_words(ladder, standing)
-        given = [str(n) for n in thing.get("skipped", []) if n <= standing]
-        if given:
-            words += " · " + t("ui.build.given") + ": " + ", ".join(given)
         box.append(Gtk.Label(label=words, xalign=0, wrap=True,
                              css_classes=["dimmed", "dim-label"]))
     return box

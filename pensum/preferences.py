@@ -58,7 +58,7 @@ class PreferencesDialog(Adw.PreferencesDialog):
 
         def remove():
             model = self.window.journeys
-            model.write({key: "" for key in model.records()})
+            model.write({key: "" for key in model.records()}, guard=False)
 
         confirm_dialog(self, t("ui.settings.data.remove"), t("ui.settings.data.confirm"),
                        t("ui.settings.data.remove-now"), remove)

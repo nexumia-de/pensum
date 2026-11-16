@@ -4,6 +4,7 @@ will Y", the condition in words, the schedule, and one message for the
 events of an evaluation. No GTK."""
 from datetime import date
 
+from pensum.game import content
 from pensum.game.content import t
 from pensum.store import dates
 
@@ -25,12 +26,48 @@ def find_stage(journey, stage_id):
     return next((s for s in (journey or {}).get("stages", ()) if s["id"] == stage_id), None)
 
 
-def plan_sentence(stage):
+def plan_action(key):
+    """An action as the plan sentence says it: a journey may give a second
+    form under `<key>.plan` (German "gehe ich 15 Minuten spazieren")."""
+    return t(key + ".plan" if content.has_text(key + ".plan") else key)
+
+
+def plan_anchor(anchor):
+    """(form, text) of a run's moment in the user's words (QuestArc
+    shared/plan.ts): `after` a routine, `at` a fixed time, `then` after a
+    step the run is chained to; None without a moment."""
+    if not anchor:
+        return None
+    after = anchor.get("after")
+    if after:
+        step = find_stage(content.journey(after.get("journeyId")), after.get("stageId"))
+        if step:
+            return "then", t(step["plan"]["action"])
+    if anchor.get("kind") == "time":
+        return "at", anchor.get("time") or ""
+    if anchor.get("words"):
+        return "after", anchor["words"]
+    return None
+
+
+def plan_sentence(stage, pair=None, anchor=None):
+    """"After getting up, I will drink a glass of water (in the kitchen),
+    with my podcast." with the run's moment (`anchor`, else the journey's
+    suggestion) and what the user pairs the stage with."""
     plan = stage["plan"]
-    parts = {"anchor": t(plan["anchor"]), "action": t(plan["action"])}
-    if plan.get("place"):
-        return t("ui.plan.sentence-place", place=t(plan["place"]), **parts)
-    return t("ui.plan.sentence", **parts)
+    own = plan_anchor(anchor)
+    form = "sentence" if not own or own[0] == "after" else own[0]
+    key = f"ui.plan.{form}{'-place' if plan.get('place') else ''}{'-pair' if pair else ''}"
+    return t(key, anchor=own[1] if own else t(plan["anchor"]), action=plan_action(plan["action"]),
+             place=t(plan["place"]) if plan.get("place") else "", pair=pair or "")
+
+
+def habit_name(stage, anchor=None):
+    """The habit in quotes for a question: '"Walk for 15 minutes after lunch"'."""
+    own = plan_anchor(anchor)
+    suffix = "" if not own or own[0] == "after" else f"-{own[0]}"
+    return t(f"ui.checkin.habit{suffix}", action=capitalise(t(stage["plan"]["action"])),
+             anchor=own[1] if own else t(stage["plan"]["anchor"]))
 
 
 def _target(condition):

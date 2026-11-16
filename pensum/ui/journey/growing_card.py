@@ -28,7 +28,7 @@ def state_line(run, station, today):
 def growing_card(run, stage, index, station, today, on_open):
     lines = [t("ui.anchor.growing") + " · " + t("ui.station.of", n=index + 1,
                                                 total=len(run["stations"]))]
-    lines.append(plan_sentence(stage))
+    lines.append(plan_sentence(stage, station.get("pair"), run.get("anchor")))
     if station["state"] in ("current", "met"):
         lines.append(condition_text(stage, station))
     state = state_line(run, station, today)

@@ -2,7 +2,7 @@
 journey can follow (QuestArc game rules §2, due days) and setting up a
 stage, which in Pensum creates the task and its repeat rule in one go
 and binds it. No GTK."""
-from pensum.game import engine, records
+from pensum.game import engine, records, sentences
 from pensum.game.content import t
 from pensum.game.sentences import capitalise
 from pensum.store import dates, tasks
@@ -42,36 +42,63 @@ def rule_fields(stage_schedule, start):
     return rules.schedule_fields("CUSTOM", start, cycle="WEEKLY", weekdays=days)
 
 
-def task_title(stage):
-    return t("ui.setup.task-title", anchor=capitalise(t(stage["plan"]["anchor"])),
-             action=t(stage["plan"]["action"]))
+def task_title(stage, anchor=None):
+    """"Getting up: drink a glass of water", with the run's moment in the
+    user's words when it has one (QuestArc shared/plan.ts, taskAnchor)."""
+    own = sentences.plan_anchor(anchor)
+    key = "ui.setup.task-anchor" + ("" if not own or own[0] == "after" else f"-{own[0]}")
+    start = capitalise(t(key, anchor=own[1] if own else t(stage["plan"]["anchor"])))
+    return t("ui.setup.task-title", anchor=start, action=t(stage["plan"]["action"]))
 
 
-def create_stage_task(ds, run_id, stage, start, now=None):
+def create_stage_task(ds, run_id, stage, start, now=None, view=None, anchor=None):
     """Create the stage's task with its repeat rule and bind it; returns
-    the task. The rule starts on the stage's first day."""
+    the task. The rule starts on the stage's first day. The binding goes
+    through the engine's guard first (`view`, the current game view), so
+    nothing is created when it would be refused."""
     now = now or dates.now_ms()
     today = ds.today(now)
-    task = tasks.add_task(ds, task_title(stage), Context.today(), now)
+    binding = engine.guard_write(view, engine.action("bindStage", {
+        "runId": run_id, "stageId": stage["id"], "taskId": "-", "day": today}))
+    if not binding:
+        return None
+    task = tasks.add_task(ds, task_title(stage, anchor), Context.today(), now)
     cfg = rules.make_recurring(ds, task["id"], rule_fields(stage["schedule"], max(start, today)),
                                now)
-    bind(ds, run_id, stage["id"], task["id"], cfg["id"], today)
+    bind(ds, run_id, stage["id"], task["id"], cfg["id"], today, view)
     return task
 
 
-def bind(ds, run_id, stage_id, task_id, cfg_id, day):
-    records.write(ds, engine.action("bindStage", {"runId": run_id, "stageId": stage_id,
-                                                  "taskId": task_id, "repeatCfgId": cfg_id,
-                                                  "day": day}))
+def bind(ds, run_id, stage_id, task_id, cfg_id, day, view=None):
+    """Write the binding through the engine's guard (engine.Refused when
+    the run belongs to a newer QuestArc)."""
+    records.write(ds, engine.guard_write(view, engine.action("bindStage", {
+        "runId": run_id, "stageId": stage_id, "taskId": task_id, "repeatCfgId": cfg_id,
+        "day": day})))
 
 
-def bind_existing(ds, run_id, stage_id, cfg_id, now=None):
+def bind_existing(ds, run_id, stage_id, cfg_id, now=None, view=None):
     """Bind a recurring task the user already has: its newest live
     instance, else the rule alone through any task id of it."""
     today = ds.today(now or dates.now_ms())
     live = sorted(instances.live_instances(ds, cfg_id), key=lambda x: x.get("created", 0))
     task_id = live[-1]["id"] if live else instances.instance_id(cfg_id, today)
-    bind(ds, run_id, stage_id, task_id, cfg_id, today)
+    bind(ds, run_id, stage_id, task_id, cfg_id, today, view)
+
+
+def rule_of_stage(ds, run_id, stage_id, today):
+    """The repeat rule bound to a stage while it still repeats: it exists
+    and has not ended by its end date (QuestArc game rules §4, stepping
+    back); else None."""
+    binding = records.load(ds).get(f"binding:{run_id}:{stage_id}")
+    if not isinstance(binding, dict):
+        return None
+    cfg_id = binding.get("repeatCfgId") or (ds.task(binding.get("taskId")) or {}).get("repeatCfgId")
+    cfg = (ds.data.get("taskRepeatCfg") or {}).get("entities", {}).get(cfg_id)
+    until = (cfg or {}).get("repeatUntilDay")
+    if not cfg or (isinstance(until, str) and until and until < today):
+        return None
+    return cfg
 
 
 def bound_rule(ds, view):
@@ -80,8 +107,36 @@ def bound_rule(ds, view):
     if not run:
         return None
     station = run["stations"][run["position"]["stage"]]
-    binding = records.load(ds).get(f"binding:{run['runId']}:{station['stageId']}")
+    return rule_of_binding(ds, run["runId"], station["stageId"])
+
+
+def rule_of_binding(ds, run_id, stage_id):
+    """The repeat rule a stage's binding names, ended or not; else None."""
+    binding = records.load(ds).get(f"binding:{run_id}:{stage_id}")
     if not isinstance(binding, dict):
         return None
     cfg_id = binding.get("repeatCfgId") or (ds.task(binding.get("taskId")) or {}).get("repeatCfgId")
     return ds.data["taskRepeatCfg"]["entities"].get(cfg_id)
+
+
+def binding_problem(ds, run_id, stage_id, today):
+    """Why an unbound station has no task (QuestArc flow G): "ended" when
+    the bound rule's repeat ended before today, "gone" when the bound
+    task and rule no longer exist; None otherwise."""
+    binding = records.load(ds).get(f"binding:{run_id}:{stage_id}")
+    if not isinstance(binding, dict):
+        return None
+    cfg_id = binding.get("repeatCfgId") or (ds.task(binding.get("taskId")) or {}).get("repeatCfgId")
+    cfg = (ds.data.get("taskRepeatCfg") or {}).get("entities", {}).get(cfg_id)
+    until = (cfg or {}).get("repeatUntilDay")
+    if cfg and isinstance(until, str) and until and until < today:
+        return "ended"
+    if not cfg and not ds.task(binding.get("taskId")):
+        return "gone"
+    return None
+
+
+def task_of_rule(ds, cfg):
+    """The newest live task of a repeat rule, or None."""
+    live = instances.live_instances(ds, cfg["id"]) if cfg else []
+    return live[-1]["id"] if live else None

@@ -27,7 +27,18 @@ Day Planner adds no second implementation.
   `bindStage`, `continueJourney`, `pauseJourney`, `resumeJourney`,
   `endJourney`, `repeatPause`, `answerCheckin`, `chooseBuild`,
   `withdraw`).
-  So both hosts write the same records.
+  So both hosts write the same records. Every write passes the engine's
+  last check first (`guardWrite`, QuestArc data model §2, pensum#58):
+  a change that touches a journey of a newer QuestArc, or a record kind
+  this engine does not write, is refused as a whole and nothing is
+  written (`engine.Refused`, `JourneyModel.write`); only removing all of
+  QuestArc's data in the preferences skips it. Records Day Planner does
+  not understand stay untouched, also `GZ1:` packed ones. A
+  read-only active journey (`view.readOnly`, state `active`) shows its
+  title and one calm sentence instead of the home and the journey
+  (`read_only.py`): no progress, no main action, no Pause or End.
+  What QuestArc offers and Day Planner does not yet:
+  [QuestArc coverage](questarc-coverage.md).
 - **Records:** QuestArc's choice records are entries of the dataset's
   `pluginUserData` slice with id `questarc:<key>`, the value as JSON
   text, `GZ1:<base64 gzip>` from 1024 characters on, `''` for a
@@ -96,9 +107,18 @@ navigation view so a swipe goes back:
   its menu holds **What you build**, **Stations** (the stations as a list
   with their state in words, `stations_page.py`), pause or resume, end
   (with Undo), the shelf and how QuestArc motivates you.
-- Choose and preview, start (own reason, start day), set up, continue
-  and finished, station details, weekly look back (1–7 or skip), shelf,
-  how it motivates you.
+- Choose and preview, start (own reason, start day or **Pick a date**,
+  today or later; **What you build** with "You build: …" and the kinds
+  to change it in place, written with the start through `chooseBuild`
+  only when the user picked another kind; at a moment that already has
+  its thing, the sentence that another of the same kind grows,
+  `start_build.py`), set up (with why a station has no task: gone, or
+  its repeat ended after starting smaller; the earlier station's task,
+  which stays as it is and can be opened), continue and finished,
+  station details, weekly look back (1–7 or skip), shelf (a habit whose
+  task no longer repeats gets **Set up the task**, the same set-up page
+  for that habit), how it motivates you. The full list against QuestArc:
+  [QuestArc coverage](questarc-coverage.md).
 - **What you build** (`build_page.py`, QuestArc behaviour, screen 3a):
   what grows (a ladder, each in its first version; at a place the kind is the
   place's and written through `choosePlaceKind`, QuestArc 4.3). There is no choice of
@@ -107,8 +127,7 @@ navigation view so a swipe goes back:
   engine's `chooseBuild`, only what the user picked; **Use the journey's
   suggestion** withdraws the record.
 - Still open from #57: the strip on Today, the moment of the tick in
-  it, the choice on the start page, and the build beside the card at
-  desktop width.
+  it, and the build beside the card at desktop width.
 - Preferences → Journeys: removing the journey data (asks first: it
   cannot be undone).
 

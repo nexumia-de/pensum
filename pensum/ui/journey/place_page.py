@@ -10,6 +10,7 @@ from pensum.game.content import t
 from pensum.game.sentences import capitalise
 from pensum.ui.journey import place_piece
 from pensum.ui.journey.base import JourneySubpage
+from pensum.ui.journey.habits import habit_banners
 
 
 def routine_rows(view, anchor):
@@ -89,6 +90,8 @@ class PlacePage(JourneySubpage):
         right = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12, hexpand=True,
                         valign=Gtk.Align.START)
         right.append(routine_card(view, anchor))
+        for banner in habit_banners(self, self.anchor_id):
+            right.append(banner)
         extend = Gtk.Button(label=t("ui.anchor.extend"), css_classes=["pensum-bar-button"])
         extend.connect("clicked", lambda *_: self._extend())
         right.append(extend)

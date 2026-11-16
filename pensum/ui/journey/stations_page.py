@@ -26,7 +26,7 @@ class StationsPage(JourneySubpage):
             row = Adw.ActionRow(
                 title=capitalise(t(stage["plan"]["action"])), title_lines=2,
                 subtitle=f"{t('ui.station.of', n=index + 1, total=total)} · "
-                         f"{t('ui.build.station.' + station['state'])}",
+                         f"{t('ui.build.station.' + ('left' if station.get('leftDay') else station['state']))}",
                 activatable=True)
             row.add_css_class("pensum-journey-station")
             row.add_suffix(Gtk.Image(icon_name="go-next-symbolic"))

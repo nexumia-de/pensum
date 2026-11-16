@@ -48,8 +48,16 @@ def journey(journey_id):
     return next((j for j in journeys() if j.get("id") == journey_id), None)
 
 
-@lru_cache(maxsize=4)
-def _texts(base):
+def locale():
+    """The locale messages are shown in (LC_ALL, LC_MESSAGES, LANG)."""
+    for name in ("LC_ALL", "LC_MESSAGES", "LANG"):
+        value = os.environ.get(name)
+        if value:
+            return value
+    return ""
+
+
+def _english(base):
     table = {}
     app = Path(base) / "content" / "i18n" / "en.json"
     if app.is_file():
@@ -59,10 +67,35 @@ def _texts(base):
     return table
 
 
+@lru_cache(maxsize=4)
+def _texts(base, wanted):
+    """QuestArc's texts in the language of `wanted` (a locale): English
+    from the files; any other language QuestArc has (German) through the
+    engine's `texts` request, which picks the language and puts English
+    behind every missing key (QuestArc texts.ts, #39)."""
+    folder = Path(base) / "content" / "i18n"
+    language = wanted.split(".")[0].split("_")[0].split("@")[0].lower()
+    if not language or language == "en" or not (folder / f"{language}.json").is_file():
+        return _english(base)
+    from pensum.game import engine  # engine imports this module
+    ui = {p.stem: json.loads(p.read_text(encoding="utf-8")) for p in folder.glob("*.json")}
+    try:
+        answer = engine.run({"texts": {"locale": wanted, "ui": ui,
+                                       "journeys": list(_journeys(base))}})
+    except (engine.EngineError, ValueError):
+        return _english(base)
+    texts = answer.get("texts") if isinstance(answer, dict) else None
+    return texts if isinstance(texts, dict) else _english(base)
+
+
+def has_text(key):
+    return key in _texts(str(directory()), locale())
+
+
 def t(key, **params):
-    """The English text for a key with {name} filled in; the key itself if
-    unknown (German follows with QuestArc's texts)."""
-    text = _texts(str(directory())).get(key, key)
+    """QuestArc's text for a key in the user's language (English behind a
+    missing one), {name} filled in; the key itself if unknown."""
+    text = _texts(str(directory()), locale()).get(key, key)
     return _PLACEHOLDER.sub(lambda m: str(params[m.group(1)])
                             if m.group(1) in params else m.group(0), text)
 
