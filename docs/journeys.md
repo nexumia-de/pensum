@@ -204,8 +204,8 @@ The engine is found where `PENSUM_QUESTARC_DIR` points (a QuestArc
 release archive, or a QuestArc checkout after `npm ci && npm run build`)
 and run with `PENSUM_GJS` (default `gjs`); in the Flatpak it is
 `/app/share/questarc`, from the release archive the manifest pins
-(module `questarc-engine`, QuestArc 4.3.0, updated by the update check;
-Day Planner needs 4.3.0 or newer (the kind of thing per place; the Valley (`valley` view and layout),
+(module `questarc-engine`, QuestArc 4.3.1, updated by the update check;
+Day Planner needs 4.3.1 or newer (the kind of thing per place; the Valley (`valley` view and layout),
 the flowers and the retired markers are in the pictures and the engine
 of 4.2.0, the place's kind and marker of 4.3.0).
 Without it the page says "Journeys Are Not Installed". On the cloud host gjs comes from Ubuntu's
