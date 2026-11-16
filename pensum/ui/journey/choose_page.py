@@ -10,7 +10,9 @@ from pensum.ui.journey.base import JourneySubpage
 
 
 class ChoosePage(JourneySubpage):
-    def __init__(self, window):
+    """`anchor_id`: "Extend This Moment", the moment is already chosen."""
+
+    def __init__(self, window, anchor_id=None):
         super().__init__(window, t("ui.choose.title"), "journey-choose")
         group = self.group()
         for journey in content.journeys():
@@ -24,12 +26,12 @@ class ChoosePage(JourneySubpage):
                                 + "\n" + lines[-1], activatable=True, subtitle_lines=0)
             row.add_suffix(Gtk.Image(icon_name="go-next-symbolic"))
             row.connect("activated", lambda _r, j=journey: window.nav.push(
-                PreviewPage(window, j["id"])))
+                PreviewPage(window, j["id"], anchor_id)))
             group.add(row)
 
 
 class PreviewPage(JourneySubpage):
-    def __init__(self, window, journey_id):
+    def __init__(self, window, journey_id, anchor_id=None):
         journey = content.journey(journey_id)
         super().__init__(window, t(journey["title"]), f"journey-preview-{journey_id}")
         self.text(t(journey["description"]))
@@ -43,8 +45,8 @@ class PreviewPage(JourneySubpage):
             number.add_css_class("dimmed")
             row.add_prefix(number)
             group.add(row)
-        self.set_main(t("ui.preview.start"), lambda: self._start(journey_id))
+        self.set_main(t("ui.preview.start"), lambda: self._start(journey_id, anchor_id))
 
-    def _start(self, journey_id):
+    def _start(self, journey_id, anchor_id):
         from pensum.ui.journey.start_page import StartPage
-        self.window.nav.push(StartPage(self.window, journey_id))
+        self.window.nav.push(StartPage(self.window, journey_id, anchor_id))

@@ -42,6 +42,7 @@ class Application(Adw.Application):
                                ("show-archived", self._on_show_archived),
                                ("show-sync", self._on_show_sync),
                                ("show-journey", self._on_show_journey),
+                               ("show-run", self._on_show_run),
                                ("search", self._on_search),
                                ("quit", self._on_quit)):
             action = Gio.SimpleAction.new(name, None)
@@ -49,8 +50,12 @@ class Application(Adw.Application):
             self.add_action(action)
         # show-list('today:TODAY'), show-list('project:<id>') and
         # show-task('<id>'), also over D-Bus for the screenshots.
+        # show-place('<moment id>') and show-change-moment('<moment id>'):
+        # the place and "Change this moment", also for the screenshots.
         for name, callback in (("show-list", self._on_show_list),
-                               ("show-task", self._on_show_task)):
+                               ("show-task", self._on_show_task),
+                               ("show-place", self._on_show_place),
+                               ("show-change-moment", self._on_show_change_moment)):
             action = Gio.SimpleAction.new(name, GLib.VariantType("s"))
             action.connect("activate", callback)
             self.add_action(action)
@@ -118,6 +123,18 @@ class Application(Adw.Application):
     def _on_show_journey(self, *_):
         if self._window():
             self._window().show_journey()
+
+    def _on_show_run(self, *_):
+        if self._window():
+            self._window().show_run()
+
+    def _on_show_place(self, _action, parameter):
+        if self._window():
+            self._window().show_place(parameter.get_string())
+
+    def _on_show_change_moment(self, _action, parameter):
+        if self._window():
+            self._window().show_change_moment(parameter.get_string())
 
     def _on_show_lists(self, *_):
         if self._window():

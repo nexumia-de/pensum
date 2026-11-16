@@ -1,0 +1,1 @@
+Tap a place in the Valley to see its thing, the versions that stand and its routine in words; the pencil opens "Change this moment": its words, earlier or later in your day, the side of the path and its colour.

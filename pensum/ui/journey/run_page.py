@@ -8,7 +8,9 @@ from gi.repository import Adw, Gio, Gtk
 
 from pensum.game.content import t
 from pensum.ui.journey.banners import banners
+from pensum.ui.journey import place_piece
 from pensum.ui.journey.build import build_header
+from pensum.ui.journey.place_piece import place_of_run
 from pensum.ui.journey.card import station_card
 
 
@@ -102,7 +104,10 @@ class RunPage(Adw.NavigationPage):
             return
         run, journey, index, station, stage = current
         self.title.set_title(t(journey["title"]))
-        self.build = build_header(run.get("build"))
+        # The journey is set in its place (a run without a moment has none yet).
+        place = place_of_run(model.view, run["runId"])
+        self.build = place_piece.section(self.window, model.view, place, run["runId"]) \
+            if place else build_header(run.get("build"))
         self._menu(run, built=self.build is not None)
         if self.build:
             box.append(self.build)

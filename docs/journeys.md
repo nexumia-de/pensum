@@ -80,9 +80,11 @@ navigation view so a swipe goes back:
   there is no QuestArc record at all, else one path through the day with
   a place for every moment and the growing step as a card below it. The
   card and the growing place open the journey's own page
-  (`run_page.py`, QuestArc screen 4): on top the journey's build in its
-  setting and hue (the ladder's standing version, the flowers of the
-  stage under way, open while the stage is ready), the row of the
+  (`run_page.py`, QuestArc screen 4), any other place opens its page
+  (`place_page.py`, screen 0b, with **Change this moment**): on top the
+  journey set in its place (the place piece with the flowers of the
+  stage under way, open while the stage is ready; a run without a moment
+  has the ladder's own scene), the row of the
   versions that stand (nothing of what comes next), and one line of state
   in words ("A log stands"); then the banners (paused, a hard week,
   weekly look back, a new nugget) and the current station's card (plan,
