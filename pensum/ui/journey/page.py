@@ -154,6 +154,9 @@ class JourneyPage(Adw.NavigationPage):
         place = self.model.view["valley"][index]
         if place["growing"]:
             self.show_run()
+        else:
+            from pensum.ui.journey.place_page import PlacePage
+            self._push(PlacePage(self.window, place["anchorId"]))
 
     # --- pushed pages ---------------------------------------------------
 

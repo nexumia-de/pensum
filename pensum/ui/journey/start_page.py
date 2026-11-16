@@ -14,9 +14,10 @@ from pensum.ui.journey.moment_rows import MomentRows
 
 
 class StartPage(JourneySubpage):
-    def __init__(self, window, journey_id):
+    def __init__(self, window, journey_id, anchor_id=None):
         super().__init__(window, t("ui.start.start"), f"journey-start-{journey_id}")
         self.journey = content.journey(journey_id)
+        self.anchor_id = anchor_id  # None: a new moment; "Extend This Moment" names one
         today = window.ds.today()
         self._moment_group()
         why = self.group(t("ui.start.why"), t("ui.start.why.private"))
@@ -50,18 +51,19 @@ class StartPage(JourneySubpage):
         hint = self.journey.get("anchor") or {}
         group = self.group(t("ui.moment.title"), t("ui.moment.hint", moment=t(
             hint.get("moment") or "ui.moment.any")))
-        self.anchor_id = None  # None: a new moment
         mine = [a for a in (self.model.view or {}).get("anchors", []) if a.get("id")]
+        if self.anchor_id not in {a["id"] for a in mine}:
+            self.anchor_id = None
         first = None
         for found in mine:
-            check = Gtk.CheckButton(group=first)
+            check = Gtk.CheckButton(group=first, active=found["id"] == self.anchor_id)
             first = first or check
             check.connect("toggled", lambda c, i=found["id"]: c.get_active()
                           and setattr(self, "anchor_id", i))
             row = Adw.ActionRow(title=moments.title(found), activatable_widget=check)
             row.add_prefix(check)
             group.add(row)
-        new = Gtk.CheckButton(active=True, group=first)
+        new = Gtk.CheckButton(active=self.anchor_id not in {a["id"] for a in mine}, group=first)
         new.connect("toggled", lambda c: c.get_active() and setattr(self, "anchor_id", None))
         row = Adw.ActionRow(title=t("ui.moment.new"), activatable_widget=new)
         row.add_prefix(new)

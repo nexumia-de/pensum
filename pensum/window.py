@@ -253,6 +253,19 @@ class Window(Adw.ApplicationWindow):
         self.show_journey()  # pops to the main page
         self.journey_page.show_run()
 
+    def show_place(self, anchor_id):
+        """A moment's place, on top of the Valley (a growing place opens
+        its journey's page)."""
+        from pensum.ui.journey.place_page import PlacePage
+        self.show_journey()
+        self.journeys.refresh_now()
+        self.nav.push(PlacePage(self, anchor_id))
+
+    def show_change_moment(self, anchor_id):
+        from pensum.ui.journey.change_moment_page import ChangeMomentPage
+        self.show_place(anchor_id)
+        self.nav.push(ChangeMomentPage(self, anchor_id))
+
     def show_task(self, task_id):
         if task_id not in self.ds.tasks:
             return
