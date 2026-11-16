@@ -53,31 +53,47 @@ def routine_card(view, anchor):
 
 
 class PlacePage(JourneySubpage):
+    """At 720 px and wider the piece stands on the left and the card on
+    the right (QuestArc screen 0b); narrower, one column."""
+
     def __init__(self, window, anchor_id):
         view = window.journeys.view or {}
         found = next((p for p in view.get("valley", []) if p["anchorId"] == anchor_id), None)
         # No tag: pages of different places are pushed one after the other.
         super().__init__(window, moments.place_title(view, found) if found else "", None)
         self.anchor_id = anchor_id
+        self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12, margin_top=12,
+                           margin_bottom=24, margin_start=12, margin_end=12)
+        scroll = Gtk.ScrolledWindow(hscrollbar_policy=Gtk.PolicyType.NEVER, vexpand=True,
+                                    child=self.box)
+        wide = Adw.BreakpointBin(child=scroll, width_request=360, height_request=294)
+        point = Adw.Breakpoint.new(Adw.BreakpointCondition.parse("min-width: 720sp"))
+        point.add_setter(self.box, "orientation", Gtk.Orientation.HORIZONTAL)
+        point.add_setter(self.box, "spacing", 24)
+        wide.add_breakpoint(point)
+        self.get_child().set_content(wide)
         self.listen(self._show)
         self._show()
 
     def _show(self):
-        self.clear()
+        while (child := self.box.get_first_child()) is not None:
+            self.box.remove(child)
         view = self.model.view or {}
         place = next((p for p in view.get("valley", []) if p["anchorId"] == self.anchor_id), None)
         anchor = moments.anchor(view, self.anchor_id)
         if place is None or anchor is None:
             return  # removed: the page goes with it
         self.set_title(moments.place_title(view, place))
-        group = self.group()
-        group.add(place_piece.section(self.window, view, place))
-        group = self.group()
-        group.add(routine_card(view, anchor))
-        extend = Adw.ButtonRow(title=t("ui.anchor.extend")) if hasattr(Adw, "ButtonRow") \
-            else Adw.ActionRow(title=t("ui.anchor.extend"), activatable=True)
-        extend.connect("activated", lambda *_: self._extend())
-        self.group().add(extend)
+        left = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, valign=Gtk.Align.START, hexpand=True)
+        left.append(place_piece.section(self.window, view, place))
+        right = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12, hexpand=True,
+                        valign=Gtk.Align.START)
+        right.append(routine_card(view, anchor))
+        extend = Gtk.Button(label=t("ui.anchor.extend"), css_classes=["pensum-bar-button"])
+        extend.connect("clicked", lambda *_: self._extend())
+        right.append(extend)
+        self.box.append(left)
+        self.box.append(right)
 
     def _extend(self):
         from pensum.ui.journey.choose_page import ChoosePage

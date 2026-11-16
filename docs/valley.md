@@ -73,8 +73,8 @@ here; Day Planner asks the engine and draws.
   "Nothing stands here yet." Then **Extend This Moment**
   (`ChoosePage(anchor_id)` → the start page with the moment chosen). The
   journey's own page (`run_page.py`) is set in the same piece, with the
-  versions of its own thing only. At 720 px and wider the page keeps one
-  column (the QuestArc screen puts the piece left and the card right).
+  versions of its own thing only. At 720 px and wider the piece stands on
+  the left and the card on the right (an `AdwBreakpoint`), narrower one column.
 - **Change this moment** (`change_moment_page.py`; screen 0a): the words
   ("After …" or a fixed time) and a name, saved with **Save**
   (`nameAnchor`); under them the places in the order of the day as a
