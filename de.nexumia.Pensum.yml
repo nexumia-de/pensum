@@ -48,8 +48,8 @@ modules:
       - install -Dm644 content/LICENSE /app/share/licenses/$FLATPAK_ID/questarc-journeys/LICENSE
     sources:
       - type: archive
-        url: https://github.com/nexumia-de/quest-arc/releases/download/v4.2.0/questarc-engine-4.2.0.tar.gz
-        sha256: 8c3bf115ba0992cc5cbf4aed85523875c051b100982620112b28b283bd1c6988
+        url: https://github.com/nexumia-de/quest-arc/releases/download/v4.3.1/questarc-engine-4.3.1.tar.gz
+        sha256: 899d73f0953f9da3c60a2bdd2c9c2a42bc81a21ba71e8b7a6ee4cf9cc9e0ad6a
         x-checker-data:
           type: json
           url: https://api.github.com/repos/nexumia-de/quest-arc/releases/latest

@@ -82,7 +82,19 @@ here; Day Planner asks the engine and draws.
   numbered list (this one bold, "This moment"), **Move Earlier** and
   **Move Later** (disabled at the ends), **Side of the path** (Left, Right),
   **Colour** (the eight hues: a swatch and the name, so the name carries
-  it) and **Use the suggestion** (only while something was chosen). Each
+  it), where a thing stands **What grows** (the kind of every thing at
+  the place: Home, Garden, Well, Lookout, each in its first version; the
+  journey's own is "Suggested by the journey"; changeable also after it
+  has grown, the version reached is kept) and **Use the suggestion** (only
+  while something was chosen). The kind is the place's (`place:<anchorId>.ladder`,
+  QuestArc 4.3, #158) and written through `choosePlaceKind`; the "Use the
+  suggestion" in "What grows" is `withdrawPlaceKind` (kind and marker, and
+  the kind chosen when the first journey started; position, side and hue
+  stay), the one at the end `withdrawPlace` with the view (all of it).
+  **What hangs** (`choosePlaceMarker`) shows only where the place's ladder
+  lists more than one marker kind (`markers` in its file): flowers are
+  the only kind now, so it is hidden. "What you build" (the journey's
+  menu) writes the same place record while the run stands at a moment. Each
   change is written at once through the engine's `movePlace`,
   `choosePlaceSide`, `choosePlaceHue` and `withdrawPlace` as
   `place:<anchorId>` records, only what the user picked; the fields above
@@ -107,4 +119,4 @@ and `app.show-change-moment('<moment>')` open the pages for
 `screenshot.sh -a` (the moments of the demo: `getting-up`, `desk`,
 `lunch`, `dinner`, `bedtime`, `evening`).
 
-[^1]: QuestArc docs/behaviour.md screens 0, 0a, 0b and 3; docs/journey-design.md "The place piece" and "The sign of a place"; docs/game-rules.md §8 (QuestArc 4.2.0, nexumia-de/quest-arc#114).
+[^1]: QuestArc docs/behaviour.md screens 0, 0a, 0b and 3; docs/journey-design.md "The place piece" and "The sign of a place"; docs/game-rules.md §8 (QuestArc 4.2.0 and 4.3.0, nexumia-de/quest-arc#114, #158).

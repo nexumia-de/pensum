@@ -72,9 +72,14 @@ def add(ds, today, name=None):
     for moment in PLACES[name]:
         found[f"anchor:{moment}"] = {"kind": "routine", "words": MOMENTS[moment][0]}
     found["run-anchor:demo"] = {"anchorId": "desk"}
-    # The places in the order of the day, as the user placed them.
+    # The places in the order of the day, as the user placed them; with
+    # PENSUM_DEMO_KIND=<ladder> the desk has another kind of thing chosen
+    # (QuestArc 4.3, `place:<anchorId>.ladder`).
     for position, moment in enumerate(PLACES[name]):
         found[f"place:{moment}"] = {"position": position}
+    kind = os.environ.get("PENSUM_DEMO_KIND")
+    if kind in ("home", "garden", "well", "lookout"):
+        found["place:desk"]["ladder"] = kind
     for moment in PLACES[name]:
         state = STATE.get(moment)
         journey_id = MOMENTS[moment][1]

@@ -502,9 +502,10 @@ def test_journey_shows_its_build_and_the_stations_as_a_list(app, tmp_path):
 
 @needs_engine
 def test_what_you_build_writes_only_the_choice(app, tmp_path):
-    """Changing what grows writes one build record with what the user
-    picked; there is nothing else to choose (no colour, no marker); the
-    journey's suggestion withdraws it. The data stays valid."""
+    """Changing what grows writes the place's kind (the run's own build
+    record where it has no moment); there is nothing else to choose (no
+    colour, no marker); the journey's suggestion withdraws it. The data
+    stays valid."""
     from pensum.game import content, records
     if not content.ladders():
         pytest.skip("no ladders in PENSUM_QUESTARC_DIR")
@@ -525,14 +526,19 @@ def test_what_you_build_writes_only_the_choice(app, tmp_path):
     window.journeys.action("chooseBuild", "demo", {"hue": "slate"})
     iterate()
     run = window.journeys.active()
+    # At a place the kind belongs to the place (QuestArc 4.3, #158): the
+    # choice is the place's record, covers every thing there and keeps the version.
+    version = run["build"]["version"]
     page._choose(run, "ladder", "home")
     iterate()
-    assert records.load(window.ds)["build:demo"] == {"hue": "slate", "ladder": "home"}
+    assert records.load(window.ds)["build:demo"] == {"hue": "slate"}
+    assert records.load(window.ds)["place:desk"]["ladder"] == "home"
     build = window.journeys.active()["build"]
-    assert (build["ladder"], build["version"]) == ("home", 2)
-    window.journeys.action("chooseBuild", "demo", {})
+    assert (build["ladder"], build["version"]) == ("home", version)
+    window.journeys.action("withdrawPlaceKind", window.journeys.view, "desk")
     iterate()
-    assert "build:demo" not in records.load(window.ds)
+    assert "ladder" not in records.load(window.ds).get("place:desk", {})
+    assert window.journeys.active()["build"]["ladder"] == "well"
     window.flush()
     assert validate.problems(backup.read(window.files.path)) == []
     window.close()

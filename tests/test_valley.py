@@ -325,3 +325,88 @@ def test_extend_this_moment_starts_from_the_moment(app, tmp_path, monkeypatch):
     window.flush()
     assert validate.problems(backup.read(window.files.path)) == []
     window.close()
+
+
+# --- the kind of thing per place (QuestArc 4.3, #158) ------------------------
+
+def _rows(page):
+    return {w.get_title(): w for w in _widgets(page) if hasattr(w, "get_title") and w.get_title()}
+
+
+@needs_engine
+def test_the_kind_is_chosen_per_place_and_kept_when_changed(app, tmp_path, monkeypatch):
+    """"What grows" in Change this moment: written at once as the place's
+    `ladder`, every thing there is drawn as the new kind at the version it
+    has reached; "Use the suggestion" for the kind gives the journey's own
+    back and leaves position, side and hue alone."""
+    from pensum.ui.journey.change_moment_page import ChangeMomentPage
+    window = _open_home(app, tmp_path, monkeypatch, "6-stacked")
+    window.nav.push(ChangeMomentPage(window, "desk"))  # two things, the first finished
+    iterate()
+    change = visible(window)
+    before = [(t["ladder"], t["version"]) for p in window.journeys.view["valley"]
+              if p["anchorId"] == "desk" for t in p["things"]]
+    assert {k for k, _ in before} == {"well"}
+    rows = _rows(change)
+    assert "What grows" in _texts(change)
+    assert rows["Garden"].get_subtitle() == ""  # the first journey suggests the Well
+    assert rows["Well"].get_subtitle() == "Suggested by the journey"
+    rows["Home"].activate()
+    iterate()
+    stored = records.load(window.ds)["place:desk"]
+    assert stored["ladder"] == "home"
+    after = [(t["ladder"], t["version"]) for p in window.journeys.view["valley"]
+             if p["anchorId"] == "desk" for t in p["things"]]
+    assert after == [("home", v) for _, v in before]  # the versions reached are kept
+    # position, side and hue chosen too; the kind's own suggestion keeps them
+    change._act("choosePlaceSide", "left")
+    iterate()
+    from gi.repository import Adw
+    suggestions = [w for w in _widgets(change) if getattr(w, "get_title", lambda: "")()
+                   == "Use the suggestion"]
+    assert len(suggestions) == 2  # one for the kind, one for position, side and hue
+    kind_row = next(w for w in suggestions
+                    if w.get_ancestor(Adw.PreferencesGroup).get_title() == "What grows")
+    kind_row.emit("activated")  # the engine's withdrawPlaceKind
+    iterate()
+    stored = records.load(window.ds)["place:desk"]
+    assert "ladder" not in stored and stored["side"] == "left"
+    assert {t["ladder"] for p in window.journeys.view["valley"]
+            if p["anchorId"] == "desk" for t in p["things"]} == {"well"}
+    window.flush()
+    assert validate.problems(backup.read(window.files.path)) == []
+    window.close()
+
+
+@needs_engine
+def test_the_kind_of_a_place_without_things_is_not_offered(app, tmp_path):
+    from pensum.ui.journey.change_moment_page import ChangeMomentPage
+    ds = demo.create()
+    records.write(ds, {"anchor:free": {"kind": "routine", "words": "tea"}})
+    window = new_window(app, tmp_path, ds)
+    window.journeys.refresh_now()
+    window.nav.push(ChangeMomentPage(window, "free"))
+    iterate()
+    assert "What grows" not in _texts(visible(window))
+    window.close()
+
+
+@needs_engine
+def test_what_hangs_shows_only_with_more_than_one_marker_kind(app, tmp_path, monkeypatch):
+    """Flowers are the only kind now: no choice. A ladder that lists more
+    than one kind shows "What hangs" (a fixture ladder stands in)."""
+    from pensum.ui.journey.change_moment_page import ChangeMomentPage
+    window = _open_home(app, tmp_path, monkeypatch, "3")
+    window.nav.push(ChangeMomentPage(window, "desk"))
+    iterate()
+    assert "What hangs" not in _texts(visible(window))
+    window.nav.pop()
+    iterate()
+    real = content.ladder
+    monkeypatch.setattr(content, "ladder", lambda name: dict(real(name) or {}, markers=[
+        "flowers", "bunting"]) if name == "well" else real(name))
+    window.nav.push(ChangeMomentPage(window, "desk"))
+    iterate()
+    texts = _texts(visible(window))
+    assert "What hangs" in texts and "The usual" in texts and "Bunting" in texts
+    window.close()
