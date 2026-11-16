@@ -249,13 +249,28 @@ def test_change_this_moment_writes_place_records_and_stays_valid(app, tmp_path, 
     assert evening["chosen"] == {}
 
     # the words and the name
+    # no Save button: the words are written when editing ends (Enter, focus out, back)
+    assert not change.bottom.get_visible()
     change.rows.routine.set_text("my second coffee")
     change.name_row.set_text("Evening")
-    change._save()
+    assert records.load(window.ds)["anchor:evening"] == {"kind": "routine",
+                                                         "words": "my evening coffee"}
+    change.name_row.emit("entry-activated")
     iterate()
     assert records.load(window.ds)["anchor:evening"] == {
         "kind": "routine", "words": "my second coffee", "name": "Evening"}
     assert any(p["name"] == "Evening" for p in window.journeys.view["valley"])
+    # emptying the words writes nothing and puts back what stands
+    change.rows.routine.set_text("")
+    change._commit()
+    iterate()
+    assert records.load(window.ds)["anchor:evening"]["words"] == "my second coffee"
+    assert change.rows.routine.get_text() == "my second coffee"
+    # leaving the page writes what was typed last
+    change.rows.routine.set_text("tea")
+    change.emit("hiding")
+    iterate()
+    assert records.load(window.ds)["anchor:evening"]["words"] == "tea"
     window.flush()
     assert validate.problems(backup.read(window.files.path)) == []
     window.close()

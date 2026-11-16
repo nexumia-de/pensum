@@ -76,8 +76,9 @@ here; Day Planner asks the engine and draws.
   versions of its own thing only. At 720 px and wider the piece stands on
   the left and the card on the right (an `AdwBreakpoint`), narrower one column.
 - **Change this moment** (`change_moment_page.py`; screen 0a): the words
-  ("After …" or a fixed time) and a name, saved with **Save**
-  (`nameAnchor`); under them the places in the order of the day as a
+  ("After …" or a fixed time) and a name, written through
+  `nameAnchor` when editing ends (Enter, leaving the field, going back;
+  there is no Save button: undo, not confirm); under them the places in the order of the day as a
   numbered list (this one bold, "This moment"), **Move Earlier** and
   **Move Later** (disabled at the ends), **Side of the path** (Left, Right),
   **Colour** (the eight hues: a swatch and the name, so the name carries

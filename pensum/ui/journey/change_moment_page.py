@@ -1,12 +1,14 @@
 """Change this moment (QuestArc docs/behaviour.md, screen 0a): the moment's
-words and name (**Save**, `nameAnchor`), and where it stands in the day:
+words and name (`nameAnchor`, written when editing ends: Enter, leaving
+the field or going back; no Save button), and where it stands in the day:
 the places in order, **Move Earlier** and **Move Later**, the side of the
 path and the colour (the eight hues, each a swatch with its name), **Use
 the suggestion** (only while something was chosen), and **Remove This
 Moment** where nothing stands. Each change of the place is written at
 once, as the engine's `movePlace`, `choosePlaceSide`, `choosePlaceHue`
 and `withdrawPlace` make it (`place:<anchorId>` records); the fields
-above keep what was typed."""
+above keep what was typed. Undo, not confirm: only removing a moment
+offers Undo."""
 import math
 
 from gi.repository import Adw, Gtk
@@ -60,9 +62,16 @@ class ChangeMomentPage(JourneySubpage):
         naming.add(self.name_row)
         self.text(t("ui.moment.tasks"), "dimmed", "caption")
         self.fixed = len(self._groups)
+        self._saved = self._typed()
+        for row in (self.rows.routine, self.rows.time, self.name_row):
+            row.connect("entry-activated", lambda *_: self._commit())
+            focus = Gtk.EventControllerFocus()
+            focus.connect("leave", lambda *_: self._commit())
+            row.add_controller(focus)
+        # Going back writes what was typed last.
+        self.connect("hiding", lambda *_: self._commit())
         self.listen(self._show)
         self._show()
-        self.set_main("Save", self._save)
 
     def _show(self):
         """The groups about the place; the fields above are left as typed."""
@@ -130,18 +139,30 @@ class ChangeMomentPage(JourneySubpage):
             row.connect("activated", lambda *_: self._remove())
             group.add(row)
 
-    def _save(self):
-        anchor = self.rows.anchor()
+    def _typed(self):
+        return (self.rows.anchor(), self.name_row.get_text().strip())
+
+    def _commit(self):
+        """Write the words, time and name when they changed. Without words
+        or a time nothing is written and the fields go back to what stands."""
+        typed = self._typed()
+        if typed == self._saved:
+            return
+        anchor, name = typed
         if anchor is None:
             self.window.toast(t("ui.moment.missing"))
+            current = moments.anchor(self.model.view or {}, self.anchor_id) or {}
+            self.rows.routine.set_text(current.get("words", ""))
+            self.rows.time.set_text(current.get("time", ""))
             return
+        self._saved = typed
         self.model.action("nameAnchor", {"anchorId": self.anchor_id, "anchor": anchor,
-                                         "name": self.name_row.get_text().strip()})
-        self.window.nav.pop()
+                                         "name": name})
 
     def _remove(self):
         """Nothing stands here, so nothing is lost; Undo brings the records
         back."""
+        self._saved = self._typed()  # going back must not write the moment again
         before = {key: value for key, value in records.load(self.window.ds).items()
                   if key in (f"anchor:{self.anchor_id}", f"place:{self.anchor_id}")}
         self.window.nav.pop()
