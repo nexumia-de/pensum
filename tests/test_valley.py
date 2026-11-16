@@ -5,7 +5,6 @@ display and QuestArc's engine."""
 import pytest
 
 from test_ui import _widgets, iterate, needs_engine, new_window, settle, visible  # noqa: F401
-from test_ui import app  # noqa: F401  (the module's one application)
 
 from pensum import demo, demo_valley  # noqa: E402
 from pensum.game import content, engine, records  # noqa: E402
