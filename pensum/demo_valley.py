@@ -37,7 +37,10 @@ def scenario():
 
 
 def _finished(found, run, journey_id, ends_ago, today, graduated):
-    stages = [s["id"] for s in content.journey(journey_id)["stages"]]
+    journey = content.journey(journey_id)
+    if journey is None:  # no QuestArc content here (the real-app exports)
+        return
+    stages = [s["id"] for s in journey["stages"]]
     start = ends_ago + 15 * len(stages)
     day = lambda back: dates.shift_day(today, -back)  # noqa: E731
     found[f"run:{run}"] = {"journeyId": journey_id, "journeyVersion": 1, "startDay": day(start)}
@@ -51,7 +54,10 @@ def _finished(found, run, journey_id, ends_ago, today, graduated):
 
 
 def _waiting(found, run, journey_id, today):
-    first = content.journey(journey_id)["stages"][0]["id"]
+    journey = content.journey(journey_id)
+    if journey is None:
+        return
+    first = journey["stages"][0]["id"]
     found[f"run:{run}"] = {"journeyId": journey_id, "journeyVersion": 1,
                            "startDay": dates.shift_day(today, -45)}
     found[f"stage:{run}:{first}"] = {"acceptedDay": dates.shift_day(today, -45)}
