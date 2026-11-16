@@ -100,7 +100,8 @@ navigation view so a swipe goes back:
   and finished, station details, weekly look back (1–7 or skip), shelf,
   how it motivates you.
 - **What you build** (`build_page.py`, QuestArc behaviour, screen 3a):
-  what grows (a ladder, each in its first version). There is no choice of
+  what grows (a ladder, each in its first version; at a place the kind is the
+  place's and written through `choosePlaceKind`, QuestArc 4.3). There is no choice of
   what hangs (flowers are the only marker since QuestArc 4.2) and no
   colour (the place's). Each change is written at once through the
   engine's `chooseBuild`, only what the user picked; **Use the journey's
@@ -203,10 +204,10 @@ The engine is found where `PENSUM_QUESTARC_DIR` points (a QuestArc
 release archive, or a QuestArc checkout after `npm ci && npm run build`)
 and run with `PENSUM_GJS` (default `gjs`); in the Flatpak it is
 `/app/share/questarc`, from the release archive the manifest pins
-(module `questarc-engine`, QuestArc 4.2.0, updated by the update check;
-Day Planner needs 4.2.0 or newer: the Valley (`valley` view and layout),
+(module `questarc-engine`, QuestArc 4.3.0, updated by the update check;
+Day Planner needs 4.3.0 or newer (the kind of thing per place; the Valley (`valley` view and layout),
 the flowers and the retired markers are in the pictures and the engine
-of 4.2.0).
+of 4.2.0, the place's kind and marker of 4.3.0).
 Without it the page says "Journeys Are Not Installed". On the cloud host gjs comes from Ubuntu's
 package or from the GNOME runtime through bwrap ([development environment](dev-environment.md)).
 Tests that need the engine are skipped without it; CI fetches the

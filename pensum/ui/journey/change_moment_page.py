@@ -143,6 +143,15 @@ class ChangeMomentPage(JourneySubpage):
             if name == suggested:
                 row.set_subtitle(t("ui.build.suggested"))
             group.add(row)
+        first_run = place["things"][0]["runId"]
+        picked = bool(place["chosen"].get("ladder") or place["chosen"].get("marker")) or bool(
+            (records.load(self.window.ds).get(f"build:{first_run}") or {}).get("ladder"))
+        if picked:  # the kind and what hangs only: position, side and hue stay
+            row = Adw.ButtonRow(title=t("ui.place.suggestion")) if hasattr(Adw, "ButtonRow") \
+                else Adw.ActionRow(title=t("ui.place.suggestion"), activatable=True)
+            row.connect("activated", lambda *_: self.model.action(
+                "withdrawPlaceKind", self.model.view, self.anchor_id))
+            group.add(row)
 
     def _marker(self, place):
         """What hangs: only where the place's kind draws more than one kind
@@ -159,11 +168,9 @@ class ChangeMomentPage(JourneySubpage):
 
     def _more(self, place, view):
         group = self.group()
-        # What the user picked: the place's record, and the kind chosen
-        # before the first journey's first version (`build:<run>`).
-        first = place["things"][0]["runId"] if place["things"] else None
-        picked = bool(place["chosen"]) or bool(
-            first and (records.load(self.window.ds).get(f"build:{first}") or {}).get("ladder"))
+        # Position, side and hue chosen: one suggestion gives all of it back
+        # (the engine's `withdrawPlace`, with the view: the kind too).
+        picked = any(name in place["chosen"] for name in ("position", "side", "hue"))
         if picked:
             row = Adw.ButtonRow(title=t("ui.place.suggestion")) if hasattr(Adw, "ButtonRow") \
                 else Adw.ActionRow(title=t("ui.place.suggestion"), activatable=True)
