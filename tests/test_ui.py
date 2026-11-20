@@ -175,6 +175,8 @@ def test_time_dialog(app, tmp_path):
 
 def test_finish_day(app, tmp_path):
     window = new_window(app, tmp_path, demo.create())
+    window.show_list(Context.today())
+    iterate()
     page = window.list_page
     assert page.done_header.get_visible()
     page._on_finish()
@@ -250,6 +252,33 @@ def test_ephyra_layout_and_swipe_back_stack(app, tmp_path):
     window.split.set_collapsed(False)
     iterate()
     assert window.visible_page() is window.list_page
+    window.close()
+
+
+def test_opens_on_the_journeys_once_there_are_any(app, tmp_path):
+    """Day Planner opens on the journeys when the dataset holds a QuestArc
+    record, with Journeys first in the sidebar, and on the list shown last
+    without one (#78)."""
+    from pensum.game import content
+    if not content.available():
+        pytest.skip("QuestArc's engine is not here")
+
+    def first_row(window):
+        return window.sidebar.listbox.get_row_at_index(0).context.kind
+
+    window = new_window(app, tmp_path / "with", demo.create())
+    assert window.journeys.in_use()
+    assert window.visible_page().get_tag() == "journey"
+    assert first_row(window) == "journey"
+    window.show_list(Context.today())
+    iterate()
+    assert window.visible_page() is window.list_page
+    window.close()
+
+    window = new_window(app, tmp_path / "without")
+    assert not window.journeys.in_use()
+    assert window.visible_page() is window.list_page
+    assert first_row(window) == "today"
     window.close()
 
 

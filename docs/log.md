@@ -1,6 +1,7 @@
 # Directory Update Log
 
 ## 2026-11-20
+* **Update** (#78): Day Planner opens on Journeys once the dataset holds a QuestArc record (`Window.show_start`, also after an import), and Journeys is then the first row of the sidebar; without a record it opens on the list shown last. The release screenshot "today" names its list. A UI test checks both starts ([design](design.md)).
 * **Decision** (owner): [Day Planner is the owner's one app for building habits](decisions/habits-first.md). A web app works badly on a Linux phone, so the native app is Day Planner, in this repository, with QuestArc's journeys as its start. New goal _Habits first_ in the [roadmap](roadmap.md): reminders (#13), the strip on Today (#57), the journeys as the start page (#78), German for Day Planner's own texts (#79), own habits (#80). Finished features stay; M3 is on hold; simple counters (#21) are dropped ([features](features.md)); sync stays because the owner uses Super Productivity on the desktop.
 
 ## 2026-11-16

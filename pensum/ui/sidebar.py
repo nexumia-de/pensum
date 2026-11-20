@@ -117,7 +117,11 @@ class Sidebar(Adw.Bin):
         today = ds.today()
         entries = [(Context.today(), "Today", "weather-clear-symbolic")]
         if self.window.journeys.available:
-            entries.append((Context("journey", "questarc"), "Journeys", "mark-location-symbolic"))
+            # First once the user has journeys: they are what Day Planner
+            # opens on (#78).
+            entries.insert(0 if self.window.journeys.in_use() else 1,
+                           (Context("journey", "questarc"), "Journeys",
+                            "mark-location-symbolic"))
         entries += [(Context("project", p["id"]), p.get("title") or "Untitled",
                      "folder-symbolic") for p in ds.projects()]
         entries += [(Context("tag", t["id"]), t.get("title") or "Untitled",
