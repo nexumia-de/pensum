@@ -67,6 +67,11 @@ and Journeys is then the first row of the sidebar; without one it opens
 on the list shown last, with Today first (#78,
 [decision](decisions/habits-first.md)). An import opens the same way.
 
+While a journey grows a step, Today starts with one strip of fixed
+height (72 × 48 px picture, two lines that never wrap) that opens the
+journey; the first task stays in view at 360 × 720 (#57,
+[journeys](journeys.md)).
+
 History: v0.1.0 nested a second navigation view in the split view's
 content, and the back swipe did not work on the phone. The next layout
 (one navigation view with the lists as its first page, moved into an

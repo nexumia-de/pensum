@@ -80,7 +80,7 @@ its issue). Files are under `pensum/ui/journey/` unless a path says otherwise.
 | 4 Journey: plan sentence with the moment's words and the pairing | covered | `pensum/game/sentences.py` |
 | 4 Journey: "already yours" under a skipped version | covered | `build.py` |
 | 4 Journey: staying / started smaller hints on the card | covered | `card.py` |
-| 4 Journey: the moment of the tick (animation), build beside the card at 720 px | missing (#57) | — |
+| 4 Journey: the moment of the tick (animation), build beside the card at 720 px | covered | `tick.py`, `run_page.py` |
 | 4 Journey: read-only journey | covered | `read_only.py` (#58) |
 | 4 Banners: paused, hard week (with the plan for the obstacle), look back, nugget | covered | `banners.py` |
 | 4 Banners: reminder suggestion and fade | waits (#13) | QuestArc flow H |
@@ -109,7 +109,7 @@ its issue). Files are under `pensum/ui/journey/` unless a path says otherwise.
 | G problems: a page out of date | covered | pages return to the journey or say "gone" (`ui.error.gone`) |
 | G problems: "This journey was updated; you continue at …" | n/a | in behaviour.md, but no text or screen in QuestArc 4.3.1 |
 | Messages after a completion (one text per event) | covered | `pensum/game/sentences.py` |
-| Strip on Today | missing (#57) | — |
+| Strip on Today | covered | `today_strip.py` (Day Planner's "build at a glance") |
 | Plugin's context menu "Use for current station", side panel, settings entry | n/a | Super Productivity only |
 
 ## Texts and language
@@ -122,8 +122,6 @@ its issue). Files are under `pensum/ui/journey/` unless a path says otherwise.
 
 ## Still open
 
-- #57: the strip on Today, the moment of the tick, the build beside the
-  card at desktop width.
 - #13: reminders while Day Planner is closed; until then the reminder
   suggestion, its fade and the habit fade banner are not shown (QuestArc
   flow H says so).

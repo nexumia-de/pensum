@@ -44,6 +44,11 @@ class PreferencesDialog(Adw.PreferencesDialog):
     def _journeys_group(self):
         from pensum.game.content import t
         group = Adw.PreferencesGroup(title="Journeys", description=t("ui.settings.data.text"))
+        strip = Adw.SwitchRow(title="Show on Today",
+                              subtitle="The step that is growing, on top of Today's tasks",
+                              active=self.window.settings.journey_strip)
+        strip.connect("notify::active", self._on_strip)
+        group.add(strip)
         remove = Adw.ButtonRow(title=t("ui.settings.data.remove")) if hasattr(
             Adw, "ButtonRow") else Adw.ActionRow(title=t("ui.settings.data.remove"),
                                                   activatable=True)
@@ -62,6 +67,11 @@ class PreferencesDialog(Adw.PreferencesDialog):
 
         confirm_dialog(self, t("ui.settings.data.remove"), t("ui.settings.data.confirm"),
                        t("ui.settings.data.remove-now"), remove)
+
+    def _on_strip(self, row, *_):
+        self.window.settings.journey_strip = row.get_active()
+        self.window.save_settings()
+        self.window.list_page.refresh()
 
     def _on_style(self, style):
         self.window.settings.style = style

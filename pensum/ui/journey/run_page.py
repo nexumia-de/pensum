@@ -14,6 +14,7 @@ from pensum.ui.journey import read_only as read_only_page
 from pensum.ui.journey.build import build_header
 from pensum.ui.journey.place_piece import place_of_run
 from pensum.ui.journey.card import station_card
+from pensum.ui.journey.tick import Growth
 
 
 class RunPage(Adw.NavigationPage):
@@ -32,7 +33,21 @@ class RunPage(Adw.NavigationPage):
         header.pack_end(self.menu_button)
         toolbar.add_top_bar(header)
         self.scroll = Gtk.ScrolledWindow(hscrollbar_policy=Gtk.PolicyType.NEVER, vexpand=True)
-        toolbar.set_content(self.scroll)
+        # At 720 px and wider the build is on the left and the card on the
+        # right (QuestArc journey design, desktop).
+        self.columns = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12, margin_top=12,
+                               margin_bottom=24, margin_start=12, margin_end=12)
+        self.clamp = Adw.Clamp(child=self.columns, maximum_size=600)
+        self.scroll.set_child(self.clamp)
+        wide = Adw.BreakpointBin(child=self.scroll, width_request=360, height_request=294)
+        point = Adw.Breakpoint.new(Adw.BreakpointCondition.parse("min-width: 720sp"))
+        point.add_setter(self.columns, "orientation", Gtk.Orientation.HORIZONTAL)
+        point.add_setter(self.columns, "spacing", 24)
+        point.add_setter(self.clamp, "maximum-size", 1120)
+        wide.add_breakpoint(point)
+        toolbar.set_content(wide)
+        # The moment of the tick: which flowers this page drew last.
+        self.growth = Growth()
         self.bar = Gtk.Box(margin_top=6, margin_bottom=6, margin_start=12, margin_end=12)
         self.main_button = Gtk.Button(hexpand=True)
         self.main_button.add_css_class("suggested-action")
@@ -91,10 +106,12 @@ class RunPage(Adw.NavigationPage):
 
     def refresh(self):
         model = self.model
-        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12, margin_top=12,
-                      margin_bottom=24, margin_start=12, margin_end=12)
-        self.scroll.set_child(Adw.Clamp(child=box, maximum_size=600))
+        while (child := self.columns.get_first_child()) is not None:
+            self.columns.remove(child)
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12, hexpand=True,
+                      valign=Gtk.Align.START)
         self.title.set_subtitle("")
+        self.columns.append(box)
         self.build = None
         if model.view is None:
             model.refresh_now()
@@ -119,11 +136,15 @@ class RunPage(Adw.NavigationPage):
         self.title.set_title(t(journey["title"]))
         # The journey is set in its place (a run without a moment has none yet).
         place = place_of_run(model.view, run["runId"])
-        self.build = place_piece.section(self.window, model.view, place, run["runId"]) \
+        self.build = place_piece.section(self.window, model.view, place, run["runId"],
+                                         self.growth) \
             if place else build_header(run.get("build"))
         self._menu(run, built=self.build is not None)
         if self.build:
-            box.append(self.build)
+            self.build.set_hexpand(True)
+            self.build.set_valign(Gtk.Align.START)
+            self.columns.prepend(Adw.Clamp(child=self.build, maximum_size=560, hexpand=True,
+                                           valign=Gtk.Align.START))
         for banner in banners(self, run, journey, index):
             box.append(banner)
         for banner in habit_banners(self):

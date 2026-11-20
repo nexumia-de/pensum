@@ -65,14 +65,30 @@ Day Planner adds no second implementation.
   (`pensum/ui/journey/model.py`) to evaluate after 300 ms in a thread;
   the request is made on the main thread, a late result from an older
   request is dropped. Without any QuestArc record the engine never runs.
-- **When the journey comes forward:** only when the engine reports a new
-  completion of the current station's own task (`event.completion` or
-  `event.welcome-back`); then, after the toast, the journey page is
-  shown. Every other change (other tasks, lists, an import or sync with
-  several completions at once, `event.progress-summary`) leaves the user
-  where they are, with the toast only. QuestArc's plugin shows only the
-  toast (its behaviour, flow A); the owner asked for this in Day
-  Planner on 2026-11-06.
+- **When the journey comes forward:** only when a completion of the
+  current station's own task reaches the station, where a choice waits
+  (`event.station-reached`), or is the first after a gap
+  (`event.welcome-back`); then, after the toast, the journey page is
+  shown. A plain completion grows its flowers in the strip on Today and
+  gets the toast (#57): the picture works where the task is ticked off,
+  and the owner asked on 2026-11-12 for the page not to come forward for
+  every completion (the rule of 2026-11-06 before that). Every other
+  change (other tasks, lists, an import or sync with several completions
+  at once, `event.progress-summary`) leaves the user where they are.
+- **The strip on Today** (`today_strip.py`, #57; QuestArc behaviour,
+  "Build at a glance"): while a journey grows a step, one row on top of
+  Today's tasks shows the small build with the flowers of the stage
+  under way, the journey's name and one line of progress ("3 of 4 days ·
+  Today: still open."); a tap opens the journey. Fixed height, no
+  wrapping, on Today only. Preferences → Journeys → **Show on Today**
+  switches it off (`settings.journey_strip`). Screen readers get the
+  build in words with the flowers counted (`ui.build.label.*`).
+- **The moment of the tick** (`tick.py`; QuestArc journey design): the
+  strip and the journey's page remember which run, version and number
+  of flowers they drew last. When a redraw shows more, the new flowers
+  grow in from their foot (scale from 0.6 and fade, 600 ms, ease-out);
+  the first draw animates nothing, and nothing moves when animations
+  are off in the system (`gtk-enable-animations`).
 - **Listening pages:** a pushed journey page that redraws on changes
   subscribes with `JourneySubpage.listen()`, which drops the subscription
   once the page is off the navigation stack. A popped `AdwNavigationPage`
@@ -100,7 +116,8 @@ navigation view so a swipe goes back:
   in words ("A log stands"); then the banners (paused, a hard week,
   weekly look back, a new nugget) and the current station's card (plan,
   progress bar and words, the last due days, runs, hint, the user's
-  reason). Everything of the build comes from the engine's `build` view
+  reason). At 720 sp and wider the build is on the left (at most 560 px)
+  and the banners and the card on the right. Everything of the build comes from the engine's `build` view
   (`pensum/ui/journey/build.py`); a ladder whose pictures are not here
   leaves only the card. The bottom bar of the journey's page holds its
   main action (**Continue**, **Set Up the Task**, **Change How Often**);
@@ -126,9 +143,7 @@ navigation view so a swipe goes back:
   colour (the place's). Each change is written at once through the
   engine's `chooseBuild`, only what the user picked; **Use the journey's
   suggestion** withdraws the record.
-- Still open from #57: the strip on Today, the moment of the tick in
-  it, and the build beside the card at desktop width.
-- Preferences → Journeys: removing the journey data (asks first: it
+- Preferences → Journeys: **Show on Today** (the strip) and removing the journey data (asks first: it
   cannot be undone).
 
 Since QuestArc 3.3 (QuestArc#110, #61) there is one look: no XP, no

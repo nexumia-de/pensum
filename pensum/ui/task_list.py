@@ -48,6 +48,10 @@ class TaskListPage(Adw.NavigationPage):
         add_button.connect("clicked", lambda *_: self._on_add(self.entry))
         add_bar.append(add_button)
         toolbar.add_bottom_bar(Adw.Clamp(child=add_bar, maximum_size=720))
+        # The growing step of the journey, on Today only (#57).
+        from pensum.ui.journey.today_strip import TodayStrip
+        self.strip = TodayStrip(window)
+        box.append(self.strip)
         overdue_header = Gtk.Box(spacing=12)
         self.overdue_title = Gtk.Label(xalign=0, hexpand=True)
         self.overdue_title.add_css_class("heading")
@@ -227,6 +231,7 @@ class TaskListPage(Adw.NavigationPage):
         self.menu.set_visible(model is not None)
         self.entry.set_placeholder_text("Add Task to Today" if self.context.kind == "today"
                                         else f"Add Task to {title}")
+        self.strip.refresh()
         open_tasks, done_tasks = ds.list_tasks(self.context, today)
         self.rows = []
         overdue = ds.overdue_tasks(today) if self.context.kind == "today" else []

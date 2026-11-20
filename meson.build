@@ -124,6 +124,8 @@ python.install_sources(
   'pensum/ui/journey/station_page.py',
   'pensum/ui/journey/stations_page.py',
   'pensum/ui/journey/still_page.py',
+  'pensum/ui/journey/tick.py',
+  'pensum/ui/journey/today_strip.py',
   'pensum/ui/journey/valley.py',
   subdir: 'pensum' / 'ui' / 'journey',
 )

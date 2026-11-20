@@ -471,16 +471,62 @@ def test_journey_comes_forward_only_for_its_own_task(app, tmp_path):
     settle(window)
     assert type(visible(window)).__name__ != "RunPage"
 
-    # Ticking off the station's own task brings the journey forward.
+    # Ticking off the station's own task grows its flowers in the strip on
+    # Today and leaves the user there (#57).
     window.show_list(Context.today())
     iterate()
+    strip = window.list_page.strip
+    assert strip.get_visible() and strip.growth.count == 0
+    assert strip.title.get_label() == "A gentle morning"
     tasks.set_done(window.ds, stage_task, True)
     window.changed()
     settle(window)
-    assert type(visible(window)).__name__ == "RunPage"
+    assert visible(window) is window.list_page
     assert window.journeys.active()["stations"][0]["completions"] == 1
+    assert strip.growth.count > 0 and list(strip.growth.new) == list(range(strip.growth.count))
+    assert "1 of 5 days" in strip.state.get_label()
+    assert "flowers, in bud" in strip.words
+    # Only on Today, and not when switched off in the preferences.
+    window.show_list(Context("project", window.ds.default_project_id()))
+    iterate()
+    assert not strip.get_visible()
+    window.show_list(Context.today())
+    window.settings.journey_strip = False
+    window.list_page.refresh()
+    assert not strip.get_visible()
+    window.settings.journey_strip = True
+    strip.emit("clicked")
+    iterate()
+    assert type(visible(window)).__name__ == "RunPage"
     window.flush()
     assert validate.problems(backup.read(window.files.path)) == []
+    window.close()
+
+
+@needs_engine
+def test_journey_comes_forward_when_the_station_is_reached(app, tmp_path):
+    """The completion that meets the stage's condition brings the journey
+    forward: a choice waits there (#57)."""
+    from pensum import demo_journey
+    from pensum.store import tasks
+    window = new_window(app, tmp_path)
+    ds, today = window.ds, window.ds.today()
+    demo_journey.walk(ds, today, "walk", [(8, range(1, 5), None)])
+    cfg_id = ds.data["taskRepeatCfg"]["ids"][-1]
+    task = tasks.add_task(ds, "Drink a glass of water", Context.today())
+    task["repeatCfgId"] = cfg_id
+    window.changed()
+    window.journeys.refresh_now()
+    window.show_list(Context.today())
+    iterate()
+    assert window.journeys.current()[3]["state"] == "current"
+    assert window.list_page.strip.get_visible()
+    tasks.set_done(ds, task["id"], True)
+    window.changed()
+    settle(window)
+    assert window.journeys.current()[3]["state"] == "met"
+    assert type(visible(window)).__name__ == "RunPage"
+    assert validate.problems(ds.data) == []
     window.close()
 
 

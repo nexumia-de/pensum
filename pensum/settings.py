@@ -14,6 +14,8 @@ class Settings:
     last_list: str = "today:TODAY"
     # Journey banners the user closed ("Got it"), e.g. "nugget:<run>:<stage>".
     seen: list = field(default_factory=list)
+    # The growing step as a strip on top of Today (Preferences → Journeys).
+    journey_strip: bool = True
     # The Super Productivity sync folder last read (pensum.sync): "webdav"
     # or "local", the server, user and folder (the password is in the
     # keyring), and the syncVersion read last from which source.
