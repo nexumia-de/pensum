@@ -7,14 +7,14 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: pensum\n"
-"Report-Msgid-Bugs-To: https://github.com/nexumia-de/pensum/issues\n"
-"POT-Creation-Date: 2026-11-20 15:42+0000\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-20 20:13+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 #: pensum/game/sentences.py:13
@@ -74,6 +74,39 @@ msgstr ""
 msgid "Moment removed"
 msgstr ""
 
+#: pensum/ui/journey/choose_page.py:30 pensum/ui/journey/choose_page.py:88
+msgid "Your Own"
+msgstr ""
+
+#: pensum/ui/journey/choose_page.py:34 pensum/ui/journey/quick_page.py:22
+#: pensum/ui/journey/quick_preview.py:32
+msgid "Your Own Habit"
+msgstr ""
+
+#: pensum/ui/journey/choose_page.py:34
+msgid "A few questions make a journey of your habit."
+msgstr ""
+
+#: pensum/ui/journey/choose_page.py:36 pensum/ui/journey/own_file.py:40
+msgid "Import a Journey File"
+msgstr ""
+
+#: pensum/ui/journey/choose_page.py:89
+msgid "Export as a File"
+msgstr ""
+
+#: pensum/ui/journey/choose_page.py:91
+msgid "Remove This Journey"
+msgstr ""
+
+#: pensum/ui/journey/choose_page.py:108
+msgid "A journey you have walked stays."
+msgstr ""
+
+#: pensum/ui/journey/choose_page.py:113
+msgid "Journey removed"
+msgstr ""
+
 #: pensum/ui/journey/continue_page.py:39
 msgid ""
 "Next you set up the task for this station. Your earlier task keeps repeating "
@@ -96,6 +129,31 @@ msgstr ""
 msgid "Open the Task"
 msgstr ""
 
+#: pensum/ui/journey/own_file.py:12
+msgid "Journey Files"
+msgstr ""
+
+#: pensum/ui/journey/own_file.py:29
+msgid "This file is not a journey."
+msgstr ""
+
+#: pensum/ui/journey/own_file.py:33
+msgid "Journey imported"
+msgstr ""
+
+#: pensum/ui/journey/own_file.py:57
+#, python-brace-format
+msgid "Can't export: {reason}"
+msgstr ""
+
+#: pensum/ui/journey/own_file.py:59
+msgid "Journey exported"
+msgstr ""
+
+#: pensum/ui/journey/own_file.py:64
+msgid "Export Journey"
+msgstr ""
+
 #: pensum/ui/journey/page.py:29 pensum/ui/journey/page.py:30
 #: pensum/ui/journey/run_page.py:32 pensum/ui/journey/run_page.py:33
 msgid "Menu"
@@ -111,6 +169,131 @@ msgstr ""
 
 #: pensum/ui/journey/page.py:107
 msgid "Journeys Can't Be Shown"
+msgstr ""
+
+#: pensum/ui/journey/quick_page.py:24
+msgid "What do you want to do?"
+msgstr ""
+
+#: pensum/ui/journey/quick_page.py:25
+msgid ""
+"In your own words. It completes “I will …”: read, stretch, write in my "
+"journal."
+msgstr ""
+
+#: pensum/ui/journey/quick_page.py:27
+msgid "I will …"
+msgstr ""
+
+#: pensum/ui/journey/quick_page.py:29
+msgid "After what?"
+msgstr ""
+
+#: pensum/ui/journey/quick_page.py:30
+msgid ""
+"A moment that already happens in your day. It completes “After …”: brushing "
+"my teeth."
+msgstr ""
+
+#: pensum/ui/journey/quick_page.py:32
+msgid "After …"
+msgstr ""
+
+#: pensum/ui/journey/quick_page.py:36
+msgid "Name and what it builds"
+msgstr ""
+
+#: pensum/ui/journey/quick_page.py:37
+msgid "Name of the journey"
+msgstr ""
+
+#: pensum/ui/journey/quick_page.py:40
+msgid "It builds"
+msgstr ""
+
+#: pensum/ui/journey/quick_page.py:42
+msgid "Look at the Steps"
+msgstr ""
+
+#: pensum/ui/journey/quick_page.py:47
+msgid "How should it grow?"
+msgstr ""
+
+#: pensum/ui/journey/quick_page.py:48
+msgid "Start with a step that is too small to skip."
+msgstr ""
+
+#: pensum/ui/journey/quick_page.py:49
+msgid "Counted in"
+msgstr ""
+
+#: pensum/ui/journey/quick_page.py:49
+msgid "Minutes"
+msgstr ""
+
+#: pensum/ui/journey/quick_page.py:49
+msgid "Pages"
+msgstr ""
+
+#: pensum/ui/journey/quick_page.py:49
+msgid "Times"
+msgstr ""
+
+#: pensum/ui/journey/quick_page.py:50
+msgid "It stays the same"
+msgstr ""
+
+#: pensum/ui/journey/quick_page.py:52
+msgid "First step"
+msgstr ""
+
+#: pensum/ui/journey/quick_page.py:54
+msgid "Last step"
+msgstr ""
+
+#: pensum/ui/journey/quick_page.py:57
+msgid "Steps (you can change them)"
+msgstr ""
+
+#: pensum/ui/journey/quick_page.py:92
+msgid "How often?"
+msgstr ""
+
+#: pensum/ui/journey/quick_page.py:93
+msgid "Planned"
+msgstr ""
+
+#: pensum/ui/journey/quick_page.py:93
+msgid "Every day"
+msgstr ""
+
+#: pensum/ui/journey/quick_page.py:93
+msgid "Every 2 days"
+msgstr ""
+
+#: pensum/ui/journey/quick_page.py:93
+msgid "Every 3 days"
+msgstr ""
+
+#: pensum/ui/journey/quick_page.py:94
+msgid "On chosen weekdays"
+msgstr ""
+
+#: pensum/ui/journey/quick_page.py:129
+msgid "Say what you want to do, after what, and give it a name."
+msgstr ""
+
+#: pensum/ui/journey/quick_page.py:132
+msgid "Choose at least one weekday."
+msgstr ""
+
+#: pensum/ui/journey/quick_preview.py:22 pensum/ui/journey/quick_preview.py:47
+#, python-brace-format
+msgid "This journey cannot be kept: {reason}"
+msgstr ""
+
+#: pensum/ui/journey/quick_preview.py:50
+msgid "Keep This Journey"
 msgstr ""
 
 #: pensum/ui/journey/run_page.py:25 pensum/ui/journey/run_page.py:30

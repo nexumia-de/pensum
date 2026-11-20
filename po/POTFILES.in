@@ -3,9 +3,13 @@ pensum/preferences.py
 pensum/ui/journey/banners.py
 pensum/ui/journey/card.py
 pensum/ui/journey/change_moment_page.py
+pensum/ui/journey/choose_page.py
 pensum/ui/journey/continue_page.py
 pensum/ui/journey/graduate_page.py
+pensum/ui/journey/own_file.py
 pensum/ui/journey/page.py
+pensum/ui/journey/quick_page.py
+pensum/ui/journey/quick_preview.py
 pensum/ui/journey/run_page.py
 pensum/ui/journey/setup_page.py
 pensum/ui/journey/smaller_page.py

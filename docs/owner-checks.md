@@ -53,3 +53,19 @@ Productivity 20.0.0. Left, with QuestArc's plugin installed there:
       Day Planner: the journey continues there and is not read-only.
 - [ ] Tick a day in Day Planner, export, import in Super Productivity:
       the plugin shows the same day.
+
+## Own habits need a QuestArc release (#80)
+
+The quick form and journey files are built in Day Planner
+([own journeys](own-journeys.md)) against QuestArc's main branch, but
+QuestArc's latest release, 4.3.1, does not have them, so Day Planner
+hides them. Apps pin only releases. Left:
+
+- [ ] Release QuestArc with quest-arc#89 and #40 (the quick form and
+      journey files); then let an agent pin that archive in
+      `de.nexumia.Pensum.yml`, run `tests/test_own_journey.py` against
+      it (it skips today) and add the changelog fragment
+      "Build a habit of your own as a journey …".
+- [ ] After that: make a habit with the form on the phone, walk a few
+      days, export, and check what Super Productivity's plugin shows
+      (it does not read own journeys before quest-arc#40 reaches it).

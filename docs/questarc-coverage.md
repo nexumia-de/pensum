@@ -1,14 +1,14 @@
 ---
 type: Concept
 title: QuestArc coverage in Day Planner
-description: Every user-facing feature, action, engine request and text family of QuestArc 4.3.1 (plugin and shared screens), and whether Day Planner's journey pages cover it, partly cover it or miss it, with the file and the open issue.
+description: Every user-facing feature, action, engine request and text family of QuestArc 4.3.1 and the quick form on QuestArc's main branch (plugin and shared screens), and whether Day Planner's journey pages cover it, partly cover it or miss it, with the file and the open issue.
 tags: [journeys, questarc, coverage]
 resource: ../pensum/ui/journey/
 generated: { by: claude-code/2.1.318, at: 2026-11-16 }
 sources:
-  - "[^behaviour]: QuestArc docs/behaviour.md at quest-arc 3d59bb5 (after v4.3.1)"
+  - "[^behaviour]: QuestArc docs/behaviour.md at quest-arc 653641e (after v4.3.1)"
   - "[^rules]: QuestArc docs/game-rules.md at quest-arc 3d59bb5"
-  - "[^actions]: QuestArc packages/engine/src/actions.ts and cli-gjs.ts, release 4.3.1"
+  - "[^actions]: QuestArc packages/engine/src/actions.ts and cli-gjs.ts, release 4.3.1; quick.ts and own-journeys.ts at 653641e"
   - "[^ui]: QuestArc packages/ui/src/ui (screens, journey, banners, habit-banners, reminder) at 3d59bb5"
   - "[^changelog]: QuestArc CHANGELOG.md up to 4.3.1"
 ---
@@ -57,6 +57,8 @@ its issue). Files are under `pensum/ui/journey/` unless a path says otherwise.
 | `checkPlan` | the plan check at the start and from the menu | covered | `start_page.py`, `plan_check.py` |
 | `pairStage` | Pair it with | covered | `pair_row.py` (set-up, station details) |
 | `withdraw` | Undo (end, change of moment), suggestion | covered | `run_page.py`, `change_moment_page.py` |
+| `quick`, `quickSteps` | the quick form: a habit of the user's own as a journey | covered | `quick_page.py`, `quick_preview.py`, `pensum/game/own.py` ([own journeys](own-journeys.md)) |
+| `keepJourney`, `forgetJourney` | keep a journey of the user's own (form or file), remove it while no run uses it | covered | `quick_preview.py`, `own_file.py`, `choose_page.py` |
 
 ## Screens
 
@@ -123,6 +125,8 @@ its issue). Files are under `pensum/ui/journey/` unless a path says otherwise.
 
 ## Still open
 
-Nothing of QuestArc 4.3.1. Left for the owner: Day Planner's own
+Nothing of QuestArc 4.3.1. The own habits (quick form, journey files)
+are built but hidden until a QuestArc release carries them
+([own journeys](own-journeys.md#open)). Left for the owner: Day Planner's own
 reminders on the phone and a journey walked in Super Productivity's
 plugin and continued here ([owner checks](owner-checks.md), #13, #64).

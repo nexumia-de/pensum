@@ -25,6 +25,7 @@ Change history is in [log.md](log.md).
 
 # Reminders
 
+* [Own journeys](own-journeys.md) - the quick form for a habit of the user's own, the journey QuestArc's engine writes and checks, the `journey:<id>` record, importing, exporting and removing a journey file.
 * [Reminders](reminders.md) - `task.remindAt` and a repeat rule's time and reminder as Super Productivity 20 keeps them, the notification with Done and Snooze, the background while the window is closed, what is open on the phone.
 
 # Journeys
