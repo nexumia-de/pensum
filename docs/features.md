@@ -68,10 +68,12 @@ lost when the same backup goes back to Super Productivity.
 
 Habit journeys come from [QuestArc](https://github.com/nexumia-de/quest-arc)
 and are not a Super Productivity feature: [journeys](journeys.md).
+Every line marked M3 in this file is on hold until the roadmap's
+_Habits first_ is done ([decision](decisions/habits-first.md)).
 
 | Feature | Data | Pensum |
 |---|---|---|
-| Habits: counters and stopwatches with streaks | `simpleCounter` | M3 |
+| Habits: counters and stopwatches with streaks | `simpleCounter` | not planned (#21, [decision](decisions/habits-first.md)): the journeys are Day Planner's habits; the data stays untouched |
 | Planner: days ahead | `planner`, `dueDay` | M3 |
 | Boards: Kanban, Eisenhower | `boards`, tags | backlog |
 | Calendar events next to the plan (iCal, CalDAV) | `issueProvider` (calendar) | backlog |

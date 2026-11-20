@@ -37,4 +37,4 @@ Change history is in [log.md](log.md).
 
 # Decision records
 
-* [Decisions](decisions/index.md) - Super Productivity's backup format as storage, name, licence.
+* [Decisions](decisions/index.md) - Super Productivity's backup format as storage, name, licence, habits first.
