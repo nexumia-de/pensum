@@ -4,7 +4,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: pensum\n"
-"Report-Msgid-Bugs-To: https://github.com/nexumia-de/pensum/issues\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-20 20:13+0000\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -57,7 +58,9 @@ msgstr "Der Schritt, der gerade wächst, über den Aufgaben von heute"
 
 #: pensum/ui/journey/banners.py:55
 msgid "Paused: the task's repeat is paused. Paused days don't count."
-msgstr "Pausiert: Die Wiederholung der Aufgabe ist pausiert. Pausierte Tage zählen nicht."
+msgstr ""
+"Pausiert: Die Wiederholung der Aufgabe ist pausiert. Pausierte Tage zählen "
+"nicht."
 
 #: pensum/ui/journey/card.py:15
 msgid "Tick off the task in your task list as usual."
@@ -67,21 +70,93 @@ msgstr "Die Aufgabe hakst du wie gewohnt in deiner Aufgabenliste ab."
 msgid "Moment removed"
 msgstr "Moment entfernt"
 
+#: pensum/ui/journey/choose_page.py:30 pensum/ui/journey/choose_page.py:88
+msgid "Your Own"
+msgstr "Deine eigenen"
+
+#: pensum/ui/journey/choose_page.py:34 pensum/ui/journey/quick_page.py:22
+#: pensum/ui/journey/quick_preview.py:32
+msgid "Your Own Habit"
+msgstr "Eigene Gewohnheit"
+
+#: pensum/ui/journey/choose_page.py:34
+msgid "A few questions make a journey of your habit."
+msgstr "Ein paar Fragen machen aus deiner Gewohnheit eine Reise."
+
+#: pensum/ui/journey/choose_page.py:36 pensum/ui/journey/own_file.py:40
+msgid "Import a Journey File"
+msgstr "Reise-Datei importieren"
+
+#: pensum/ui/journey/choose_page.py:89
+msgid "Export as a File"
+msgstr "Als Datei exportieren"
+
+#: pensum/ui/journey/choose_page.py:91
+msgid "Remove This Journey"
+msgstr "Diese Reise entfernen"
+
+#: pensum/ui/journey/choose_page.py:108
+msgid "A journey you have walked stays."
+msgstr "Eine Reise, die du gegangen bist, bleibt."
+
+#: pensum/ui/journey/choose_page.py:113
+msgid "Journey removed"
+msgstr "Reise entfernt"
+
 #: pensum/ui/journey/continue_page.py:39
-msgid "Next you set up the task for this station. Your earlier task keeps repeating as it is; you can stop it on its Repeat page."
-msgstr "Als Nächstes richtest du die Aufgabe für diese Station ein. Deine frühere Aufgabe wiederholt sich weiter wie bisher; du kannst sie auf ihrer Seite „Repeat“ beenden."
+msgid ""
+"Next you set up the task for this station. Your earlier task keeps repeating "
+"as it is; you can stop it on its Repeat page."
+msgstr ""
+"Als Nächstes richtest du die Aufgabe für diese Station ein. Deine frühere "
+"Aufgabe wiederholt sich weiter wie bisher; du kannst sie auf ihrer Seite "
+"„Repeat“ beenden."
 
 #: pensum/ui/journey/graduate_page.py:18
-msgid "To end the repeat, open the task, go to its Repeat page and stop the repeat. Day Planner does not do this for you."
-msgstr "Um die Wiederholung zu beenden, öffne die Aufgabe, geh auf ihre Seite „Repeat“ und beende dort die Wiederholung. Day Planner macht das nicht für dich."
+msgid ""
+"To end the repeat, open the task, go to its Repeat page and stop the repeat. "
+"Day Planner does not do this for you."
+msgstr ""
+"Um die Wiederholung zu beenden, öffne die Aufgabe, geh auf ihre Seite "
+"„Repeat“ und beende dort die Wiederholung. Day Planner macht das nicht für "
+"dich."
 
 #: pensum/ui/journey/graduate_page.py:20
-msgid "The task keeps repeating as before. You could stop its repeat on its Repeat page whenever you like."
-msgstr "Die Aufgabe wiederholt sich weiter wie bisher. Du könntest ihre Wiederholung jederzeit auf ihrer Seite „Repeat“ beenden."
+msgid ""
+"The task keeps repeating as before. You could stop its repeat on its Repeat "
+"page whenever you like."
+msgstr ""
+"Die Aufgabe wiederholt sich weiter wie bisher. Du könntest ihre Wiederholung "
+"jederzeit auf ihrer Seite „Repeat“ beenden."
 
 #: pensum/ui/journey/graduate_page.py:49
 msgid "Open the Task"
 msgstr "Aufgabe öffnen"
+
+#: pensum/ui/journey/own_file.py:12
+msgid "Journey Files"
+msgstr "Reise-Dateien"
+
+#: pensum/ui/journey/own_file.py:29
+msgid "This file is not a journey."
+msgstr "Diese Datei ist keine Reise."
+
+#: pensum/ui/journey/own_file.py:33
+msgid "Journey imported"
+msgstr "Reise importiert"
+
+#: pensum/ui/journey/own_file.py:57
+#, python-brace-format
+msgid "Can't export: {reason}"
+msgstr "Export nicht möglich: {reason}"
+
+#: pensum/ui/journey/own_file.py:59
+msgid "Journey exported"
+msgstr "Reise exportiert"
+
+#: pensum/ui/journey/own_file.py:64
+msgid "Export Journey"
+msgstr "Reise exportieren"
 
 #: pensum/ui/journey/page.py:29 pensum/ui/journey/page.py:30
 #: pensum/ui/journey/run_page.py:32 pensum/ui/journey/run_page.py:33
@@ -100,26 +175,168 @@ msgstr "Diese Version von Day Planner enthält die Reisen von QuestArc nicht."
 msgid "Journeys Can't Be Shown"
 msgstr "Reisen können nicht gezeigt werden"
 
+#: pensum/ui/journey/quick_page.py:24
+msgid "What do you want to do?"
+msgstr "Was möchtest du tun?"
+
+#: pensum/ui/journey/quick_page.py:25
+msgid "In your own words. It completes “I will …”: read, stretch, write in my journal."
+msgstr "In deinen eigenen Worten, in der Grundform. Es ergänzt „Ich will …“: lesen, mich dehnen, Tagebuch schreiben."
+
+#: pensum/ui/journey/quick_page.py:27
+msgid "I will …"
+msgstr "Ich will …"
+
+#: pensum/ui/journey/quick_page.py:29
+msgid "After what?"
+msgstr "Wonach?"
+
+#: pensum/ui/journey/quick_page.py:30
+msgid "A moment that already happens in your day. It completes “After …”: brushing my teeth."
+msgstr "Ein Moment, den es in deinem Tag schon gibt. Er ergänzt „Nach …“: dem Zähneputzen."
+
+#: pensum/ui/journey/quick_page.py:32
+msgid "After …"
+msgstr "Nach …"
+
+#: pensum/ui/journey/quick_page.py:36
+msgid "Name and what it builds"
+msgstr "Name und was sie baut"
+
+#: pensum/ui/journey/quick_page.py:37
+msgid "Name of the journey"
+msgstr "Name der Reise"
+
+#: pensum/ui/journey/quick_page.py:40
+msgid "It builds"
+msgstr "Sie baut"
+
+#: pensum/ui/journey/quick_page.py:42
+msgid "Look at the Steps"
+msgstr "Schritte ansehen"
+
+#: pensum/ui/journey/quick_page.py:47
+msgid "How should it grow?"
+msgstr "Wie soll es wachsen?"
+
+#: pensum/ui/journey/quick_page.py:48
+msgid "Start with a step that is too small to skip."
+msgstr "Beginne mit einem Schritt, der so klein ist, dass er immer geht."
+
+#: pensum/ui/journey/quick_page.py:49
+msgid "Counted in"
+msgstr "Gezählt in"
+
+#: pensum/ui/journey/quick_page.py:49
+msgid "Minutes"
+msgstr "Minuten"
+
+#: pensum/ui/journey/quick_page.py:49
+msgid "Pages"
+msgstr "Seiten"
+
+#: pensum/ui/journey/quick_page.py:49
+msgid "Times"
+msgstr "Wiederholungen"
+
+#: pensum/ui/journey/quick_page.py:50
+msgid "It stays the same"
+msgstr "Es bleibt gleich"
+
+#: pensum/ui/journey/quick_page.py:52
+msgid "First step"
+msgstr "Erster Schritt"
+
+#: pensum/ui/journey/quick_page.py:54
+msgid "Last step"
+msgstr "Letzter Schritt"
+
+#: pensum/ui/journey/quick_page.py:57
+msgid "Steps (you can change them)"
+msgstr "Schritte (du kannst sie ändern)"
+
+#: pensum/ui/journey/quick_page.py:92
+msgid "How often?"
+msgstr "Wie oft?"
+
+#: pensum/ui/journey/quick_page.py:93
+msgid "Planned"
+msgstr "Geplant"
+
+#: pensum/ui/journey/quick_page.py:93
+msgid "Every day"
+msgstr "Jeden Tag"
+
+#: pensum/ui/journey/quick_page.py:93
+msgid "Every 2 days"
+msgstr "Alle 2 Tage"
+
+#: pensum/ui/journey/quick_page.py:93
+msgid "Every 3 days"
+msgstr "Alle 3 Tage"
+
+#: pensum/ui/journey/quick_page.py:94
+msgid "On chosen weekdays"
+msgstr "An gewählten Wochentagen"
+
+#: pensum/ui/journey/quick_page.py:129
+msgid "Say what you want to do, after what, and give it a name."
+msgstr "Sag, was du tun möchtest und wonach, und gib der Reise einen Namen."
+
+#: pensum/ui/journey/quick_page.py:132
+msgid "Choose at least one weekday."
+msgstr "Wähle mindestens einen Wochentag."
+
+#: pensum/ui/journey/quick_preview.py:22 pensum/ui/journey/quick_preview.py:47
+#, python-brace-format
+msgid "This journey cannot be kept: {reason}"
+msgstr "Diese Reise kann nicht behalten werden: {reason}"
+
+#: pensum/ui/journey/quick_preview.py:50
+msgid "Keep This Journey"
+msgstr "Diese Reise behalten"
+
 #: pensum/ui/journey/run_page.py:25 pensum/ui/journey/run_page.py:30
 msgid "Journey"
 msgstr "Reise"
 
 #: pensum/ui/journey/setup_page.py:21
-msgid "Day Planner follows one recurring task for this station. You could create it now, or use a recurring task you already have."
-msgstr "Day Planner folgt für diese Station einer wiederkehrenden Aufgabe. Du könntest sie jetzt anlegen oder eine wiederkehrende Aufgabe nehmen, die du schon hast."
+msgid ""
+"Day Planner follows one recurring task for this station. You could create it "
+"now, or use a recurring task you already have."
+msgstr ""
+"Day Planner folgt für diese Station einer wiederkehrenden Aufgabe. Du "
+"könntest sie jetzt anlegen oder eine wiederkehrende Aufgabe nehmen, die du "
+"schon hast."
 
 #: pensum/ui/journey/setup_page.py:23
-msgid "Your earlier task stays as it is. You could end or change it on its Repeat page so you don't keep both, or use it again for this station."
-msgstr "Deine frühere Aufgabe bleibt, wie sie ist. Du könntest sie auf ihrer Seite „Repeat“ beenden oder ändern, damit du nicht beide behältst, oder sie für diese Station wieder nehmen."
+msgid ""
+"Your earlier task stays as it is. You could end or change it on its Repeat "
+"page so you don't keep both, or use it again for this station."
+msgstr ""
+"Deine frühere Aufgabe bleibt, wie sie ist. Du könntest sie auf ihrer Seite "
+"„Repeat“ beenden oder ändern, damit du nicht beide behältst, oder sie für "
+"diese Station wieder nehmen."
 
 #: pensum/ui/journey/setup_page.py:74
-msgid "Journeys work with tasks that repeat daily, every few days or on chosen weekdays. You could give the task the suggested schedule, or use another task."
-msgstr "Reisen funktionieren mit Aufgaben, die sich täglich, alle paar Tage oder an gewählten Wochentagen wiederholen. Du könntest der Aufgabe den vorgeschlagenen Rhythmus geben oder eine andere Aufgabe nehmen."
+msgid ""
+"Journeys work with tasks that repeat daily, every few days or on chosen "
+"weekdays. You could give the task the suggested schedule, or use another "
+"task."
+msgstr ""
+"Reisen funktionieren mit Aufgaben, die sich täglich, alle paar Tage oder an "
+"gewählten Wochentagen wiederholen. Du könntest der Aufgabe den "
+"vorgeschlagenen Rhythmus geben oder eine andere Aufgabe nehmen."
 
 #: pensum/ui/journey/setup_page.py:78
 msgid "Use the Suggested Schedule"
 msgstr "Vorgeschlagenen Rhythmus nehmen"
 
 #: pensum/ui/journey/smaller_page.py:16
-msgid "The task of the larger step stays as it is. Afterwards you could pause or end its repeat on its Repeat page so you don't keep both."
-msgstr "Die Aufgabe des größeren Schritts bleibt, wie sie ist. Danach könntest du ihre Wiederholung auf ihrer Seite „Repeat“ pausieren oder beenden, damit du nicht beide behältst."
+msgid ""
+"The task of the larger step stays as it is. Afterwards you could pause or "
+"end its repeat on its Repeat page so you don't keep both."
+msgstr ""
+"Die Aufgabe des größeren Schritts bleibt, wie sie ist. Danach könntest du "
+"ihre Wiederholung auf ihrer Seite „Repeat“ pausieren oder beenden, damit du "
+"nicht beide behältst."

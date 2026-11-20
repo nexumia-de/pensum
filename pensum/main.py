@@ -43,6 +43,7 @@ class Application(Adw.Application):
                                ("show-sync", self._on_show_sync),
                                ("show-journey", self._on_show_journey),
                                ("show-run", self._on_show_run),
+                               ("show-own-habit", self._on_show_own_habit),
                                ("search", self._on_search),
                                ("quit", self._on_quit)):
             action = Gio.SimpleAction.new(name, None)
@@ -130,6 +131,13 @@ class Application(Adw.Application):
     def _on_show_journey(self, *_):
         if self._window():
             self._window().show_journey()
+
+    def _on_show_own_habit(self, *_):
+        """The quick form for a habit of the user's own (#80)."""
+        if self._window():
+            from pensum.ui.journey.quick_page import QuickPage
+            self._window().show_journey()
+            self._window().nav.push(QuickPage(self._window()))
 
     def _on_show_run(self, *_):
         if self._window():

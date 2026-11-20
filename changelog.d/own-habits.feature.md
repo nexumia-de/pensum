@@ -1,0 +1,1 @@
+Build a habit of your own as a journey: under "Choose a Journey", "Your Own Habit" asks what you want to do, after what and how it should grow, and proposes the steps; a journey can also be imported from and exported to a file.

@@ -245,7 +245,7 @@ The engine is found where `PENSUM_QUESTARC_DIR` points (a QuestArc
 release archive, or a QuestArc checkout after `npm ci && npm run build`)
 and run with `PENSUM_GJS` (default `gjs`); in the Flatpak it is
 `/app/share/questarc`, from the release archive the manifest pins
-(module `questarc-engine`, QuestArc 4.3.1, updated by the update check;
+(module `questarc-engine`, QuestArc 4.4.0, updated by the update check;
 Day Planner needs 4.3.1 or newer (the kind of thing per place; the Valley (`valley` view and layout),
 the flowers and the retired markers are in the pictures and the engine
 of 4.2.0, the place's kind and marker of 4.3.0).
@@ -258,6 +258,8 @@ demo dataset (`PENSUM_DEMO=1`) has "First Things First" in the game at
 its second station with one gap (two on a weekend, so it is still on its way),
 at the moment "sitting down at my desk", with other places around it
 (`PENSUM_DEMO_VALLEY=1|3|6|6-stacked`, default 3: [Valley](valley.md)).
+
+Journeys of the user's own (the quick form, a journey file): [own journeys](own-journeys.md).
 
 ## Open
 

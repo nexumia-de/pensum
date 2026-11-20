@@ -1,24 +1,24 @@
 ---
 type: Concept
 title: QuestArc coverage in Day Planner
-description: Every user-facing feature, action, engine request and text family of QuestArc 4.3.1 (plugin and shared screens), and whether Day Planner's journey pages cover it, partly cover it or miss it, with the file and the open issue.
+description: Every user-facing feature, action, engine request and text family of QuestArc 4.4.0 (plugin and shared screens), and whether Day Planner's journey pages cover it, partly cover it or miss it, with the file and the open issue.
 tags: [journeys, questarc, coverage]
 resource: ../pensum/ui/journey/
 generated: { by: claude-code/2.1.318, at: 2026-11-16 }
 sources:
-  - "[^behaviour]: QuestArc docs/behaviour.md at quest-arc 3d59bb5 (after v4.3.1)"
+  - "[^behaviour]: QuestArc docs/behaviour.md at quest-arc v4.4.0"
   - "[^rules]: QuestArc docs/game-rules.md at quest-arc 3d59bb5"
-  - "[^actions]: QuestArc packages/engine/src/actions.ts and cli-gjs.ts, release 4.3.1"
+  - "[^actions]: QuestArc packages/engine/src/actions.ts and cli-gjs.ts, release 4.4.0"
   - "[^ui]: QuestArc packages/ui/src/ui (screens, journey, banners, habit-banners, reminder) at 3d59bb5"
-  - "[^changelog]: QuestArc CHANGELOG.md up to 4.3.1"
+  - "[^changelog]: QuestArc CHANGELOG.md up to 4.4.0"
 ---
 
 # QuestArc coverage in Day Planner
 
 What a QuestArc user can do in Super Productivity's plugin (the shared
 screens of `packages/ui`[^ui], [behaviour](https://github.com/nexumia-de/quest-arc/blob/main/docs/behaviour.md)[^behaviour],
-game rules[^rules], changelog up to 4.3.1[^changelog]) and where Day
-Planner covers it. Day Planner pins QuestArc 4.3.1's engine and writes
+game rules[^rules], changelog up to 4.4.0[^changelog]) and where Day
+Planner covers it. Day Planner pins QuestArc 4.4.0's engine and writes
 records only through its actions[^actions] ([journeys](journeys.md)).
 
 Status: **covered**, **partly** (what is missing is said), **missing**,
@@ -57,6 +57,8 @@ its issue). Files are under `pensum/ui/journey/` unless a path says otherwise.
 | `checkPlan` | the plan check at the start and from the menu | covered | `start_page.py`, `plan_check.py` |
 | `pairStage` | Pair it with | covered | `pair_row.py` (set-up, station details) |
 | `withdraw` | Undo (end, change of moment), suggestion | covered | `run_page.py`, `change_moment_page.py` |
+| `quick`, `quickSteps` | the quick form: a habit of the user's own as a journey | covered | `quick_page.py`, `quick_preview.py`, `pensum/game/own.py` ([own journeys](own-journeys.md)) |
+| `keepJourney`, `forgetJourney` | keep a journey of the user's own (form or file), remove it while no run uses it | covered | `quick_preview.py`, `own_file.py`, `choose_page.py` |
 
 ## Screens
 
@@ -107,7 +109,7 @@ its issue). Files are under `pensum/ui/journey/` unless a path says otherwise.
 | H reminders: suggested, faded | covered | `reminder_banner.py`; the reminder itself is Day Planner's ([reminders](reminders.md)) |
 | G problems: engine missing or failing | covered | `page.py` |
 | G problems: a page out of date | covered | pages return to the journey or say "gone" (`ui.error.gone`) |
-| G problems: "This journey was updated; you continue at …" | n/a | in behaviour.md, but no text or screen in QuestArc 4.3.1 |
+| G problems: "This journey was updated; you continue at …" | n/a | in behaviour.md, but no text or screen in QuestArc 4.4.0 |
 | Messages after a completion (one text per event) | covered | `pensum/game/sentences.py` |
 | Strip on Today | covered | `today_strip.py` (Day Planner's "build at a glance") |
 | Plugin's context menu "Use for current station", side panel, settings entry | n/a | Super Productivity only |
@@ -123,5 +125,5 @@ its issue). Files are under `pensum/ui/journey/` unless a path says otherwise.
 
 ## Still open
 
-Nothing of QuestArc 4.3.1. On the phone, Day Planner's own reminders
+Nothing of QuestArc 4.4.0. On the phone, Day Planner's own reminders
 are still to be checked ([reminders](reminders.md), #13).
