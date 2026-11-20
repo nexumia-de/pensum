@@ -52,46 +52,74 @@
   <screenshots>
     <screenshot type="default">
       <caption>Today's tasks with their time and estimates</caption>
-      <image>https://github.com/nexumia-de/pensum/releases/download/v0.2.0/today-phone-light.png</image>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.3.0/today-phone-light.png</image>
     </screenshot>
     <screenshot>
       <caption>Today's tasks with their time and estimates</caption>
-      <image>https://github.com/nexumia-de/pensum/releases/download/v0.2.0/today-desktop-light.png</image>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.3.0/today-desktop-light.png</image>
     </screenshot>
     <screenshot>
       <caption>A task with its timer running</caption>
-      <image>https://github.com/nexumia-de/pensum/releases/download/v0.2.0/task-phone-light.png</image>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.3.0/task-phone-light.png</image>
     </screenshot>
     <screenshot>
       <caption>A task with its timer running</caption>
-      <image>https://github.com/nexumia-de/pensum/releases/download/v0.2.0/task-desktop-light.png</image>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.3.0/task-desktop-light.png</image>
     </screenshot>
     <screenshot>
       <caption>Projects and tags</caption>
-      <image>https://github.com/nexumia-de/pensum/releases/download/v0.2.0/lists-phone-light.png</image>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.3.0/lists-phone-light.png</image>
     </screenshot>
     <screenshot>
       <caption>Projects and tags</caption>
-      <image>https://github.com/nexumia-de/pensum/releases/download/v0.2.0/lists-desktop-light.png</image>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.3.0/lists-desktop-light.png</image>
     </screenshot>
     <screenshot>
       <caption>A project's tasks</caption>
-      <image>https://github.com/nexumia-de/pensum/releases/download/v0.2.0/project-phone-light.png</image>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.3.0/project-phone-light.png</image>
     </screenshot>
     <screenshot>
       <caption>A project's tasks</caption>
-      <image>https://github.com/nexumia-de/pensum/releases/download/v0.2.0/project-desktop-light.png</image>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.3.0/project-desktop-light.png</image>
     </screenshot>
     <screenshot>
-      <caption>A habit journey, its current station and the path</caption>
-      <image>https://github.com/nexumia-de/pensum/releases/download/v0.2.0/journey-phone-light.png</image>
+      <caption>A habit journey: what it builds and its current station</caption>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.3.0/journey-phone-light.png</image>
     </screenshot>
     <screenshot>
-      <caption>A habit journey, its current station and the path</caption>
-      <image>https://github.com/nexumia-de/pensum/releases/download/v0.2.0/journey-desktop-light.png</image>
+      <caption>A habit journey: what it builds and its current station</caption>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.3.0/journey-desktop-light.png</image>
     </screenshot>
   </screenshots>
   <releases>
+    <release version="0.3.0" date="2026-11-20">
+      <description>
+        <ul>
+          <li>Read sync folders that Super Productivity keeps compressed or encrypted; the encryption password stays in the keyring.</li>
+          <li>Journeys with the game now build something: the journey page shows one thing that is whole at every station and grows with the next (stepping stones become a bridge, a fireplace a house), with lanterns, pennants or flowers in front while a station is under way; you can change what is built and what hangs on it under "What you build".</li>
+          <li>A journey starts from a moment in your day, in your own words or at a fixed time; a journey you began earlier asks once whether its moment is yours.</li>
+          <li>Journeys offer everything QuestArc 4 does: stay at a station a while or pass one you already do, a gentle way back after a long break, letting a habit graduate and bringing it back, pairing a step with something you enjoy, an optional plan check, tying a new step to a habit, and QuestArc's texts in German.</li>
+          <li>Starting a journey lets you pick any start date and change what it builds, and a habit whose task no longer repeats can get a task again from the shelf.</li>
+          <li>The step you are growing shows on top of Today with what it builds; ticking its task lets a flower grow there, and the journey opens by itself only when a station is reached.</li>
+          <li>On wide windows the journey shows what it builds beside the station's card.</li>
+          <li>Choose what grows at a moment: under "Change this moment" you can pick another kind of thing (Home, Garden, Well or Lookout) for the place, also after it has grown; it keeps the version it has reached, and "Use the suggestion" brings back the journey's own.</li>
+          <li>Tap a place in the Valley to see its thing, the versions that stand and its routine in words; the pencil opens "Change this moment": its words, earlier or later in your day, the side of the path and its colour.</li>
+          <li>Read Super Productivity's Surgical sync folders too, with the latest changes applied.</li>
+          <li>Read the tasks Super Productivity keeps in its WebDAV, Nextcloud or local sync folder and import them, without changing the folder.</li>
+          <li>Tasks can remind you: set a reminder under a task's time, or a time and a reminder for a repeating task; the notification offers Done and Snooze and also comes while Day Planner is closed.</li>
+          <li>Journeys ask once whether a reminder would help for the first weeks of a step, and say when you may no longer need it.</li>
+          <li>Journeys open on the Valley: one path through your day with a place for every moment, the thing each routine builds, a lit lantern where a routine runs by itself, and the growing step as a card below.</li>
+          <li>The "What you build" page no longer offers a colour; a journey's colour now belongs to its place.</li>
+          <li>The thing a journey builds is marked by flowers that grow with each good day and open when the step is ready; "What hangs" is gone and the row of versions shows only what stands.</li>
+          <li>With a German system the journey pages are German throughout, including what a journey builds.</li>
+          <li>German umlauts in the journeys no longer turn into question marks when the system's language pack is missing.</li>
+          <li>Importing a backup that is older than the data on your device now warns how many tasks and journey entries would be lost, and keeps journey records made only on this device.</li>
+          <li>Journeys follow QuestArc 3.3: every journey shows what it builds, the stations are a list in the menu, and levels, XP, guardians and the choice between calm and game are gone.</li>
+          <li>Day Planner opens on your journeys once you have started one, and Journeys is the first entry of the sidebar.</li>
+          <li>A journey continued with a newer QuestArc is shown read-only instead of being changed, and journey data Day Planner does not understand is kept as it is.</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.2.0" date="2026-11-09">
       <description>
         <ul>

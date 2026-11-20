@@ -1,1 +1,0 @@
-Journeys open on the Valley: one path through your day with a place for every moment, the thing each routine builds, a lit lantern where a routine runs by itself, and the growing step as a card below.
