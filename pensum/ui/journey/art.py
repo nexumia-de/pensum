@@ -174,6 +174,8 @@ def draw_scene(cr, scene, width, height, roles):
     """A scene scaled to fit, centred and clipped to its own size, in the
     roles' colours; the far band as one silhouette in tint."""
     scale = min(width / scene["width"], height / scene["height"])
+    if scale <= 0:
+        return  # not laid out yet; a zero scale is an invalid matrix
     css, far = stylesheet(roles), far_stylesheet(roles)
     cr.save()
     cr.translate((width - scene["width"] * scale) / 2, (height - scene["height"] * scale) / 2)

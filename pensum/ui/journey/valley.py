@@ -131,6 +131,8 @@ class ValleyScene(Gtk.Overlay):
         return cache[hue]
 
     def _draw(self, area, cr, width, height):
+        if width <= 0 or height <= 0:
+            return  # not laid out yet; a zero scale is an invalid matrix
         layout, scale = self.layout, width / self.layout["width"]
         dark = Adw.StyleManager.get_default().get_dark()
         cache = {}
