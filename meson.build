@@ -10,18 +10,22 @@ nightly = get_option('profile') == 'development'
 app_id = nightly ? base_id + '.Devel' : base_id
 
 python = import('python').find_installation('python3')
+i18n = import('i18n')
 pythondir = python.get_install_dir()
 
 python.install_sources(
   'pensum/__init__.py',
   'pensum/__main__.py',
+  'pensum/background.py',
   'pensum/day_watch.py',
   'pensum/demo.py',
   'pensum/demo_journey.py',
   'pensum/demo_valley.py',
   'pensum/duration.py',
+  'pensum/i18n.py',
   'pensum/main.py',
   'pensum/preferences.py',
+  'pensum/reminder_watch.py',
   'pensum/settings.py',
   'pensum/timer.py',
   'pensum/window.py',
@@ -40,6 +44,7 @@ python.install_sources(
   'pensum/store/files.py',
   'pensum/store/ids.py',
   'pensum/store/incoming.py',
+  'pensum/store/reminders.py',
   'pensum/store/search.py',
   'pensum/store/short_syntax.py',
   'pensum/store/tasks.py',
@@ -115,6 +120,7 @@ python.install_sources(
   'pensum/ui/journey/place_piece.py',
   'pensum/ui/journey/plan_check.py',
   'pensum/ui/journey/read_only.py',
+  'pensum/ui/journey/reminder_banner.py',
   'pensum/ui/journey/run_page.py',
   'pensum/ui/journey/setup_page.py',
   'pensum/ui/journey/shelf_page.py',
@@ -124,6 +130,8 @@ python.install_sources(
   'pensum/ui/journey/station_page.py',
   'pensum/ui/journey/stations_page.py',
   'pensum/ui/journey/still_page.py',
+  'pensum/ui/journey/tick.py',
+  'pensum/ui/journey/today_strip.py',
   'pensum/ui/journey/valley.py',
   subdir: 'pensum' / 'ui' / 'journey',
 )
@@ -166,6 +174,7 @@ configure_file(
 config = configuration_data()
 config.set('APP_ID', app_id)
 config.set('BUILD_LABEL', get_option('build_label'))
+config.set('LOCALE_DIR', get_option('prefix') / get_option('localedir'))
 configure_file(
   input: 'pensum/config.py.in',
   output: 'config.py',
@@ -209,3 +218,6 @@ if appstreamcli.found()
   test('validate-metainfo', appstreamcli,
     args: ['validate', '--no-net', metainfo])
 endif
+
+# Day Planner's own texts in other languages (docs/translations.md).
+subdir('po')

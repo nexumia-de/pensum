@@ -82,6 +82,7 @@ class Window(Adw.ApplicationWindow):
         self.refresh()
         if self.day_watch.start_day():
             self.changed()
+        self.show_start()
         # No field focused at the start: on the phone that would open the
         # on-screen keyboard over the list.
         self.connect("map", lambda *_: GLib.idle_add(self._unfocus))
@@ -93,6 +94,7 @@ class Window(Adw.ApplicationWindow):
         and save soon."""
         self.refresh()
         self.journeys.schedule()
+        self.get_application().reminders.check()
         if self._save_source is None:
             self._save_source = GLib.timeout_add(SAVE_DELAY_MS, self._save_now)
 
@@ -118,7 +120,8 @@ class Window(Adw.ApplicationWindow):
         self.ds = ds
         self.day_watch.start_day()
         self.timer.resume()
-        self.show_list(Context.today())
+        self.list_page.set_context(Context.today())
+        self.show_start()
         self.refresh()
 
     def refresh(self):
@@ -180,8 +183,19 @@ class Window(Adw.ApplicationWindow):
         self.split.set_show_content(False)
 
     def _on_close(self, *_):
+        """Save and stop working on this dataset: the application may live
+        on in the background for reminders (pensum.reminder_watch), which
+        then reads and writes the file."""
         self.flush()
+        self.timer.halt()
+        self.day_watch.stop()
+        self.closed = True
+        GLib.idle_add(self._after_close)
         return False
+
+    def _after_close(self):
+        self.get_application() and self.get_application().reminders.check()
+        return GLib.SOURCE_REMOVE
 
     def undoable(self, message, change):
         """Make a change now and show a toast whose Undo puts the whole
@@ -211,6 +225,15 @@ class Window(Adw.ApplicationWindow):
         self.settings_store.save(self.settings)
 
     # --- navigation ------------------------------------------------------
+
+    def show_start(self):
+        """The page Day Planner opens on: the journeys once the user has
+        any (docs/decisions/habits-first.md, #78), else the list shown
+        last."""
+        if self.journeys.available and self.journeys.in_use():
+            self.show_journey()
+        else:
+            self.show_list(self.list_page.context)
 
     def show_list(self, context):
         if not self.ds.context_exists(context):

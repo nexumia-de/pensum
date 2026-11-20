@@ -8,10 +8,11 @@ from pensum.game.content import t
 from pensum.game.sentences import condition_text, plan_sentence, short_date
 from pensum.store import dates
 from pensum.ui.journey.drawing import day_mark
+from pensum.i18n import N_, _
 
 HINTS = {"current": "ui.card.hint", "met": "ui.card.met", "unbound": "ui.card.unbound",
          "unsupported-repeat": "ui.card.unsupported"}
-PENSUM_HINTS = {"current": "Tick off the task in your task list as usual."}
+PENSUM_HINTS = {"current": N_("Tick off the task in your task list as usual.")}
 
 
 def _label(text, *classes, **kwargs):
@@ -48,10 +49,11 @@ def card_hint(run, station, today):
         return t("ui.card.starts", date=short_date(station["acceptedDay"]))
     if state == "current" and station.get("stepBackDay"):
         return t("ui.card.smaller", date=short_date(station["stepBackDay"])).replace(
-            t("ui.card.hint"), PENSUM_HINTS["current"])
+            t("ui.card.hint"), _(PENSUM_HINTS["current"]))
     if state == "met" and (run.get("offer") or {}).get("quietUntil"):
         return t("ui.card.staying")
-    return PENSUM_HINTS.get(state) or (t(HINTS[state]) if state in HINTS else "")
+    return _(PENSUM_HINTS[state]) if state in PENSUM_HINTS else \
+        (t(HINTS[state]) if state in HINTS else "")
 
 
 def station_card(run, stage, index, station, today):

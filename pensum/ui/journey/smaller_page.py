@@ -9,10 +9,11 @@ from pensum.game import stages
 from pensum.game.content import t
 from pensum.game.sentences import plan_sentence, short_date
 from pensum.ui.journey.base import JourneySubpage
+from pensum.i18n import N_, _
 
 # QuestArc's sentence names Super Productivity; Day Planner's repeat is on
 # the task's Repeat page.
-CURRENT_TASK = ("The task of the larger step stays as it is. Afterwards you could pause or "
+CURRENT_TASK = N_("The task of the larger step stays as it is. Afterwards you could pause or "
                 "end its repeat on its Repeat page so you don't keep both.")
 
 
@@ -35,7 +36,7 @@ class SmallerPage(JourneySubpage):
         self.text(t("ui.smaller.text"))
         self.earlier = stages.rule_of_stage(window.ds, run["runId"], stage["id"], today)
         self.text(t("ui.smaller.task-earlier" if self.earlier else "ui.smaller.task-new"))
-        self.text(CURRENT_TASK, "dimmed")
+        self.text(_(CURRENT_TASK), "dimmed")
         pause = self.group()
         self.pause = Gtk.Switch(valign=Gtk.Align.CENTER)
         row = Adw.ActionRow(title=t("ui.smaller.pause",

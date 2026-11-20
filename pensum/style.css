@@ -38,3 +38,9 @@
 .pensum-journey-why {
   font-style: italic;
 }
+
+/* The growing step on top of Today: one row of fixed height. */
+.pensum-today-strip {
+  padding: 6px 12px;
+  min-height: 48px;
+}

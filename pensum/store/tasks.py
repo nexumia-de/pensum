@@ -128,6 +128,9 @@ def schedule_day(ds, task_id, day, now=None):
     now = now or dates.now_ms()
     task = ds.tasks[task_id]
     task.pop("dueWithTime", None)
+    # A reminder belongs to a time: planning for a day alone drops it
+    # (Super Productivity's planTaskForDay and unScheduleTask).
+    task.pop("remindAt", None)
     for ids in ds.data["planner"]["days"].values():
         _drop(ids, task_id)
     if day is None:
@@ -150,11 +153,17 @@ def schedule_time(ds, task_id, day, hours, minutes, now=None):
     (ARCHITECTURE-DECISIONS #1); Today's and the planner's lists follow."""
     from datetime import datetime
     now = now or dates.now_ms()
+    before = ds.tasks[task_id]
+    # A reminder keeps its lead when the time moves.
+    lead = before["dueWithTime"] - before["remindAt"] if isinstance(
+        before.get("remindAt"), (int, float)) and before.get("dueWithTime") else None
     schedule_day(ds, task_id, day, now)
     task = ds.tasks[task_id]
     moment = datetime.combine(dates.parse_day(day), datetime.min.time()).replace(
         hour=hours, minute=minutes)
     task["dueWithTime"] = int(moment.timestamp() * 1000)
+    if lead is not None and lead >= 0:
+        task["remindAt"] = task["dueWithTime"] - lead
     task.pop("dueDay", None)
     task["hasPlannedTime"] = True
     _touch(task, now)

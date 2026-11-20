@@ -54,6 +54,10 @@ class Application(Adw.Application):
         # the place and "Change this moment", also for the screenshots.
         for name, callback in (("show-list", self._on_show_list),
                                ("show-task", self._on_show_task),
+                               ("reminder-open", lambda _a, v: self.reminders.open(v.unpack())),
+                               ("reminder-done", lambda _a, v: self.reminders.done(v.unpack())),
+                               ("reminder-snooze",
+                                lambda _a, v: self.reminders.snooze(v.unpack())),
                                ("show-place", self._on_show_place),
                                ("show-change-moment", self._on_show_change_moment)):
             action = Gio.SimpleAction.new(name, GLib.VariantType("s"))
@@ -81,6 +85,9 @@ class Application(Adw.Application):
         self.settings_store = settings.Store()
         from phosh_toolkit import style
         style.apply(self.settings_store.load().style)
+        from pensum.reminder_watch import ReminderWatch
+        self.reminders = ReminderWatch(self)
+        self.reminders.check()
 
     def do_activate(self):
         from pensum.window import Window

@@ -19,11 +19,19 @@ Change history is in [log.md](log.md).
 * [Data model](super-productivity-data.md) - Every slice of the dataset with fields and consistency rules, the backup files, how Pensum stores, imports and exports them.
 * [Sync files](super-productivity-sync.md) - The WebDAV/local-folder sync format (v2, v3), envelope, compression, encryption, operations, and what Pensum needs to sync.
 
+# Reminders
+
+* [Reminders](reminders.md) - `task.remindAt` and a repeat rule's time and reminder as Super Productivity 20 keeps them, the notification with Done and Snooze, the background while the window is closed, what is open on the phone.
+
 # Journeys
 
 * [QuestArc's journeys](journeys.md) - QuestArc's engine through gjs, the choice records in pluginUserData, stage tasks with their repeat rule, the journey pages, development.
 * [QuestArc coverage](questarc-coverage.md) - Every QuestArc action, screen and text family and whether Day Planner covers it, with the file and the open issue.
 * [The Valley](valley.md) - The home of the journeys: moments as places along one path, drawn from the engine's `valley` view and layout; the growing card, moments at the start, the demo places.
+
+# Translations
+
+* [Translations](translations.md) - gettext for Day Planner's own texts (`pensum/i18n.py`, `po/`), the wording, what is German so far and what is still English.
 
 # Design
 
@@ -37,4 +45,4 @@ Change history is in [log.md](log.md).
 
 # Decision records
 
-* [Decisions](decisions/index.md) - Super Productivity's backup format as storage, name, licence.
+* [Decisions](decisions/index.md) - Super Productivity's backup format as storage, name, licence, habits first.

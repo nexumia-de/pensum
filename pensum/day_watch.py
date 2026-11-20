@@ -17,7 +17,12 @@ class DayWatch:
         self._ds = ds_getter
         self._changed = changed
         self._day = None
+        self._stopped = False
         GLib.timeout_add_seconds(CHECK_SECONDS, self._check)
+
+    def stop(self):
+        """The window is closed: its dataset is no longer the current one."""
+        self._stopped = True
 
     def start_day(self):
         """Create today's instances now; True when something changed."""
@@ -29,6 +34,8 @@ class DayWatch:
         return bool(created)
 
     def _check(self):
+        if self._stopped:
+            return GLib.SOURCE_REMOVE
         if self._ds().today() != self._day:
             self.start_day()
             self._changed()

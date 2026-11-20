@@ -13,12 +13,14 @@ from pensum.store.repeat import rules
 from pensum.ui.journey.base import JourneySubpage
 from pensum.ui.journey.habits import habit_of
 from pensum.ui.journey.pair_row import pair_group
+from pensum.ui.journey.reminder_banner import question
 from pensum.ui.repeat_page import describe
+from pensum.i18n import N_, _
 
 # QuestArc's sentences name Super Productivity's menus; Day Planner's own.
-CHOOSE = ("Day Planner follows one recurring task for this station. You could "
+CHOOSE = N_("Day Planner follows one recurring task for this station. You could "
           "create it now, or use a recurring task you already have.")
-EARLIER = ("Your earlier task stays as it is. You could end or change it on its Repeat "
+EARLIER = N_("Your earlier task stays as it is. You could end or change it on its Repeat "
            "page so you don't keep both, or use it again for this station.")
 
 
@@ -69,18 +71,18 @@ class SetupPage(JourneySubpage):
         plan.add(plan_row)
         if station["state"] == "unsupported-repeat":
             cfg = stages.rule_of_binding(self.window.ds, run["runId"], stage["id"])
-            self.text("Journeys work with tasks that repeat daily, every few days or on "
-                      "chosen weekdays. You could give the task the suggested schedule, "
-                      "or use another task.")
+            self.text(_("Journeys work with tasks that repeat daily, every few days or on "
+                        "chosen weekdays. You could give the task the suggested schedule, "
+                        "or use another task."))
             if cfg:
-                row = Adw.ActionRow(title="Use the Suggested Schedule", activatable=True,
+                row = Adw.ActionRow(title=_("Use the Suggested Schedule"), activatable=True,
                                     subtitle=describe(cfg))
                 row.connect("activated", lambda *_: self._reschedule(cfg, stage))
                 self.group().add(row)
         else:
             problem = stages.binding_problem(self.window.ds, run["runId"], stage["id"],
                                              self.model.view["todayStr"])
-            self.text(t(f"ui.setup.{problem}") if problem else CHOOSE)
+            self.text(t(f"ui.setup.{problem}") if problem else _(CHOOSE))
         self.set_main(t("ui.setup.create"), lambda: self._create(run, stage, station))
         existing = stages.supported_rules(self.window.ds)
         group = self.group(t("ui.setup.existing"), t("ui.pick.supported"))
@@ -103,6 +105,10 @@ class SetupPage(JourneySubpage):
             row.connect("activated", lambda *_: self._skip(run, journey))
             skip.add(row)
         self._earlier(run, journey, index, station)
+        # A reminder for the first weeks (flow B step 7): one muted
+        # sentence while the station has no task.
+        if station["state"] == "unbound":
+            self.text(question(run, "ui.setup.reminder"), "dimmed")
         pair_group(self, run, stage["id"], station.get("pair"), lambda pair: plan_row.set_title(
             plan_sentence(stage, pair, run.get("anchor"))))
 
@@ -116,7 +122,7 @@ class SetupPage(JourneySubpage):
         task_id = stages.task_of_rule(self.window.ds, cfg)
         if not task_id:
             return
-        group = self.group(None, EARLIER)
+        group = self.group(None, _(EARLIER))
         row = Adw.ActionRow(title=t("ui.setup.open-earlier"), activatable=True,
                             subtitle=cfg.get("title") or "")
         row.add_suffix(Gtk.Image(icon_name="go-next-symbolic"))
