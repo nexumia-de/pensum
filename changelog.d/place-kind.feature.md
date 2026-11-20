@@ -1,1 +1,0 @@
-Choose what grows at a moment: under "Change this moment" you can pick another kind of thing (Home, Garden, Well or Lookout) for the place, also after it has grown; it keeps the version it has reached, and "Use the suggestion" brings back the journey's own.
