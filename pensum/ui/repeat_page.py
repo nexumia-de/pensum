@@ -1,9 +1,11 @@
 """How a task repeats: choosing a schedule makes it recurring, the rule
 can be paused, changed or removed (with Undo). Pushed from the task
 page, so a swipe goes back."""
+from datetime import datetime
+
 from gi.repository import Adw, GLib, Gtk
 
-from pensum.store import dates
+from pensum.store import dates, reminders
 from pensum.store.repeat import instances, rules, schedule
 
 DAY_NAMES = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
@@ -92,6 +94,14 @@ class RepeatPage(Adw.NavigationPage):
                                        subtitle="No new tasks while paused")
         self.pause_row.connect("notify::active", self._on_pause)
         self.rule_group.add(self.pause_row)
+        # The time of day and the reminder every new task of the rule gets.
+        self.time_row = Adw.EntryRow(title="Time (like 14:30)", show_apply_button=True)
+        self.time_row.connect("apply", self._on_time)
+        self.rule_group.add(self.time_row)
+        self.remind_row = Adw.ComboRow(title="Reminder", model=Gtk.StringList.new(
+            [label for _, label in reminders.OPTIONS]))
+        self.remind_row.connect("notify::selected", self._on_remind)
+        self.rule_group.add(self.remind_row)
         page.add(self.rule_group)
 
         stop = Adw.PreferencesGroup()
@@ -145,6 +155,13 @@ class RepeatPage(Adw.NavigationPage):
             for button, key in zip(self.day_buttons, schedule.WEEKDAYS):
                 button.set_active(bool(cfg.get(key)))
             self.pause_row.set_active(bool(cfg.get("isPaused")))
+            start, option = reminders.rule_time(cfg)
+            if not self.time_row.has_focus():
+                self.time_row.set_text(start or "")
+            keys = [key for key, _ in reminders.OPTIONS]
+            self.remind_row.set_selected(keys.index(option) if option in keys else 0)
+            self.remind_row.set_sensitive(bool(start))
+            self.remind_row.set_subtitle("" if start else "Set a time first")
         self.days_box.set_visible(self.unit_row.get_selected() == 1)
         self.rule_group.set_visible(bool(cfg))
         self.stop_group.set_visible(bool(cfg))
@@ -191,6 +208,33 @@ class RepeatPage(Adw.NavigationPage):
         if cfg:
             rules.update(self.window.ds, cfg["id"], **self._fields("CUSTOM"))
             self._changed()
+
+    def _set_time(self, start, option):
+        ds = self.window.ds
+        reminders.set_rule_time(ds, self._rule()["id"], start, option, ds.today())
+        self._changed()
+
+    def _on_time(self, row):
+        cfg = self._rule()
+        if not cfg:
+            return
+        text = row.get_text().strip().replace(".", ":")
+        if text:
+            try:
+                text = datetime.strptime(text, "%H:%M").strftime("%H:%M")
+            except ValueError:
+                self.window.toast("Write the time like 14:30")
+                return
+        self._set_time(text, reminders.rule_time(cfg)[1])
+
+    def _on_remind(self, row, _param):
+        cfg = self._rule()
+        if self._updating or not cfg:
+            return
+        start, option = reminders.rule_time(cfg)
+        chosen = reminders.OPTIONS[row.get_selected()][0]
+        if start and chosen != option:
+            self._set_time(start, chosen)
 
     def _on_pause(self, row, _param):
         cfg = self._rule()

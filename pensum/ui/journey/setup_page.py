@@ -13,6 +13,7 @@ from pensum.store.repeat import rules
 from pensum.ui.journey.base import JourneySubpage
 from pensum.ui.journey.habits import habit_of
 from pensum.ui.journey.pair_row import pair_group
+from pensum.ui.journey.reminder_banner import question
 from pensum.ui.repeat_page import describe
 
 # QuestArc's sentences name Super Productivity's menus; Day Planner's own.
@@ -103,6 +104,10 @@ class SetupPage(JourneySubpage):
             row.connect("activated", lambda *_: self._skip(run, journey))
             skip.add(row)
         self._earlier(run, journey, index, station)
+        # A reminder for the first weeks (flow B step 7): one muted
+        # sentence while the station has no task.
+        if station["state"] == "unbound":
+            self.text(question(run, "ui.setup.reminder"), "dimmed")
         pair_group(self, run, stage["id"], station.get("pair"), lambda pair: plan_row.set_title(
             plan_sentence(stage, pair, run.get("anchor"))))
 

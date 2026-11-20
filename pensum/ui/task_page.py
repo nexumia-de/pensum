@@ -5,7 +5,7 @@ from datetime import datetime
 from gi.repository import Adw, GLib, Gtk, Pango
 
 from pensum import duration
-from pensum.store import dates, tasks
+from pensum.store import dates, reminders, tasks
 from pensum.ui.task_row import TaskRow
 
 
@@ -79,6 +79,11 @@ class TaskPage(Adw.NavigationPage):
         self.time_row = Adw.EntryRow(title="Time (like 14:30)", show_apply_button=True)
         self.time_row.connect("apply", self._on_time)
         plan.add(self.time_row)
+        # A reminder is a lead before the time (pensum.store.reminders).
+        self.remind_row = Adw.ComboRow(title="Reminder", model=Gtk.StringList.new(
+            [label for _, label in reminders.OPTIONS]))
+        self._remind_handler = self.remind_row.connect("notify::selected", self._on_remind)
+        plan.add(self.remind_row)
         self.deadline_row = Adw.ActionRow(title="Deadline")
         self.deadline_calendar = Gtk.Calendar()
         self.deadline_calendar.connect("day-selected", self._on_deadline)
@@ -192,6 +197,16 @@ class TaskPage(Adw.NavigationPage):
             due = task.get("dueWithTime")
             self.time_row.set_text(datetime.fromtimestamp(due / 1000).strftime("%H:%M")
                                    if due else "")
+        option = reminders.option_of(task)
+        keys = [key for key, _ in reminders.OPTIONS]
+        with self._blocked(self.remind_row, self._remind_handler):
+            self.remind_row.set_selected(keys.index(option) if option in keys else 0)
+        self.remind_row.set_sensitive(bool(task.get("dueWithTime")))
+        remind = task.get("remindAt")
+        self.remind_row.set_subtitle(
+            "Set a time first" if not task.get("dueWithTime") else
+            "At " + datetime.fromtimestamp(remind / 1000).strftime("%H:%M")
+            if option == "custom" else "")
 
         deadline = tasks.deadline_day(ds, task)
         self.deadline_row.set_subtitle(self._day_label(deadline, today) if deadline
@@ -336,6 +351,12 @@ class TaskPage(Adw.NavigationPage):
         day = ds.planned_day(self.task) or ds.today()
         tasks.schedule_time(ds, self.task_id, day, moment.hour, moment.minute)
         self._change()
+
+    def _on_remind(self, row, *_):
+        option = reminders.OPTIONS[row.get_selected()][0]
+        if option != reminders.option_of(self.task):
+            reminders.set_option(self.window.ds, self.task_id, option)
+            self._change()
 
     @staticmethod
     def _repeat_label(ds, task):

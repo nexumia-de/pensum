@@ -94,6 +94,7 @@ class Window(Adw.ApplicationWindow):
         and save soon."""
         self.refresh()
         self.journeys.schedule()
+        self.get_application().reminders.check()
         if self._save_source is None:
             self._save_source = GLib.timeout_add(SAVE_DELAY_MS, self._save_now)
 
@@ -182,8 +183,19 @@ class Window(Adw.ApplicationWindow):
         self.split.set_show_content(False)
 
     def _on_close(self, *_):
+        """Save and stop working on this dataset: the application may live
+        on in the background for reminders (pensum.reminder_watch), which
+        then reads and writes the file."""
         self.flush()
+        self.timer.halt()
+        self.day_watch.stop()
+        self.closed = True
+        GLib.idle_add(self._after_close)
         return False
+
+    def _after_close(self):
+        self.get_application() and self.get_application().reminders.check()
+        return GLib.SOURCE_REMOVE
 
     def undoable(self, message, change):
         """Make a change now and show a toast whose Undo puts the whole

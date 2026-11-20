@@ -19,6 +19,10 @@ Change history is in [log.md](log.md).
 * [Data model](super-productivity-data.md) - Every slice of the dataset with fields and consistency rules, the backup files, how Pensum stores, imports and exports them.
 * [Sync files](super-productivity-sync.md) - The WebDAV/local-folder sync format (v2, v3), envelope, compression, encryption, operations, and what Pensum needs to sync.
 
+# Reminders
+
+* [Reminders](reminders.md) - `task.remindAt` and a repeat rule's time and reminder as Super Productivity 20 keeps them, the notification with Done and Snooze, the background while the window is closed, what is open on the phone.
+
 # Journeys
 
 * [QuestArc's journeys](journeys.md) - QuestArc's engine through gjs, the choice records in pluginUserData, stage tasks with their repeat rule, the journey pages, development.

@@ -25,6 +25,14 @@ class PreferencesDialog(Adw.PreferencesDialog):
         self.hour_row.connect("notify::value", self._on_hour)
         day.add(self.hour_row)
         page.add(day)
+        remind = Adw.PreferencesGroup(title="Reminders")
+        closed = Adw.SwitchRow(
+            title="Remind When Closed",
+            subtitle="Day Planner stays in the background while a reminder is waiting",
+            active=window.settings.remind_when_closed)
+        closed.connect("notify::active", self._on_remind_closed)
+        remind.add(closed)
+        page.add(remind)
         if window.journeys.available:
             page.add(self._journeys_group())
 
@@ -67,6 +75,13 @@ class PreferencesDialog(Adw.PreferencesDialog):
 
         confirm_dialog(self, t("ui.settings.data.remove"), t("ui.settings.data.confirm"),
                        t("ui.settings.data.remove-now"), remove)
+
+    def _on_remind_closed(self, row, *_):
+        from pensum import background
+        self.window.settings.remind_when_closed = row.get_active()
+        self.window.save_settings()
+        background.request(autostart=row.get_active())
+        self.window.get_application().reminders.check()
 
     def _on_strip(self, row, *_):
         self.window.settings.journey_strip = row.get_active()

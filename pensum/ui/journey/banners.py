@@ -1,14 +1,18 @@
 """Banners above the current station's card (QuestArc docs/behaviour.md,
 screen 4): paused, a hard week with the earlier step and the user's
-reason, the weekly look back and a new learning nugget. Closed banners
-are remembered in Pensum's settings."""
+reason, the weekly look back and a new learning nugget; when none of
+them stands, QuestArc's words about the task's reminder
+(`reminder_banner.py`). Closed banners are remembered in Pensum's
+settings."""
 from datetime import date
 
 from gi.repository import Adw
 
 from pensum.game.content import t
 from pensum.game.sentences import short_date
+from pensum.store import dates
 from pensum.ui.journey.come_back import come_back_card
+from pensum.ui.journey.reminder_banner import question, reminder_banner
 
 
 def iso_week(day):
@@ -76,4 +80,11 @@ def banners(page, run, journey, index):
             run["stations"][index]["state"] != "ahead":
         out.append(_banner(t("ui.banner.nugget", nugget=t(stage["nugget"])),
                            t("ui.action.got-it"), lambda: close(nugget_key)))
+    # One thing at a time: the reminder waits for the other banners.
+    if not out:
+        accepted = run["stations"][index].get("acceptedDay") or today
+        age = (dates.parse_day(today) - dates.parse_day(accepted)).days
+        out += reminder_banner(page, run["runId"], stage["id"], run.get("reminder"),
+                               iso_week(today), t("ui.banner.fade"),
+                               question(run, "ui.banner.reminder"), age)
     return out

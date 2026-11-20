@@ -143,6 +143,13 @@ navigation view so a swipe goes back:
   colour (the place's). Each change is written at once through the
   engine's `chooseBuild`, only what the user picked; **Use the journey's
   suggestion** withdraws the record.
+- **Reminders** (QuestArc flow H, `reminder_banner.py`): the sentence
+  at set-up, the suggestion in a station's first two weeks and that the
+  reminder may not be needed any more, for the growing step and for a
+  habit, each with **Open the task** and **Not Now**. The reminder is
+  set on the task's Repeat page (time and reminder of the rule,
+  [reminders](reminders.md)); what Day Planner sees is recorded for
+  graduation (`pensum/game/reminders.py`).
 - Preferences → Journeys: **Show on Today** (the strip) and removing the journey data (asks first: it
   cannot be undone).
 

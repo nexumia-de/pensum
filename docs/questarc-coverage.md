@@ -64,7 +64,7 @@ its issue). Files are under `pensum/ui/journey/` unless a path says otherwise.
 | --- | --- | --- |
 | 0 Home: the Valley, growing card, A New Moment | covered | `page.py`, `valley.py`, `growing_card.py` |
 | 0 Home: habit banners (still, graduate, habit look back) | covered | `habits.py` |
-| 0 Home: habit fade (reminder no longer needed) | waits (#13) | QuestArc flow H: Day Planner suggests no reminders until it has its own |
+| 0 Home: habit fade (reminder no longer needed) | covered | `habits.py`, `reminder_banner.py` |
 | 0a Change this moment | covered | `change_moment_page.py` |
 | 0b The place, Extend This Moment | covered | `place_page.py`, `place_piece.py` |
 | 1 Welcome | covered | `page.py` |
@@ -83,7 +83,7 @@ its issue). Files are under `pensum/ui/journey/` unless a path says otherwise.
 | 4 Journey: the moment of the tick (animation), build beside the card at 720 px | covered | `tick.py`, `run_page.py` |
 | 4 Journey: read-only journey | covered | `read_only.py` (#58) |
 | 4 Banners: paused, hard week (with the plan for the obstacle), look back, nugget | covered | `banners.py` |
-| 4 Banners: reminder suggestion and fade | waits (#13) | QuestArc flow H |
+| 4 Banners: reminder suggestion and fade | covered | `banners.py`, `reminder_banner.py` |
 | 5 Station details (skipped, undo skip, left, pair field, plan for the obstacle) | covered | `station_page.py` |
 | 6 Weekly look back (last days, answers row, the habit's, every four weeks) | covered | `checkin_page.py`, `answers_row.py` |
 | 7 Shelf (habits with last days and run, Let It Graduate, graduated habits, Bring It Back, brought back) | covered | `shelf_page.py` |
@@ -96,7 +96,7 @@ its issue). Files are under `pensum/ui/journey/` unless a path says otherwise.
 | B the earlier station's task stays (**Open the earlier task**) | covered | `setup_page.py` |
 | B I Already Do This | covered | `setup_page.py` |
 | B Pair it with | covered | `pair_row.py` |
-| B reminder sentence | waits (#13) | QuestArc flow H |
+| B reminder sentence | covered | `setup_page.py` |
 | C Continue and Stay Here a While, the suggestion | covered | `continue_page.py` |
 | C after a step back: take up the step left | covered | `continue_page.py` |
 | C finished: "the weekly question goes on" | covered | `continue_page.py` |
@@ -104,7 +104,7 @@ its issue). Files are under `pensum/ui/journey/` unless a path says otherwise.
 | E pause and resume | covered | `run_page.py`, `banners.py` |
 | F graduation, the question, bring back | covered | `graduate_page.py`, `still_page.py`, `habits.py` |
 | H reminders: recorded for graduation | covered | `pensum/game/reminders.py` |
-| H reminders: suggested, faded | waits (#13) | Day Planner has no reminders while it is closed yet |
+| H reminders: suggested, faded | covered | `reminder_banner.py`; the reminder itself is Day Planner's ([reminders](reminders.md)) |
 | G problems: engine missing or failing | covered | `page.py` |
 | G problems: a page out of date | covered | pages return to the journey or say "gone" (`ui.error.gone`) |
 | G problems: "This journey was updated; you continue at …" | n/a | in behaviour.md, but no text or screen in QuestArc 4.3.1 |
@@ -122,6 +122,5 @@ its issue). Files are under `pensum/ui/journey/` unless a path says otherwise.
 
 ## Still open
 
-- #13: reminders while Day Planner is closed; until then the reminder
-  suggestion, its fade and the habit fade banner are not shown (QuestArc
-  flow H says so).
+Nothing of QuestArc 4.3.1. On the phone, Day Planner's own reminders
+are still to be checked ([reminders](reminders.md), #13).

@@ -16,6 +16,9 @@ class Settings:
     seen: list = field(default_factory=list)
     # The growing step as a strip on top of Today (Preferences → Journeys).
     journey_strip: bool = True
+    # Stay in the background while a reminder is pending, so it also
+    # comes when the window is closed (pensum.reminder_watch).
+    remind_when_closed: bool = True
     # The Super Productivity sync folder last read (pensum.sync): "webdav"
     # or "local", the server, user and folder (the password is in the
     # keyring), and the syncVersion read last from which source.
