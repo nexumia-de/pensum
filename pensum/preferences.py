@@ -1,6 +1,7 @@
 """Preferences: style, the day boundary Super Productivity uses, how the
 journeys look and their data, and where the data and its backups are."""
 from gi.repository import Adw, GLib
+from pensum.i18n import _
 from phosh_toolkit.style import style_row
 
 
@@ -51,9 +52,9 @@ class PreferencesDialog(Adw.PreferencesDialog):
 
     def _journeys_group(self):
         from pensum.game.content import t
-        group = Adw.PreferencesGroup(title="Journeys", description=t("ui.settings.data.text"))
-        strip = Adw.SwitchRow(title="Show on Today",
-                              subtitle="The step that is growing, on top of Today's tasks",
+        group = Adw.PreferencesGroup(title=_("Journeys"), description=t("ui.settings.data.text"))
+        strip = Adw.SwitchRow(title=_("Show on Today"),
+                              subtitle=_("The step that is growing, on top of Today's tasks"),
                               active=self.window.settings.journey_strip)
         strip.connect("notify::active", self._on_strip)
         group.add(strip)

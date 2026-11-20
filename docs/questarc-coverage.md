@@ -118,7 +118,8 @@ its issue). Files are under `pensum/ui/journey/` unless a path says otherwise.
 | --- | --- | --- |
 | QuestArc's English texts (`content/i18n/en.json`, journeys' `en`) | covered | `pensum/game/content.py` |
 | German (`de.json`, journeys' `de`), the plan form `.plan` | covered | `texts` request, `pensum/game/sentences.py` |
-| Sentences about Super Productivity's menus replaced by Day Planner wording | covered (English only, like the rest of Day Planner) | `card.py`, `setup_page.py`, `smaller_page.py`, `continue_page.py` |
+| Sentences about Super Productivity's menus replaced by Day Planner wording | covered, English and German ([translations](translations.md)) | `card.py`, `setup_page.py`, `smaller_page.py`, `continue_page.py`, `graduate_page.py`; `po/de.po` |
+| Titles of what a journey builds and of the colours (`ui.art.ladder.*`, `ui.art.hue.*`), "… stands" (`ui.build.words.*`) | covered | `pensum/game/content.py`, `art.build_words` |
 
 ## Still open
 

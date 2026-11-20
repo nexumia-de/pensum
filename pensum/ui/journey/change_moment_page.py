@@ -22,6 +22,7 @@ from pensum.game.content import t
 from pensum.ui.journey import art
 from pensum.ui.journey.base import JourneySubpage
 from pensum.ui.journey.moment_rows import MAX_WORDS, MomentRows, limit
+from pensum.i18n import _
 
 
 def swatch(hue):
@@ -215,6 +216,6 @@ class ChangeMomentPage(JourneySubpage):
                   if key in (f"anchor:{self.anchor_id}", f"place:{self.anchor_id}")}
         self.window.nav.pop()
         self.model.action("removeAnchor", self.model.view, self.anchor_id)
-        toast = Adw.Toast(title="Moment removed", button_label=t("ui.action.undo"))
+        toast = Adw.Toast(title=_("Moment removed"), button_label=t("ui.action.undo"))
         toast.connect("button-clicked", lambda *_: self.model.apply(lambda: before, "undo"))
         self.window.toasts.add_toast(toast)

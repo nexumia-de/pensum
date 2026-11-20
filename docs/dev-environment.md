@@ -28,7 +28,9 @@ build`, and gjs. Where apt works (it did on the cloud image on
 python3-gi python3-gi-cairo python3-cffi gir1.2-gtk-4.0 gir1.2-adw-1
 gir1.2-rsvg-2.0 gjs`, and `libgtk-4-bin` for the screenshot script; then
 only `PENSUM_QUESTARC_DIR` is needed. Ubuntu 24.04 has libadwaita 1.5,
-older than the runtime's, so check the look in the Flatpak. Otherwise
+older than the runtime's, so check the look in the Flatpak. `gettext`
+and `meson` are needed only to update the translation template and to
+try the build ([translations](translations.md)). Otherwise
 gjs comes from the GNOME runtime (`flatpak run` does not work on the
 cloud host, so a small wrapper runs it through bwrap):
 

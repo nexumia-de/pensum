@@ -13,6 +13,7 @@ from pensum.game.sentences import short_date
 from pensum.store import dates
 from pensum.ui.journey.come_back import come_back_card
 from pensum.ui.journey.reminder_banner import question, reminder_banner
+from pensum.i18n import _
 
 
 def iso_week(day):
@@ -51,7 +52,7 @@ def banners(page, run, journey, index):
                                t("ui.action.resume"),
                                lambda: model.action("resumeJourney", run["runId"], today)))
         else:
-            out.append(_banner("Paused: the task's repeat is paused. Paused days don't count.",
+            out.append(_banner(_("Paused: the task's repeat is paused. Paused days don't count."),
                                None, None))
         return out
 

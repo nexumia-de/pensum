@@ -119,14 +119,31 @@ def _art_json(name, suffix):
 def ladder(name):
     """A ladder of content/art/ (`<name>.ladder.json`): the versions of one
     build, its default marker and the setting with its places; None if
-    absent."""
-    return _art_json(name, ".ladder.json")
+    absent. The titles of the ladder and its versions are in the user's
+    language where QuestArc has them (`ui.art.ladder.*`, as its art pack
+    does); a title without a text stays as content/art has it."""
+    found = _art_json(name, ".ladder.json")
+    if found is None:
+        return None
+    found["title"] = _titled(f"ui.art.ladder.{name}", found.get("title"))
+    for number, version in enumerate(found.get("versions") or (), start=1):
+        version["title"] = _titled(f"ui.art.ladder.{name}.{number}", version.get("title"))
+    return found
+
+
+def _titled(key, fallback):
+    text = t(key)
+    return fallback if text == key else text
 
 
 def palette():
     """The region hues of content/art/palette.json: name → {title, light,
-    dark}; empty if absent."""
-    return _art_json("palette", ".json") or {}
+    dark}; empty if absent. Titles in the user's language (`ui.art.hue.*`)."""
+    found = _art_json("palette", ".json") or {}
+    for name, entry in found.items():
+        if isinstance(entry, dict):
+            entry["title"] = _titled(f"ui.art.hue.{name}", entry.get("title"))
+    return found
 
 
 def ladders():

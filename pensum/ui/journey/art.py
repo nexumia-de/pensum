@@ -191,7 +191,9 @@ def build_words(ladder, version):
     stands ("A hut stands"), never the next version (QuestArc #155)."""
     versions = ladder["versions"]
     now = versions[min(max(version, 1), len(versions)) - 1]["title"]
-    return f"{now} {'stands' if now.startswith('A ') else 'stand'}"
+    # The language says which names are one thing (QuestArc ladder.ts).
+    one = re.search(content.t("ui.grammar.singular"), now)
+    return content.t("ui.build.words.stands" if one else "ui.build.words.stand", name=now)
 
 
 def marker_elements(ladder):

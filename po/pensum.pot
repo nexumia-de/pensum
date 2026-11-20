@@ -1,0 +1,147 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the pensum package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: pensum\n"
+"Report-Msgid-Bugs-To: https://github.com/nexumia-de/pensum/issues\n"
+"POT-Creation-Date: 2026-11-20 15:42+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: pensum/game/sentences.py:13
+msgid "Monday"
+msgstr ""
+
+#: pensum/game/sentences.py:13
+msgid "Tuesday"
+msgstr ""
+
+#: pensum/game/sentences.py:13
+msgid "Wednesday"
+msgstr ""
+
+#: pensum/game/sentences.py:13
+msgid "Thursday"
+msgstr ""
+
+#: pensum/game/sentences.py:13
+msgid "Friday"
+msgstr ""
+
+#: pensum/game/sentences.py:14
+msgid "Saturday"
+msgstr ""
+
+#: pensum/game/sentences.py:14
+msgid "Sunday"
+msgstr ""
+
+#: pensum/game/sentences.py:116
+msgid "Monday to Friday"
+msgstr ""
+
+#: pensum/preferences.py:55 pensum/ui/journey/page.py:23
+#: pensum/ui/journey/page.py:103 pensum/ui/sidebar.py:124
+msgid "Journeys"
+msgstr ""
+
+#: pensum/preferences.py:56
+msgid "Show on Today"
+msgstr ""
+
+#: pensum/preferences.py:57
+msgid "The step that is growing, on top of Today's tasks"
+msgstr ""
+
+#: pensum/ui/journey/banners.py:55
+msgid "Paused: the task's repeat is paused. Paused days don't count."
+msgstr ""
+
+#: pensum/ui/journey/card.py:15
+msgid "Tick off the task in your task list as usual."
+msgstr ""
+
+#: pensum/ui/journey/change_moment_page.py:219
+msgid "Moment removed"
+msgstr ""
+
+#: pensum/ui/journey/continue_page.py:39
+msgid ""
+"Next you set up the task for this station. Your earlier task keeps repeating "
+"as it is; you can stop it on its Repeat page."
+msgstr ""
+
+#: pensum/ui/journey/graduate_page.py:18
+msgid ""
+"To end the repeat, open the task, go to its Repeat page and stop the repeat. "
+"Day Planner does not do this for you."
+msgstr ""
+
+#: pensum/ui/journey/graduate_page.py:20
+msgid ""
+"The task keeps repeating as before. You could stop its repeat on its Repeat "
+"page whenever you like."
+msgstr ""
+
+#: pensum/ui/journey/graduate_page.py:49
+msgid "Open the Task"
+msgstr ""
+
+#: pensum/ui/journey/page.py:29 pensum/ui/journey/page.py:30
+#: pensum/ui/journey/run_page.py:32 pensum/ui/journey/run_page.py:33
+msgid "Menu"
+msgstr ""
+
+#: pensum/ui/journey/page.py:98
+msgid "Journeys Are Not Installed"
+msgstr ""
+
+#: pensum/ui/journey/page.py:99
+msgid "This build of Day Planner comes without QuestArc's journeys."
+msgstr ""
+
+#: pensum/ui/journey/page.py:107
+msgid "Journeys Can't Be Shown"
+msgstr ""
+
+#: pensum/ui/journey/run_page.py:25 pensum/ui/journey/run_page.py:30
+msgid "Journey"
+msgstr ""
+
+#: pensum/ui/journey/setup_page.py:21
+msgid ""
+"Day Planner follows one recurring task for this station. You could create it "
+"now, or use a recurring task you already have."
+msgstr ""
+
+#: pensum/ui/journey/setup_page.py:23
+msgid ""
+"Your earlier task stays as it is. You could end or change it on its Repeat "
+"page so you don't keep both, or use it again for this station."
+msgstr ""
+
+#: pensum/ui/journey/setup_page.py:74
+msgid ""
+"Journeys work with tasks that repeat daily, every few days or on chosen "
+"weekdays. You could give the task the suggested schedule, or use another "
+"task."
+msgstr ""
+
+#: pensum/ui/journey/setup_page.py:78
+msgid "Use the Suggested Schedule"
+msgstr ""
+
+#: pensum/ui/journey/smaller_page.py:16
+msgid ""
+"The task of the larger step stays as it is. Afterwards you could pause or "
+"end its repeat on its Repeat page so you don't keep both."
+msgstr ""

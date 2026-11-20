@@ -4,6 +4,7 @@ from gi.repository import Adw, Gio, Gtk, Pango
 
 from pensum import NAME
 from pensum.store.dataset import Context
+from pensum.i18n import _
 
 
 def main_menu():
@@ -120,7 +121,7 @@ class Sidebar(Adw.Bin):
             # First once the user has journeys: they are what Day Planner
             # opens on (#78).
             entries.insert(0 if self.window.journeys.in_use() else 1,
-                           (Context("journey", "questarc"), "Journeys",
+                           (Context("journey", "questarc"), _("Journeys"),
                             "mark-location-symbolic"))
         entries += [(Context("project", p["id"]), p.get("title") or "Untitled",
                      "folder-symbolic") for p in ds.projects()]

@@ -10,6 +10,7 @@ nightly = get_option('profile') == 'development'
 app_id = nightly ? base_id + '.Devel' : base_id
 
 python = import('python').find_installation('python3')
+i18n = import('i18n')
 pythondir = python.get_install_dir()
 
 python.install_sources(
@@ -21,6 +22,7 @@ python.install_sources(
   'pensum/demo_journey.py',
   'pensum/demo_valley.py',
   'pensum/duration.py',
+  'pensum/i18n.py',
   'pensum/main.py',
   'pensum/preferences.py',
   'pensum/reminder_watch.py',
@@ -172,6 +174,7 @@ configure_file(
 config = configuration_data()
 config.set('APP_ID', app_id)
 config.set('BUILD_LABEL', get_option('build_label'))
+config.set('LOCALE_DIR', get_option('prefix') / get_option('localedir'))
 configure_file(
   input: 'pensum/config.py.in',
   output: 'config.py',
@@ -215,3 +218,6 @@ if appstreamcli.found()
   test('validate-metainfo', appstreamcli,
     args: ['validate', '--no-net', metainfo])
 endif
+
+# Day Planner's own texts in other languages (docs/translations.md).
+subdir('po')

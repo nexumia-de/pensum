@@ -164,6 +164,13 @@ def test_questarc_speaks_german_with_a_german_locale(monkeypatch):
                                        {"kind": "routine", "words": "dem Mittagessen"})
     assert sentence.startswith("Nach dem Mittagessen gehe ich")
     assert sentence.endswith(", mit meinem Podcast.")
+    # What a journey builds is named in German too, with German grammar,
+    # and umlauts survive the engine's output (#79).
+    from pensum.ui.journey import art
+    well = content.ladder("well")
+    assert well["title"] == "Brunnen" and well["versions"][1]["title"] == "Ein Ziehbrunnen"
+    assert art.build_words(well, 2) == "Ein Ziehbrunnen steht"
+    assert "ü" in content.t("ui.banner.checkin")
     monkeypatch.setenv("LANG", "C.UTF-8")
     assert content.t("ui.continue.title") == "Continue"
     assert sentences.plan_sentence(stage, None, {"kind": "time", "time": "12:30"}).startswith(
@@ -180,3 +187,28 @@ def test_reminders_are_recorded_only_when_they_change():
     assert reminders.due(view, {"reminder-seen:r:s": {"on": True, "day": "x"},
                                 "reminder-seen:f:h": {"on": True, "day": "x"}}) == [
         ("f", "h", False)]
+
+
+def test_day_planners_own_texts_follow_the_locale(monkeypatch):
+    """Day Planner's own sentences on the journey pages are German with a
+    German locale, read from po/de.po in the source tree (#79), and every
+    text of the template has a translation."""
+    from pensum import i18n
+    from pensum.game import sentences
+    assert i18n._("Journeys") == "Journeys"
+    weekdays = {"type": "weekdays", "days": ["mon", "wed"]}
+    monkeypatch.setenv("LANG", "de_DE.UTF-8")
+    assert i18n._("Journeys") == "Reisen"
+    assert i18n._("Use the Suggested Schedule") == "Vorgeschlagenen Rhythmus nehmen"
+    if content.available():
+        ids = sentences.DAY_IDS
+        weekdays["days"] = [ids[0], ids[2]]
+        assert sentences.schedule_text(weekdays) == "Jeden Montag, Mittwoch"
+    monkeypatch.setenv("LANG", "de_AT.UTF-8")
+    assert i18n._("Journey") == "Reise"
+    template = i18n.read_po(i18n.SOURCE_PO / "de.po")
+    wanted = [line for line in (i18n.SOURCE_PO / "pensum.pot").read_text().split("\n")
+              if line.startswith("msgid \"") and line != 'msgid ""']
+    assert len(template) >= len(wanted) and all(template.values())
+    monkeypatch.setenv("LANG", "C.UTF-8")
+    assert i18n._("Journey") == "Journey"

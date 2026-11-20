@@ -15,21 +15,22 @@ from pensum.ui.journey.build import build_header
 from pensum.ui.journey.place_piece import place_of_run
 from pensum.ui.journey.card import station_card
 from pensum.ui.journey.tick import Growth
+from pensum.i18n import _
 
 
 class RunPage(Adw.NavigationPage):
     def __init__(self, window):
         # No tag: a tagged page stays registered for a moment after it is
         # popped, and tapping the card again at once would be refused.
-        super().__init__(title="Journey")
+        super().__init__(title=_("Journey"))
         self.window = window
         self.model = window.journeys
         toolbar = Adw.ToolbarView()
         header = Adw.HeaderBar()
-        self.title = Adw.WindowTitle(title="Journey")
+        self.title = Adw.WindowTitle(title=_("Journey"))
         header.set_title_widget(self.title)
-        self.menu_button = Gtk.MenuButton(icon_name="view-more-symbolic", tooltip_text="Menu")
-        self.menu_button.update_property([Gtk.AccessibleProperty.LABEL], ["Menu"])
+        self.menu_button = Gtk.MenuButton(icon_name="view-more-symbolic", tooltip_text=_("Menu"))
+        self.menu_button.update_property([Gtk.AccessibleProperty.LABEL], [_("Menu")])
         header.pack_end(self.menu_button)
         toolbar.add_top_bar(header)
         self.scroll = Gtk.ScrolledWindow(hscrollbar_policy=Gtk.PolicyType.NEVER, vexpand=True)

@@ -12,11 +12,12 @@ from pensum.game.content import t
 from pensum.game.sentences import plan_sentence
 from pensum.ui.journey.base import JourneySubpage
 from pensum.ui.journey.habits import habit_of
+from pensum.i18n import N_, _
 
 # QuestArc's sentences name Super Productivity's menus.
-GRADUATED_END = ("To end the repeat, open the task, go to its Repeat page and stop the repeat. "
+GRADUATED_END = N_("To end the repeat, open the task, go to its Repeat page and stop the repeat. "
                  "Day Planner does not do this for you.")
-GRADUATED_KEEP = ("The task keeps repeating as before. You could stop its repeat on its "
+GRADUATED_KEEP = N_("The task keeps repeating as before. You could stop its repeat on its "
                   "Repeat page whenever you like.")
 
 
@@ -42,10 +43,10 @@ class GraduatePage(JourneySubpage):
             self.set_title(t("ui.graduated.title"))
             self.text(t("ui.graduated.text"))
             ends = habit["graduated"]["choice"] == "end"
-            self.text(GRADUATED_END if ends else GRADUATED_KEEP, "dimmed")
+            self.text(_(GRADUATED_END if ends else GRADUATED_KEEP), "dimmed")
             task_id = self._task(run, stage) if ends else None
             if task_id:
-                button = Gtk.Button(label="Open the Task", halign=Gtk.Align.START)
+                button = Gtk.Button(label=_("Open the Task"), halign=Gtk.Align.START)
                 button.set_size_request(-1, 44)
                 button.connect("clicked", lambda *_: self.window.show_task(task_id))
                 self.group().add(button)

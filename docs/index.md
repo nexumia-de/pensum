@@ -29,6 +29,10 @@ Change history is in [log.md](log.md).
 * [QuestArc coverage](questarc-coverage.md) - Every QuestArc action, screen and text family and whether Day Planner covers it, with the file and the open issue.
 * [The Valley](valley.md) - The home of the journeys: moments as places along one path, drawn from the engine's `valley` view and layout; the growing card, moments at the start, the demo places.
 
+# Translations
+
+* [Translations](translations.md) - gettext for Day Planner's own texts (`pensum/i18n.py`, `po/`), the wording, what is German so far and what is still English.
+
 # Design
 
 * [Visual design](design.md) - Stock libadwaita with Pensum's indigo accent, the screens at 360 px and on the desktop.
