@@ -24,7 +24,7 @@ lost when the same backup goes back to Super Productivity.
 |---|---|---|
 | Tasks: add, rename, done/undone, delete | `task` | **M1, done** |
 | Subtasks with summed time and estimate | `task.subTaskIds`, `parentId` | **M1, done** |
-| Notes per task (Markdown) | `task.notes` | **M1, done** (plain text editing; Markdown rendering M2) |
+| Notes per task (Markdown) | `task.notes` | **M2, done** (#18: shown formatted, checkboxes can be ticked, plain text editing; [Markdown in notes](markdown-notes.md)) |
 | Time estimate | `task.timeEstimate` | **M1, done** |
 | Inbox and projects: create, rename, archive, delete | `project`, `menuTree.projectTree` | **M1, done** (incl. archived projects page) |
 | Tags: create, rename, delete, tag tasks | `tag`, `task.tagIds`, `menuTree.tagTree` | **M1, done** |

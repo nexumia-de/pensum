@@ -57,8 +57,10 @@ def create(now=None):
     tasks.set_deadline(ds, review["id"], (datetime.fromtimestamp(now / 1000)
                                           + timedelta(days=3)).strftime("%Y-%m-%d"), now)
     tasks.update(ds, review["id"], now,
-                 notes="Focus on the phone layout first; the desktop "
-                       "version was reviewed last week.")
+                 notes="Focus on the **phone layout** first; the desktop "
+                       "version was reviewed last week.\n\n"
+                       "- [x] Start page\n- [ ] Menu\n- [ ] Contact form\n\n"
+                       "Checklist: [style guide](https://example.org/style)")
     tasks.set_estimate(ds, call["id"], ms(10), now)
 
     for title in ("Prune the apple tree", "Order compost"):

@@ -38,6 +38,11 @@ keep the title, back and the menu ([adaptive rule 10](../../phosh-toolkit/docs/a
   editor), estimate, Today, planned day and time, deadline, priority,
   project, tags, notes, subtasks, and Delete at the end (out of easy
   reach on purpose). Mark as Done and Start/Stop Timer in a bottom bar, as normal buttons at least 44 px high (`.pensum-bar-button`); `pill` buttons there made gtk4-broadwayd crash in about half of the CI screenshots (checked locally with the GNOME 51 Flatpak, 2026-11-05).
+- **Notes** (`pensum/ui/notes_box.py`): a task's note is shown formatted
+  on the view's ground (headings, lists, checkboxes at 44 px, a bar for
+  quotes, a tinted block for code; colours only from the text colour).
+  Edit / Done in the group's header switches to the text field and back
+  with one tap ([Markdown in notes](markdown-notes.md)).
 - **Time of day** (`pensum/ui/time_picker.py`): the task page's Time row
   opens a dialog (a bottom sheet on the phone) with hours and minutes as
   vertical spin buttons, plus and minus at least 44 px
@@ -134,4 +139,4 @@ nothing scrolls sideways at 360 px.
 
 # Not yet done
 
-Swipe actions on rows, Markdown rendering of notes.
+Swipe actions on rows.

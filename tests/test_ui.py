@@ -405,6 +405,99 @@ def test_sections_in_a_list(app, tmp_path):
     window.close()
 
 
+def _review(ds):
+    return next(t for t in ds.tasks.values() if t.get("title") == "Review the new start page")
+
+
+def test_note_is_shown_formatted_and_stays_as_typed(app, tmp_path):
+    """Opening a task shows its note formatted; viewing, switching to the
+    text field and back, and leaving the page write nothing: the stored
+    note is the same string, byte for byte."""
+    from pensum import markdown
+    from pensum.ui.notes_view import NotesView
+    ds = demo.create()
+    odd = ("Line one  \r\n\r\n\t- [ ] tab item\r\n* [X] big x\n\n\n"
+           "<b>html</b> &amp; trailing spaces   \n# Heading #\n```\ncode  \n```\n\n")
+    _review(ds)["notes"] = odd
+    window = new_window(app, tmp_path, ds)
+    ds = window.ds
+    task = _review(ds)
+    assert task["notes"] == odd
+    modified = task["modified"]
+    window.show_task(task["id"])
+    iterate()
+    page = window.nav.get_visible_page()
+    box = page.notes
+    # Formatted, and no field has the focus when the page opens.
+    assert not box.editing and box.stack.get_visible_child_name() == "view"
+    assert isinstance(box.view, NotesView) and len(box.view.checks) == 2
+    assert not isinstance(window.get_focus(), (Gtk.Text, Gtk.TextView))
+    assert box.switch.get_label() == "Edit"
+    # One tap to the text field, one back.
+    box.switch.emit("clicked")
+    iterate()
+    assert box.editing and box.stack.get_visible_child_name() == "edit"
+    assert window.get_focus() is box.text and box.switch.get_label() == "Done"
+    box.switch.emit("clicked")
+    iterate()
+    assert not box.editing
+    window.nav.pop()
+    iterate(40)
+    window.flush()
+    assert task["notes"] == odd and task["modified"] == modified
+    saved = backup.read(window.files.path)
+    assert saved["task"]["entities"][task["id"]]["notes"] == odd
+    assert [b.kind for b in markdown.parse(odd)] == [
+        "paragraph", "task", "task", "paragraph", "heading", "code"]
+    window.close()
+
+
+def test_note_checkbox_and_editing(app, tmp_path):
+    window = new_window(app, tmp_path, demo.create())
+    ds = window.ds
+    task = _review(ds)
+    before = task["notes"]
+    window.show_task(task["id"])
+    iterate()
+    box = window.nav.get_visible_page().notes
+    assert [c.get_active() for c in box.view.checks] == [True, False, False]
+    # Ticking changes that one character of the source.
+    box.view.checks[1].set_active(True)
+    iterate()
+    assert task["notes"] == before.replace("- [ ] Menu", "- [x] Menu")
+    assert [c.get_active() for c in box.view.checks] == [True, True, False]
+    box.view.checks[0].set_active(False)
+    iterate()
+    assert task["notes"] == before.replace("- [ ] Menu", "- [x] Menu").replace(
+        "- [x] Start page", "- [ ] Start page")
+    # Links are labels' own links; only safe schemes are ever opened.
+    labels = [w for w in _widgets(box.view) if isinstance(w, Gtk.Label)]
+    assert any('href="https://example.org/style"' in label.get_label() for label in labels)
+    assert not [w for w in _widgets(box) if type(w).__name__ in ("WebView", "Picture")]
+    # Editing saves what was typed, as typed.
+    box.switch.emit("clicked")
+    iterate()
+    typed = task["notes"] + "\n\n<i>raw</i>  \n"
+    box.text.get_buffer().set_text(typed)
+    box.switch.emit("clicked")
+    iterate()
+    assert task["notes"] == typed and not box.editing
+    assert validate.problems(ds.data) == []
+    # Without Markdown in Super Productivity's settings: the text field only.
+    ds.config.setdefault("tasks", {})["isMarkdownFormattingInNotesEnabled"] = False
+    box.load()
+    assert box.editing and not box.switch.get_visible()
+    # An empty note opens as the empty text field, without the focus.
+    ds.config["tasks"]["isMarkdownFormattingInNotesEnabled"] = True
+    empty = next(t for t in ds.tasks.values() if not t.get("notes") and not t.get("parentId"))
+    window.show_task(empty["id"])
+    iterate()
+    box = window.nav.get_visible_page().notes
+    assert box.editing and box.switch.get_visible()
+    assert window.get_focus() is not box.text
+    window.close()
+
+
 def test_overdue_section(app, tmp_path):
     from pensum.store import dates, planning, tasks
     window = new_window(app, tmp_path)

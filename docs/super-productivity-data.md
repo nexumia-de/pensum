@@ -187,31 +187,10 @@ it starts at `globalConfig.misc.startOfNextDayTime` (`HH:MM`) or the
 older `startOfNextDay` (hours), so work at 1:00 with a 4:00 boundary
 counts for the previous day (`DateService`, `isTodayWithOffset`).
 
-## Notes as Markdown (`ui/marked-options-factory.ts`)
+## Notes as Markdown
 
-Read at commit `9980fd76` (2026-11-21) for #18; only the renderer's
-options, `ui/link-href.util.ts` and the dependency list were read so
-far, **not** how the note component (`ui/inline-markdown/`) toggles a
-checkbox in the source, nor the scheme list in
-`electron/shared-with-frontend/is-external-url-allowed.ts`.
-
-- `task.notes` is the Markdown source as typed; rendering is display
-  only. `globalConfig.tasks.isMarkdownFormattingInNotesEnabled` (on
-  when missing) switches the formatting.
-- Renderer: `marked` (`^18.0.5` in `package.json`) through
-  `ngx-markdown`, with `gfm: true`, `breaks: true` (a single line break
-  is a line break), `pedantic: false`. GFM brings tables, strikethrough,
-  task lists and bare URLs as links.
-- Own rules on top: a task-list item shows a checkbox icon and is marked
-  done or undone (`- [ ]`, `- [x]`); a paragraph line with `h1.` to
-  `h6.` becomes a heading; `![alt](url =WxH)` sizes an image (not inside
-  fenced code); `webexteams://` URIs become links.
-- Links render only when their scheme is allowed
-  (`toRenderableHref`: a bare host gets `http://`, `//host` gets
-  `https:`); others show as plain text marked as blocked. Images load
-  from the web; the rendered HTML is sanitized.
-- Pensum (planned, #18): no web view, no images fetched, raw HTML shown
-  as text, links opened only on a tap.
+`task.notes` is the Markdown source as typed; what Super Productivity
+shows of it and what Pensum shows is in [Markdown in notes](markdown-notes.md).
 
 ## Section (`section.model.ts`)
 
