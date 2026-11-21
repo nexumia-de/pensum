@@ -78,9 +78,14 @@ def run(request):
         raise EngineError("QuestArc's engine is not installed")
     started = time.monotonic()
     try:
+        # gjs prints in the locale's character set: with a locale that is
+        # not installed (a Flatpak without its language pack) umlauts came
+        # back as "?". The engine takes its language from the request, so
+        # its own locale is fixed to UTF-8.
         done = subprocess.run([gjs_command(), "-m", str(cli)], input=payload,
-                              capture_output=True, text=True, timeout=TIMEOUT_SECONDS,
-                              check=False)
+                              capture_output=True, text=True, encoding="utf-8",
+                              timeout=TIMEOUT_SECONDS, check=False,
+                              env={**os.environ, "LC_ALL": "C.UTF-8"})
     except (OSError, subprocess.TimeoutExpired) as error:
         raise EngineError(f"gjs could not run the engine: {error}") from error
     if done.returncode != 0:

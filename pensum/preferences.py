@@ -1,6 +1,7 @@
 """Preferences: style, the day boundary Super Productivity uses, how the
 journeys look and their data, and where the data and its backups are."""
 from gi.repository import Adw, GLib
+from pensum.i18n import _
 from phosh_toolkit.style import style_row
 
 
@@ -25,6 +26,14 @@ class PreferencesDialog(Adw.PreferencesDialog):
         self.hour_row.connect("notify::value", self._on_hour)
         day.add(self.hour_row)
         page.add(day)
+        remind = Adw.PreferencesGroup(title="Reminders")
+        closed = Adw.SwitchRow(
+            title="Remind When Closed",
+            subtitle="Day Planner stays in the background while a reminder is waiting",
+            active=window.settings.remind_when_closed)
+        closed.connect("notify::active", self._on_remind_closed)
+        remind.add(closed)
+        page.add(remind)
         if window.journeys.available:
             page.add(self._journeys_group())
 
@@ -43,7 +52,12 @@ class PreferencesDialog(Adw.PreferencesDialog):
 
     def _journeys_group(self):
         from pensum.game.content import t
-        group = Adw.PreferencesGroup(title="Journeys", description=t("ui.settings.data.text"))
+        group = Adw.PreferencesGroup(title=_("Journeys"), description=t("ui.settings.data.text"))
+        strip = Adw.SwitchRow(title=_("Show on Today"),
+                              subtitle=_("The step that is growing, on top of Today's tasks"),
+                              active=self.window.settings.journey_strip)
+        strip.connect("notify::active", self._on_strip)
+        group.add(strip)
         remove = Adw.ButtonRow(title=t("ui.settings.data.remove")) if hasattr(
             Adw, "ButtonRow") else Adw.ActionRow(title=t("ui.settings.data.remove"),
                                                   activatable=True)
@@ -62,6 +76,18 @@ class PreferencesDialog(Adw.PreferencesDialog):
 
         confirm_dialog(self, t("ui.settings.data.remove"), t("ui.settings.data.confirm"),
                        t("ui.settings.data.remove-now"), remove)
+
+    def _on_remind_closed(self, row, *_):
+        from pensum import background
+        self.window.settings.remind_when_closed = row.get_active()
+        self.window.save_settings()
+        background.request(autostart=row.get_active())
+        self.window.get_application().reminders.check()
+
+    def _on_strip(self, row, *_):
+        self.window.settings.journey_strip = row.get_active()
+        self.window.save_settings()
+        self.window.list_page.refresh()
 
     def _on_style(self, style):
         self.window.settings.style = style

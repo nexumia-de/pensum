@@ -88,11 +88,16 @@ class ValleyScene(Gtk.Overlay):
     None for a plain picture (the place's own page); `edit(i)` adds a
     pencil on place i's free side (the page of one place)."""
 
-    def __init__(self, places, titles, layout, on_open=None, growing_flowers=False):
+    def __init__(self, places, titles, layout, on_open=None, growing_flowers=False,
+                 growth=None):
         super().__init__(css_classes=["pensum-valley", "card"], overflow=Gtk.Overflow.HIDDEN)
         self.places, self.titles, self.layout = places, titles, layout
         self.flowers = growing_flowers
+        # The moment of the tick (`tick.Growth`): new flowers grow in.
+        self.growth = growth
         self.picture = _Picture(layout, self._draw)
+        if growth:
+            growth.attach(self.picture)
         self.set_child(self.picture)
         self.labels = [place_label(p, ti) for p, ti in zip(places, titles)]
         label = t("ui.valley.label")
@@ -126,6 +131,8 @@ class ValleyScene(Gtk.Overlay):
         return cache[hue]
 
     def _draw(self, area, cr, width, height):
+        if width <= 0 or height <= 0:
+            return  # not laid out yet; a zero scale is an invalid matrix
         layout, scale = self.layout, width / self.layout["width"]
         dark = Adw.StyleManager.get_default().get_dark()
         cache = {}
@@ -204,8 +211,9 @@ class ValleyScene(Gtk.Overlay):
             grows = next((th for th in place["things"] if th["state"] == "growing"), None)
             if grows:
                 box = piece["things"][place["things"].index(grows)]
-                for name in flowers(grows):
-                    art.draw(cr, name, box["x"], box["y"], box["width"], box["height"], css)
+                for index, name in enumerate(flowers(grows)):
+                    art.draw_growing(cr, name, box["x"], box["y"], box["width"], box["height"],
+                                     css, self.growth.factor(index) if self.growth else 1.0)
         if place.get("sign") == "lantern":
             slot = piece["slot"]
             art.draw(cr, f"place-lantern-{piece['side']}", slot["x"], slot["y"],

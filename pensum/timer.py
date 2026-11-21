@@ -47,6 +47,15 @@ class Timer:
         self._since = None
         self._changed()
 
+    def halt(self):
+        """The window closes: book and stop counting, but keep the current
+        task, so the next start goes on with it."""
+        self.book()
+        if self._source:
+            GLib.source_remove(self._source)
+            self._source = None
+        self._since = None
+
     def unbooked_ms(self):
         return dates.now_ms() - self._since if self._since else 0
 

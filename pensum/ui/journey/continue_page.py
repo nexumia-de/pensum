@@ -10,6 +10,7 @@ from gi.repository import Adw
 from pensum.game.content import t
 from pensum.game.sentences import plan_sentence
 from pensum.ui.journey.base import JourneySubpage
+from pensum.i18n import _
 
 SUGGESTIONS = {"continue": "ui.continue.suggest-continue", "stay": "ui.continue.suggest-stay"}
 
@@ -35,8 +36,8 @@ class ContinuePage(JourneySubpage):
             group.add(Adw.ActionRow(title=plan_sentence(following, pair, run.get("anchor")),
                                     title_lines=0))
             self.text(t("ui.continue.again") if again else
-                      "Next you set up the task for this station. Your earlier task keeps "
-                      "repeating as it is; you can stop it on its Repeat page.", "dimmed")
+                      _("Next you set up the task for this station. Your earlier task keeps "
+                        "repeating as it is; you can stop it on its Repeat page."), "dimmed")
         else:
             self.text(t("ui.continue.last"))
         offer = run.get("offer") or {}

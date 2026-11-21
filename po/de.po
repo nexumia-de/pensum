@@ -1,0 +1,125 @@
+# German translation of Day Planner (pensum).
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: pensum\n"
+"Report-Msgid-Bugs-To: https://github.com/nexumia-de/pensum/issues\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: pensum/game/sentences.py:13
+msgid "Monday"
+msgstr "Montag"
+
+#: pensum/game/sentences.py:13
+msgid "Tuesday"
+msgstr "Dienstag"
+
+#: pensum/game/sentences.py:13
+msgid "Wednesday"
+msgstr "Mittwoch"
+
+#: pensum/game/sentences.py:13
+msgid "Thursday"
+msgstr "Donnerstag"
+
+#: pensum/game/sentences.py:13
+msgid "Friday"
+msgstr "Freitag"
+
+#: pensum/game/sentences.py:14
+msgid "Saturday"
+msgstr "Samstag"
+
+#: pensum/game/sentences.py:14
+msgid "Sunday"
+msgstr "Sonntag"
+
+#: pensum/game/sentences.py:116
+msgid "Monday to Friday"
+msgstr "Montag bis Freitag"
+
+#: pensum/preferences.py:55 pensum/ui/journey/page.py:23
+#: pensum/ui/journey/page.py:103 pensum/ui/sidebar.py:124
+msgid "Journeys"
+msgstr "Reisen"
+
+#: pensum/preferences.py:56
+msgid "Show on Today"
+msgstr "Auf „Heute“ zeigen"
+
+#: pensum/preferences.py:57
+msgid "The step that is growing, on top of Today's tasks"
+msgstr "Der Schritt, der gerade wächst, über den Aufgaben von heute"
+
+#: pensum/ui/journey/banners.py:55
+msgid "Paused: the task's repeat is paused. Paused days don't count."
+msgstr "Pausiert: Die Wiederholung der Aufgabe ist pausiert. Pausierte Tage zählen nicht."
+
+#: pensum/ui/journey/card.py:15
+msgid "Tick off the task in your task list as usual."
+msgstr "Die Aufgabe hakst du wie gewohnt in deiner Aufgabenliste ab."
+
+#: pensum/ui/journey/change_moment_page.py:219
+msgid "Moment removed"
+msgstr "Moment entfernt"
+
+#: pensum/ui/journey/continue_page.py:39
+msgid "Next you set up the task for this station. Your earlier task keeps repeating as it is; you can stop it on its Repeat page."
+msgstr "Als Nächstes richtest du die Aufgabe für diese Station ein. Deine frühere Aufgabe wiederholt sich weiter wie bisher; du kannst sie auf ihrer Seite „Repeat“ beenden."
+
+#: pensum/ui/journey/graduate_page.py:18
+msgid "To end the repeat, open the task, go to its Repeat page and stop the repeat. Day Planner does not do this for you."
+msgstr "Um die Wiederholung zu beenden, öffne die Aufgabe, geh auf ihre Seite „Repeat“ und beende dort die Wiederholung. Day Planner macht das nicht für dich."
+
+#: pensum/ui/journey/graduate_page.py:20
+msgid "The task keeps repeating as before. You could stop its repeat on its Repeat page whenever you like."
+msgstr "Die Aufgabe wiederholt sich weiter wie bisher. Du könntest ihre Wiederholung jederzeit auf ihrer Seite „Repeat“ beenden."
+
+#: pensum/ui/journey/graduate_page.py:49
+msgid "Open the Task"
+msgstr "Aufgabe öffnen"
+
+#: pensum/ui/journey/page.py:29 pensum/ui/journey/page.py:30
+#: pensum/ui/journey/run_page.py:32 pensum/ui/journey/run_page.py:33
+msgid "Menu"
+msgstr "Menü"
+
+#: pensum/ui/journey/page.py:98
+msgid "Journeys Are Not Installed"
+msgstr "Reisen sind nicht installiert"
+
+#: pensum/ui/journey/page.py:99
+msgid "This build of Day Planner comes without QuestArc's journeys."
+msgstr "Diese Version von Day Planner enthält die Reisen von QuestArc nicht."
+
+#: pensum/ui/journey/page.py:107
+msgid "Journeys Can't Be Shown"
+msgstr "Reisen können nicht gezeigt werden"
+
+#: pensum/ui/journey/run_page.py:25 pensum/ui/journey/run_page.py:30
+msgid "Journey"
+msgstr "Reise"
+
+#: pensum/ui/journey/setup_page.py:21
+msgid "Day Planner follows one recurring task for this station. You could create it now, or use a recurring task you already have."
+msgstr "Day Planner folgt für diese Station einer wiederkehrenden Aufgabe. Du könntest sie jetzt anlegen oder eine wiederkehrende Aufgabe nehmen, die du schon hast."
+
+#: pensum/ui/journey/setup_page.py:23
+msgid "Your earlier task stays as it is. You could end or change it on its Repeat page so you don't keep both, or use it again for this station."
+msgstr "Deine frühere Aufgabe bleibt, wie sie ist. Du könntest sie auf ihrer Seite „Repeat“ beenden oder ändern, damit du nicht beide behältst, oder sie für diese Station wieder nehmen."
+
+#: pensum/ui/journey/setup_page.py:74
+msgid "Journeys work with tasks that repeat daily, every few days or on chosen weekdays. You could give the task the suggested schedule, or use another task."
+msgstr "Reisen funktionieren mit Aufgaben, die sich täglich, alle paar Tage oder an gewählten Wochentagen wiederholen. Du könntest der Aufgabe den vorgeschlagenen Rhythmus geben oder eine andere Aufgabe nehmen."
+
+#: pensum/ui/journey/setup_page.py:78
+msgid "Use the Suggested Schedule"
+msgstr "Vorgeschlagenen Rhythmus nehmen"
+
+#: pensum/ui/journey/smaller_page.py:16
+msgid "The task of the larger step stays as it is. Afterwards you could pause or end its repeat on its Repeat page so you don't keep both."
+msgstr "Die Aufgabe des größeren Schritts bleibt, wie sie ist. Danach könntest du ihre Wiederholung auf ihrer Seite „Repeat“ pausieren oder beenden, damit du nicht beide behältst."

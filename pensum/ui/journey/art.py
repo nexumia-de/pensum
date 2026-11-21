@@ -143,10 +143,39 @@ def draw(cr, name, x, y, width, height, css):
     return True
 
 
+def draw_growing(cr, name, x, y, width, height, css, factor):
+    """A picture while it grows in (the moment of the tick): scaled from
+    0.6 around the foot of what it shows and faded, eased out; at factor 1
+    as `draw`."""
+    path = content.art_path(name)
+    if path is None or factor >= 1.0:
+        return draw(cr, name, x, y, width, height, css)
+    rect = Rsvg.Rectangle()
+    rect.x, rect.y, rect.width, rect.height = x, y, width, height
+    handle = _handle(path, css)
+    found, ink, _logical = handle.get_geometry_for_layer(None, rect)
+    eased = 1 - (1 - factor) ** 3
+    scale = 0.6 + 0.4 * eased
+    foot_x, foot_y = (ink.x + ink.width / 2, ink.y + ink.height) if found else \
+        (x + width / 2, y + height)
+    cr.save()
+    cr.translate(foot_x, foot_y)
+    cr.scale(scale, scale)
+    cr.translate(-foot_x, -foot_y)
+    cr.push_group()
+    handle.render_document(cr, rect)
+    cr.pop_group_to_source()
+    cr.paint_with_alpha(eased)
+    cr.restore()
+    return True
+
+
 def draw_scene(cr, scene, width, height, roles):
     """A scene scaled to fit, centred and clipped to its own size, in the
     roles' colours; the far band as one silhouette in tint."""
     scale = min(width / scene["width"], height / scene["height"])
+    if scale <= 0:
+        return  # not laid out yet; a zero scale is an invalid matrix
     css, far = stylesheet(roles), far_stylesheet(roles)
     cr.save()
     cr.translate((width - scene["width"] * scale) / 2, (height - scene["height"] * scale) / 2)
@@ -164,7 +193,9 @@ def build_words(ladder, version):
     stands ("A hut stands"), never the next version (QuestArc #155)."""
     versions = ladder["versions"]
     now = versions[min(max(version, 1), len(versions)) - 1]["title"]
-    return f"{now} {'stands' if now.startswith('A ') else 'stand'}"
+    # The language says which names are one thing (QuestArc ladder.ts).
+    one = re.search(content.t("ui.grammar.singular"), now)
+    return content.t("ui.build.words.stands" if one else "ui.build.words.stand", name=now)
 
 
 def marker_elements(ladder):

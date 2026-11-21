@@ -10,7 +10,7 @@ from pensum.game import content, engine, moments
 from pensum.game.content import t
 from pensum.ui.journey.build import version_row
 from pensum.ui.journey import art
-from pensum.ui.journey.valley import MAX_WIDTH, ValleyScene
+from pensum.ui.journey.valley import MAX_WIDTH, ValleyScene, flowers
 
 HEIGHT = 230
 _layouts = {}
@@ -29,11 +29,19 @@ def layout_for(place):
     return _layouts[key]
 
 
-def piece(window, view, place):
+def growing_thing(place):
+    return next((th for th in place["things"] if th["state"] == "growing"), None)
+
+
+def piece(window, view, place, growth=None):
     """The piece as a picture with its pencil; it is not a button (the
     page around it is the place), but it is named in words."""
     title = moments.place_title(view, place)
-    scene = ValleyScene([place], [title], layout_for(place), growing_flowers=True)
+    grows = growing_thing(place)
+    if growth and grows:
+        growth.show((grows["runId"], grows["version"]), len(flowers(grows)))
+    scene = ValleyScene([place], [title], layout_for(place), growing_flowers=True,
+                        growth=growth if grows else None)
     overlay = Gtk.Overlay(child=scene)
     if place.get("anchorId"):
         free = Gtk.Align.START if place["side"] == "right" else Gtk.Align.END
@@ -75,9 +83,9 @@ def things(place, run_id=None):
     return box
 
 
-def section(window, view, place, run_id=None):
+def section(window, view, place, run_id=None, growth=None):
     """The piece, then the versions that stand."""
     box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
-    box.append(Adw.Clamp(child=piece(window, view, place), maximum_size=MAX_WIDTH))
+    box.append(Adw.Clamp(child=piece(window, view, place, growth), maximum_size=MAX_WIDTH))
     box.append(things(place, run_id))
     return box

@@ -23,6 +23,12 @@ matters more than the M3 features. Tests run against a real Super
 Productivity in CI (#46), so the owner does not check by hand what a
 test can check.
 
+**Habits first** (owner, 2026-11-20,
+[decision](decisions/habits-first.md)): Day Planner is the owner's one
+app for building habits. After M2's reminders the goal _Habits first_
+below comes before everything else; M3 is on hold, and the writing part
+of M4 follows it.
+
 # M1 – Daily use on the phone
 
 **Goal**: the owner plans the day and tracks time on the phone with the
@@ -43,16 +49,34 @@ time spent.
 **Exit criteria**: every M2 line in [features](features.md) works on
 the phone and survives a round trip through Super Productivity.
 
-# M3 – Focus, habits and reports
+# Habits first
 
-**Goal**: Pomodoro/Flowtime focus sessions, break reminders, habits,
-worklog and daily summary, project notes, attachments, planner days,
-menu folders.
+**Goal**: the owner builds habits with Day Planner alone on the phone;
+the journeys are what the app opens on and feel native.
+
+**Exit criteria**, in this order: reminders as notifications (#13),
+with QuestArc's reminder suggestion and its fade; the strip on Today,
+the moment of the tick and the build beside the card (#57); the
+journeys as the start page (#78); German for Day Planner's own texts
+(#79); the user's own habits as journeys (#80, after QuestArc#89). The
+[coverage](questarc-coverage.md) matrix then has no open line.
+
+# M3 – Focus and reports
+
+**On hold** (owner, 2026-11-20): nothing of M3 is built until _Habits
+first_ is done. Simple counters (#21) are dropped; the journeys are Day
+Planner's habits.
+
+**Goal**: Pomodoro/Flowtime focus sessions, break reminders, worklog
+and daily summary, project notes, attachments, planner days, menu
+folders.
 
 # M4 – Sync with Super Productivity
 
 **Goal**: Pensum and Super Productivity share one WebDAV (or Nextcloud,
 or local) sync folder without manual export and import.
+The owner uses Super Productivity on the desktop (2026-11-20), so this
+stays: phone and desktop must see the same journeys.
 
 **Exit criteria**: first, before M3, read-only: reads v2 sync files
 incl. compressed and encrypted ones written by a real Super

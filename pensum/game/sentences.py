@@ -7,9 +7,11 @@ from datetime import date
 from pensum.game import content
 from pensum.game.content import t
 from pensum.store import dates
+from pensum.i18n import N_, _
 
 DAY_IDS = ("mon", "tue", "wed", "thu", "fri", "sat", "sun")
-DAY_NAMES = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+DAY_NAMES = (N_("Monday"), N_("Tuesday"), N_("Wednesday"), N_("Thursday"), N_("Friday"),
+             N_("Saturday"), N_("Sunday"))
 
 
 def capitalise(text):
@@ -111,8 +113,8 @@ def schedule_text(schedule):
         return t("ui.schedule.every-n", n=schedule["n"])
     names = [DAY_NAMES[DAY_IDS.index(d)] for d in DAY_IDS if d in schedule["days"]]
     if names == list(DAY_NAMES[:5]):
-        return "Monday to Friday"
-    return t("ui.schedule.weekdays", days=", ".join(names))
+        return _("Monday to Friday")
+    return t("ui.schedule.weekdays", days=", ".join(_(name) for name in names))
 
 
 def message_for(events, view, journeys):

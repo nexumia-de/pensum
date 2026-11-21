@@ -1,15 +1,16 @@
 """The habits finished journeys leave (QuestArc docs/behaviour.md, flow
 F and screen 7) and their banners: at most one per habit, the question
 after graduation, the offer to graduate (with **Not Now**, a choice
-written through `graduateLater`), or its weekly look back. Each is put
-aside on this device when closed; the shelf keeps the quiet way to all.
-The banner about a reminder that may not be needed waits for Day
-Planner's reminders (pensum#13)."""
+written through `graduateLater`), its weekly look back, or, when
+nothing else is asked, that its task's reminder may not be needed any
+more (`reminder_banner.py`). Each is put aside on this device when
+closed; the shelf keeps the quiet way to all."""
 from gi.repository import Gtk
 
 from pensum.game.content import t
 from pensum.game.sentences import habit_name
 from pensum.ui.journey.banners import iso_week
+from pensum.ui.journey.reminder_banner import reminder_banner
 
 
 def habits_of(model):
@@ -73,4 +74,7 @@ def habit_banners(page, anchor_id=None):
             out.append(banner_box(t(text, habit=name),
                                   (t("ui.action.answer"),
                                    lambda r=run_id: page.show_checkin(r))))
+        else:
+            out += reminder_banner(page, run_id, stage["id"], habit.get("reminder"),
+                                   iso_week(today), t("ui.banner.habit-fade", habit=name))
     return out

@@ -15,18 +15,19 @@ from pensum.ui.journey import read_only as read_only_page
 from pensum.ui.journey.growing_card import growing_card
 from pensum.ui.journey.habits import habit_banners
 from pensum.ui.journey.valley import MAX_WIDTH, ValleyScene
+from pensum.i18n import _
 
 
 class JourneyPage(Adw.NavigationPage):
     def __init__(self, window):
-        super().__init__(title="Journeys", tag="journey")
+        super().__init__(title=_("Journeys"), tag="journey")
         self.window = window
         self.model = window.journeys
         self._layouts = {}
         toolbar = Adw.ToolbarView()
         header = Adw.HeaderBar()
-        self.menu_button = Gtk.MenuButton(icon_name="view-more-symbolic", tooltip_text="Menu")
-        self.menu_button.update_property([Gtk.AccessibleProperty.LABEL], ["Menu"])
+        self.menu_button = Gtk.MenuButton(icon_name="view-more-symbolic", tooltip_text=_("Menu"))
+        self.menu_button.update_property([Gtk.AccessibleProperty.LABEL], [_("Menu")])
         header.pack_end(self.menu_button)
         toolbar.add_top_bar(header)
         self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12, margin_top=12,
@@ -94,15 +95,16 @@ class JourneyPage(Adw.NavigationPage):
         self.scene = self.card = None
         if not model.available:
             self._set_main(None)
-            return self._status("dialog-information-symbolic", "Journeys Are Not Installed",
-                                "This build of Day Planner comes without QuestArc's journeys.")
+            return self._status("dialog-information-symbolic", _("Journeys Are Not Installed"),
+                                _("This build of Day Planner comes without QuestArc's "
+                                  "journeys."))
         if not model.records():
             self._set_main(t("ui.home.choose"), suggested=True)
-            return self._status("mark-location-symbolic", "Journeys",
+            return self._status("mark-location-symbolic", _("Journeys"),
                                 f"{t('ui.welcome.what')} {t('ui.welcome.how')}")
         if model.error and model.view is None:
             self._set_main(None)
-            return self._status("dialog-warning-symbolic", "Journeys Can't Be Shown", model.error)
+            return self._status("dialog-warning-symbolic", _("Journeys Can't Be Shown"), model.error)
         if model.view is None:
             model.refresh_now()
             if model.view is None:
