@@ -6,7 +6,7 @@ option id) give each new instance its time and reminder. `remindAt` is
 optional and non-nullable: it is deleted, never set to null. No GTK."""
 from datetime import datetime
 
-from pensum.store import dates, tasks
+from pensum.store import dates, planning, tasks
 from pensum.store.repeat import instances
 
 # Super Productivity's TaskReminderOptionId with a time, as minutes
@@ -57,7 +57,7 @@ def snooze(ds, task_id, minutes=SNOOZE_MINUTES, now=None):
     again = now + minutes * 60_000
     if not isinstance(task.get("dueWithTime"), (int, float)):
         moment = datetime.fromtimestamp(again / 1000)
-        tasks.schedule_time(ds, task_id, moment.strftime("%Y-%m-%d"), moment.hour,
+        planning.schedule_time(ds, task_id, moment.strftime("%Y-%m-%d"), moment.hour,
                             moment.minute, now)
     task["remindAt"] = again
     tasks._touch(task, now)
@@ -121,6 +121,6 @@ def set_rule_time(ds, cfg_id, start_time, option, today, now=None):
             continue
         moment = datetime.fromtimestamp(instances.due_with_time(
             start_time, today, dates.day_offset_ms(ds.config)) / 1000)
-        tasks.schedule_time(ds, task["id"], moment.strftime("%Y-%m-%d"), moment.hour,
+        planning.schedule_time(ds, task["id"], moment.strftime("%Y-%m-%d"), moment.hour,
                             moment.minute, now)
         set_option(ds, task["id"], option, now)

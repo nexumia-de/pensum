@@ -38,6 +38,11 @@ keep the title, back and the menu ([adaptive rule 10](../../phosh-toolkit/docs/a
   editor), estimate, Today, planned day and time, deadline, priority,
   project, tags, notes, subtasks, and Delete at the end (out of easy
   reach on purpose). Mark as Done and Start/Stop Timer in a bottom bar, as normal buttons at least 44 px high (`.pensum-bar-button`); `pill` buttons there made gtk4-broadwayd crash in about half of the CI screenshots (checked locally with the GNOME 51 Flatpak, 2026-11-05).
+- **Notes** (`pensum/ui/notes_box.py`): a task's note is shown formatted
+  on the view's ground (headings, lists, checkboxes at 44 px, a bar for
+  quotes, a tinted block for code; colours only from the text colour).
+  Edit / Done in the group's header switches to the text field and back
+  with one tap ([Markdown in notes](markdown-notes.md)).
 - **Time of day** (`pensum/ui/time_picker.py`): the task page's Time row
   opens a dialog (a bottom sheet on the phone) with hours and minutes as
   vertical spin buttons, plus and minus at least 44 px
@@ -51,6 +56,18 @@ keep the title, back and the menu ([adaptive rule 10](../../phosh-toolkit/docs/a
   only they are moved (menu, dragging). Super Productivity's own Today
   list does not sort by time, so the stored order (`TODAY.taskIds`) is
   never changed for it.
+- **Sections** (`pensum/ui/section_group.py`): a project's list and
+  Today show the tasks in no section first, then each section: a header
+  (arrow, title, number of open tasks; a tap collapses or expands it,
+  44 px high) with a menu button (Rename…, Delete) and the section's
+  open tasks as a boxed list. Add Section… is in the list's menu
+  (`pensum/ui/list_menu.py`). Deleting acts at once with Undo; the tasks
+  stay in the list. A task moves by the row menu's Move to Section (the
+  sections and No Section; the accessible way) or by dragging it onto a
+  row of another section, onto a row in no section, or onto a section's
+  header, which also works for an empty or collapsed section. Done tasks
+  stay in one Done list. Tag lists have no sections, as in Super
+  Productivity.
 - **Reorder by dragging** (`pensum/ui/row_drag.py`): a task row dropped
   on another row of the same list takes its place; a line in the accent
   colour shows where it lands (above the row when moving up, below when
@@ -122,4 +139,4 @@ nothing scrolls sideways at 360 px.
 
 # Not yet done
 
-Swipe actions on rows, Markdown rendering of notes.
+Swipe actions on rows.

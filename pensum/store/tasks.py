@@ -1,7 +1,7 @@
 """Changes to tasks, keeping every list Super Productivity derives from
 them consistent: project and tag order, subtask ids, the Today order and
 the parent's estimate and time. No GTK."""
-from pensum.store import dates, defaults
+from pensum.store import dates, defaults, sections
 from pensum.store.defaults import TODAY_ID
 from pensum.store.ids import new_id
 
@@ -122,73 +122,6 @@ def set_done(ds, task_id, done, now=None):
         instances.on_done(ds, task, now)
 
 
-def schedule_day(ds, task_id, day, now=None):
-    """Plan a task for a day (None: unplanned). Today's order list holds
-    it while it is due today; the planner holds later days."""
-    now = now or dates.now_ms()
-    task = ds.tasks[task_id]
-    task.pop("dueWithTime", None)
-    # A reminder belongs to a time: planning for a day alone drops it
-    # (Super Productivity's planTaskForDay and unScheduleTask).
-    task.pop("remindAt", None)
-    for ids in ds.data["planner"]["days"].values():
-        _drop(ids, task_id)
-    if day is None:
-        # Removed, not null, as Super Productivity's unscheduleTask leaves it.
-        task.pop("dueDay", None)
-        _drop(_today_order(ds), task_id)
-    else:
-        task["dueDay"] = day
-        if day == ds.today(now):
-            if not task.get("parentId"):
-                _insert(_today_order(ds), task_id, top=False)
-        else:
-            _drop(_today_order(ds), task_id)
-            if day > ds.today(now) and not task.get("parentId"):
-                ds.data["planner"]["days"].setdefault(day, []).append(task_id)
-    _touch(task, now)
-
-
-def schedule_time(ds, task_id, day, hours, minutes, now=None):
-    """Plan a task at a time of day, as Super Productivity's
-    scheduleTaskWithTime does: dueWithTime replaces dueDay
-    (ARCHITECTURE-DECISIONS #1), the planner's days let go of the task, and
-    Today's order gets it on top when the time is today and it is not in
-    there yet, or loses it when the time is on another day."""
-    from datetime import datetime
-    now = now or dates.now_ms()
-    task = ds.tasks[task_id]
-    # A reminder keeps its lead when the time moves.
-    lead = task["dueWithTime"] - task["remindAt"] if isinstance(
-        task.get("remindAt"), (int, float)) and task.get("dueWithTime") else None
-    moment = datetime.combine(dates.parse_day(day), datetime.min.time()).replace(
-        hour=hours, minute=minutes)
-    task["dueWithTime"] = int(moment.timestamp() * 1000)
-    task.pop("dueDay", None)
-    if lead is not None and lead >= 0:
-        task["remindAt"] = task["dueWithTime"] - lead
-    else:
-        task.pop("remindAt", None)
-    for ids in ds.data["planner"]["days"].values():
-        _drop(ids, task_id)
-    order = _today_order(ds)
-    if ds.today(task["dueWithTime"]) == ds.today(now):
-        if task_id not in order:
-            order.insert(0, task_id)
-    else:
-        _drop(order, task_id)
-    _touch(task, now)
-
-
-def clear_time(ds, task_id, now=None):
-    """Keep the planned day, drop the time (and with it the reminder): the
-    task is planned for that day, as when a day without a time is chosen."""
-    task = ds.tasks[task_id]
-    if not task.get("dueWithTime"):
-        return
-    schedule_day(ds, task_id, ds.today(task["dueWithTime"]), now)
-
-
 def move_to_project(ds, task_id, project_id, now=None):
     task = ds.tasks[task_id]
     if task.get("parentId") or task.get("projectId") == project_id:
@@ -197,6 +130,9 @@ def move_to_project(ds, task_id, project_id, now=None):
     if old:
         _drop(old["taskIds"], task_id)
         _drop(old["backlogTaskIds"], task_id)
+        # The old project's sections let go of the task and its subtasks.
+        sections.strip(ds, [task_id] + list(task.get("subTaskIds", ())),
+                       project_id=old["id"])
     ds.project_entities[project_id]["taskIds"].append(task_id)
     for sub in [task] + ds.subtasks(task):
         sub["projectId"] = project_id
@@ -214,7 +150,10 @@ def set_backlog(ds, task_id, in_backlog, now=None):
     if task_id not in project.get(source, []):
         return False
     _drop(project[source], task_id)
-    project.setdefault(target, []).insert(0, task_id)
+    # Super Productivity's menu: first in the backlog, last in the list
+    # (moveProjectTaskToBacklogListAuto, moveProjectTaskToRegularListAuto).
+    # A section that lists the task keeps listing it.
+    _insert(project.setdefault(target, []), task_id, top=in_backlog)
     if in_backlog:
         project["isEnableBacklog"] = True
     _touch(task, now or dates.now_ms())

@@ -24,7 +24,7 @@ lost when the same backup goes back to Super Productivity.
 |---|---|---|
 | Tasks: add, rename, done/undone, delete | `task` | **M1, done** |
 | Subtasks with summed time and estimate | `task.subTaskIds`, `parentId` | **M1, done** |
-| Notes per task (Markdown) | `task.notes` | **M1, done** (plain text editing; Markdown rendering M2) |
+| Notes per task (Markdown) | `task.notes` | **M2, done** (#18: shown formatted, checkboxes can be ticked, plain text editing; [Markdown in notes](markdown-notes.md)) |
 | Time estimate | `task.timeEstimate` | **M1, done** |
 | Inbox and projects: create, rename, archive, delete | `project`, `menuTree.projectTree` | **M1, done** (incl. archived projects page) |
 | Tags: create, rename, delete, tag tasks | `tag`, `task.tagIds`, `menuTree.tagTree` | **M1, done** |
@@ -37,7 +37,7 @@ lost when the same backup goes back to Super Productivity.
 | Deadlines | `deadlineDay`, `deadlineWithTime`, `deadlineRemindAt` | **M2, done** (#8; day only, deadline reminders with #13) |
 | Priority | `task.priority` | **M2, done** (#9) |
 | Backlog of a project | `project.backlogTaskIds`, `isEnableBacklog` | **M2, done** (#10) |
-| Sections in a list | `section` | M2 |
+| Sections in a list | `section` (`title`, `isExpanded`, `taskIds`, the places in `section.ids`), `project.taskIds`/`TODAY.taskIds` when a task leaves a section | **M2, done** (#11: projects and Today; add, rename, collapse, delete with Undo, move tasks by menu and by dragging); reordering the sections themselves open |
 | Repeating tasks | `taskRepeatCfg`, `task.repeatCfgId` | **M2, done** (#12): instances like Super Productivity (all cycles, skip overdue, wait for completion, repeat from completion, skipped days, pause, timed rules, subtask templates); task page → Repeat: presets and custom, pause, stop with Undo. Open: sections of the previous instance (sections are #11), the duplicate clean-up after sync, rescheduling the current instance when a rule's schedule changes |
 | Reminders as notifications | `task.remindAt`, a repeat rule's `startTime` and `remindAt` | **M2, done** (#13; also while the window is closed, [reminders](reminders.md)); on the phone a sleeping device is not woken; deadline reminders open |
 | Short syntax when adding (`#tag +project 1h @tomorrow`) | `globalConfig.shortSyntax` | **M2, done** (#14): `+project`, `#tag`, estimate, spent/estimate, `p1`–`p3`, `@today/@tomorrow/@weekday [HH:MM]`; repeat (`@every`), deadline (`!`) and URLs open |

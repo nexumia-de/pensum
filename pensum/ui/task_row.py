@@ -61,6 +61,9 @@ class TaskRow(Adw.ActionRow):
         self.task_id = task_id
         self.context_label = context_label
         self.context = context
+        # Set by the list page for the rows of its open tasks, which move
+        # between the list's sections.
+        self.in_main_list = False
         self._add_move_menu()
         self.check = Gtk.CheckButton(valign=Gtk.Align.CENTER)
         self.check.add_css_class("selection-mode")
@@ -86,6 +89,7 @@ class TaskRow(Adw.ActionRow):
             group.add_action(action)
             self.move_actions.append(action)
             menu.append(label, f"row.{name}")
+        self._add_section_menu(group, menu)
         self.backlog_action = Gio.SimpleAction.new("backlog", None)
         self.backlog_action.connect("activate", self._on_backlog)
         group.add_action(self.backlog_action)
@@ -121,6 +125,30 @@ class TaskRow(Adw.ActionRow):
             Gtk.CallbackAction.new(lambda *_: self.show_menu() or True)))
         self.add_controller(keys)
         row_drag.attach(self)
+
+    def _add_section_menu(self, group, menu):
+        """Move to Section: the list's sections and No Section."""
+        from pensum.store import order, sections
+        ds = self.window.ds
+        found = sections.of_context(ds, self.context)
+        if not found or not order.sectionable(ds, self.task_id, self.context):
+            return
+        action = Gio.SimpleAction.new("section", GLib.VariantType("s"))
+        action.connect("activate", lambda _a, value: self.to_section(value.unpack() or None))
+        group.add_action(action)
+        submenu = Gio.Menu()
+        for title, section_id in [("No Section", "")] + [
+                (s.get("title") or "Untitled", s["id"]) for s in found]:
+            item = Gio.MenuItem.new(title.replace("_", "__"), None)
+            item.set_action_and_target_value("row.section", GLib.Variant("s", section_id))
+            submenu.append_item(item)
+        menu.append_submenu("Move to Section", submenu)
+
+    def to_section(self, section_id):
+        from pensum.store import order
+        if order.to_section(self.window.ds, self.task_id, self.context, section_id):
+            self.window.changed()
+            self.window.focus_task_row(self.task_id)
 
     def _set_held(self, held):
         self.held = held

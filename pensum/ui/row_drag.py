@@ -4,7 +4,7 @@ press, because until then a drag scrolls the list. While a drag is near
 the upper or lower edge of the list, the list scrolls."""
 from gi.repository import Gdk, GLib, GObject, Graphene, Gtk
 
-from pensum.store import order
+from pensum.store import order, sections
 
 EDGE = 56  # px from the edge of the scrolled area where a drag scrolls it
 STEP = 10  # px per frame
@@ -32,11 +32,16 @@ def attach(row):
 
 def can_drop(dragged, row):
     """Rows of one list box share one stored order (open, done, backlog,
-    subtasks); the overdue tasks have none."""
-    return (dragged is not None and dragged is not row
-            and dragged.get_parent() is row.get_parent()
-            and row.task_id in order.siblings(row.window.ds, dragged.task_id,
-                                              dragged.context))
+    subtasks); the overdue tasks have none. A list's open tasks also move
+    between its sections and the tasks in no section."""
+    if dragged is None or dragged is row:
+        return False
+    ds = row.window.ds
+    if dragged.get_parent() is row.get_parent():
+        return row.task_id in order.siblings(ds, dragged.task_id, dragged.context)
+    return (dragged.in_main_list and row.in_main_list
+            and dragged.context == row.context
+            and bool(order.siblings(ds, row.task_id, row.context)))
 
 
 def drop(dragged, row):
@@ -50,8 +55,48 @@ def drop(dragged, row):
     return True
 
 
+def attach_section(header, group):
+    """A section's header takes a dropped task as the section's first."""
+    target = Gtk.DropTarget.new(GObject.TYPE_STRING, Gdk.DragAction.MOVE)
+    target.connect("enter", lambda *_: _section_action(group))
+    target.connect("motion", lambda *_: _section_action(group))
+    target.connect("drop", lambda *_: _on_section_drop(group))
+    header.add_controller(target)
+
+
+def can_drop_on_section(dragged, group):
+    return (dragged is not None and dragged.in_main_list
+            and dragged.context == group.context)
+
+
+def drop_on_section(dragged, group):
+    window = group.window
+    if not can_drop_on_section(dragged, group) or not order.to_section(
+            window.ds, dragged.task_id, group.context, group.section_id, first=True):
+        return False
+    window.changed()
+    window.focus_task_row(dragged.task_id)
+    return True
+
+
+def _section_action(group):
+    return Gdk.DragAction.MOVE if can_drop_on_section(_dragged, group) else 0
+
+
+def _on_section_drop(group):
+    dragged = _dragged
+    if not can_drop_on_section(dragged, group):
+        return False
+    GLib.idle_add(lambda: drop_on_section(dragged, group) and False)
+    return True
+
+
 def _on_prepare(source, x, y, row):
-    if len(order.siblings(row.window.ds, row.task_id, row.context)) < 2:
+    ds = row.window.ds
+    among = len(order.siblings(ds, row.task_id, row.context))
+    # Alone in its group a task can still go into a section or out of one.
+    alone_ok = row.in_main_list and bool(sections.of_context(ds, row.context))
+    if among < 2 and not (among == 1 and alone_ok):
         return None
     source.set_icon(Gtk.WidgetPaintable.new(row), int(x), int(y))
     return Gdk.ContentProvider.new_for_value(row.task_id)
@@ -85,8 +130,10 @@ def _on_motion(_target, x, y, row):
         _mark(row)
         return 0
     # A line where the task will land: moving down it goes after the row.
-    _mark(row, "pensum-drop-after" if _dragged.get_index() < row.get_index()
-          else "pensum-drop-before")
+    # From another group it takes the row's place, so it lands before it.
+    after = (_dragged.get_parent() is row.get_parent()
+             and _dragged.get_index() < row.get_index())
+    _mark(row, "pensum-drop-after" if after else "pensum-drop-before")
     scroller = row.get_ancestor(Gtk.ScrolledWindow)
     if scroller is not None:
         found, point = row.compute_point(scroller, Graphene.Point().init(x, y))

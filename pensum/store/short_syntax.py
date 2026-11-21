@@ -142,7 +142,7 @@ class _Span:
 
 def apply(ds, task, parsed, now=None):
     """Write what the syntax said onto a task just added."""
-    from pensum.store import contexts, tasks, tracking
+    from pensum.store import contexts, planning, tasks, tracking
     now = now or dates.now_ms()
     tasks.update(ds, task["id"], now, title=parsed.title)
     if parsed.project_id:
@@ -163,6 +163,6 @@ def apply(ds, task, parsed, now=None):
         tasks.set_priority(ds, task["id"], parsed.priority, now)
     if parsed.due_day:
         if parsed.due_time:
-            tasks.schedule_time(ds, task["id"], parsed.due_day, *parsed.due_time, now=now)
+            planning.schedule_time(ds, task["id"], parsed.due_day, *parsed.due_time, now=now)
         else:
-            tasks.schedule_day(ds, task["id"], parsed.due_day, now)
+            planning.schedule_day(ds, task["id"], parsed.due_day, now)

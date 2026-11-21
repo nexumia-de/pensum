@@ -1,12 +1,11 @@
 """A list of tasks (Today, a project or a tag): the field that adds a task,
-the open tasks, the done ones, and the list's menu (rename, archive,
-delete)."""
-from gi.repository import Adw, Gio, GLib, Gtk
+the open tasks with the list's sections, the done ones and the backlog."""
+from gi.repository import Adw, Gtk
 
 from pensum import duration
-from pensum.store import contexts, dates, tasks, tracking
-from pensum.store.dataset import Context
-from pensum.ui import scroll
+from pensum.store import dates, planning, sections, tasks, tracking
+from pensum.ui import list_menu, scroll
+from pensum.ui.section_group import SectionGroup
 from pensum.ui.task_row import TaskRow
 
 
@@ -31,7 +30,7 @@ class TaskListPage(Adw.NavigationPage):
         self.menu.update_property([Gtk.AccessibleProperty.LABEL], ["List Menu"])
         header.pack_end(self.menu)
         toolbar.add_top_bar(header)
-        self._add_actions()
+        list_menu.install(self)
 
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=18,
                       margin_top=12, margin_bottom=24, margin_start=12, margin_end=12)
@@ -71,6 +70,10 @@ class TaskListPage(Adw.NavigationPage):
         box.append(self.empty)
         self.open_list = boxed_list()
         box.append(self.open_list)
+        # The list's sections, each with its open tasks (section_group.py).
+        self.sections_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=18)
+        self.section_groups = []
+        box.append(self.sections_box)
         self.done_header = Gtk.Box(spacing=12, margin_top=6)
         self.done_title = Gtk.Label(xalign=0, hexpand=True)
         self.done_title.add_css_class("heading")
@@ -97,71 +100,6 @@ class TaskListPage(Adw.NavigationPage):
         toolbar.set_content(self.scroller)
         self.set_child(toolbar)
         self.refresh()
-
-    # --- list actions ------------------------------------------------------
-
-    def _add_actions(self):
-        group = Gio.SimpleActionGroup()
-        for name, callback in (("rename", self._on_rename),
-                               ("archive", self._on_archive),
-                               ("delete", self._on_delete)):
-            action = Gio.SimpleAction.new(name, None)
-            action.connect("activate", callback)
-            group.add_action(action)
-        self.insert_action_group("list", group)
-
-    def _menu_model(self):
-        if self.context.kind == "today":
-            return None
-        menu = Gio.Menu()
-        menu.append("Rename…", "list.rename")
-        if self.context.kind == "project" and self.context.id != "INBOX_PROJECT":
-            archived = self.window.ds.project_entities[self.context.id].get("isArchived")
-            menu.append("Unarchive Project" if archived else "Archive Project",
-                        "list.archive")
-        if self.context.id != "INBOX_PROJECT":
-            menu.append("Delete", "list.delete")
-        return menu
-
-    def _kind_name(self):
-        return "Project" if self.context.kind == "project" else "Tag"
-
-    def _on_rename(self, *_):
-        from pensum.ui.dialogs import name_dialog
-        ds = self.window.ds
-
-        def done(name):
-            contexts.rename(ds, self.context.kind, self.context.id, name)
-            self.window.changed()
-
-        name_dialog(self.window, f"Rename {self._kind_name()}",
-                    ds.context_title(self.context), "Rename", done)
-
-    def _on_archive(self, *_):
-        ds = self.window.ds
-        archived = not ds.project_entities[self.context.id].get("isArchived")
-        contexts.set_archived(ds, self.context.id, archived)
-        if archived:
-            self.window.toast("Project archived")
-            self.window.show_list(Context.today())
-        else:
-            self.window.toast("Project back in the sidebar")
-        self.window.changed()
-
-    def _on_delete(self, *_):
-        """Delete at once and offer Undo (GNOME HIG)."""
-        ds = self.window.ds
-        context = self.context
-        name = ds.context_title(context)
-
-        def delete():
-            if context.kind == "project":
-                contexts.delete_project(ds, context.id)
-            else:
-                contexts.delete_tag(ds, context.id)
-
-        self.window.show_list(Context.today())
-        self.window.undoable(f"“{name}” deleted", delete)
 
     # --- tasks -------------------------------------------------------------
 
@@ -199,7 +137,7 @@ class TaskListPage(Adw.NavigationPage):
         ds = self.window.ds
         today = ds.today()
         for task in ds.overdue_tasks(today):
-            tasks.schedule_day(ds, task["id"], today)
+            planning.schedule_day(ds, task["id"], today)
         self.window.changed()
 
     def _overdue_label(self, task):
@@ -227,7 +165,7 @@ class TaskListPage(Adw.NavigationPage):
                                     if worked >= 60_000 else "")
         else:
             self.title.set_subtitle("")
-        model = self._menu_model()
+        model = list_menu.model(self)
         self.menu.set_menu_model(model)
         self.menu.set_visible(model is not None)
         self.entry.set_placeholder_text("Add Task to Today" if self.context.kind == "today"
@@ -247,14 +185,18 @@ class TaskListPage(Adw.NavigationPage):
         self.overdue_list.set_visible(bool(overdue))
         self.overdue_header.set_visible(bool(overdue))
         self.overdue_title.set_label(f"Overdue ({len(overdue)})")
-        for listbox, items in ((self.open_list, open_tasks),
-                               (self.done_list, done_tasks)):
-            listbox.remove_all()
-            for task in items:
-                row = TaskRow(self.window, task["id"], self._context_label, self.context)
-                self.rows.append(row)
-                listbox.append(row)
-            listbox.set_visible(bool(items))
+        loose, groups = sections.group(ds, self.context, open_tasks)
+        self._fill(self.open_list, loose, main=True)
+        for group in self.section_groups:
+            self.sections_box.remove(group)
+        self.section_groups = []
+        for section, items in groups:
+            rows = [self._row(task, main=True) for task in items]
+            group = SectionGroup(self.window, self.context, section, rows)
+            self.section_groups.append(group)
+            self.sections_box.append(group)
+        self.sections_box.set_visible(bool(groups))
+        self._fill(self.done_list, done_tasks)
         backlog = (ds.backlog_tasks(self.context.id)
                    if self.context.kind == "project" else [])
         self.backlog_list.remove_all()
@@ -272,6 +214,19 @@ class TaskListPage(Adw.NavigationPage):
         self.finish.set_label("Finish Day" if self.context.kind == "today" else "Archive Done")
         self.done_title.set_label(f"Done ({len(done_tasks)})")
         adjustment.set_value(scrolled)
+
+    def _row(self, task, main=False):
+        """`main`: an open task, which can move between the list's sections."""
+        row = TaskRow(self.window, task["id"], self._context_label, self.context)
+        row.in_main_list = main
+        self.rows.append(row)
+        return row
+
+    def _fill(self, listbox, items, main=False):
+        listbox.remove_all()
+        for task in items:
+            listbox.append(self._row(task, main))
+        listbox.set_visible(bool(items))
 
     def focus_row(self, task_id):
         for row in self.rows:

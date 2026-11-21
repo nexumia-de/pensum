@@ -5,8 +5,9 @@ from datetime import datetime
 from gi.repository import Adw, GLib, Gtk, Pango
 
 from pensum import duration
-from pensum.store import dates, reminders, tasks
+from pensum.store import dates, planning, reminders, tasks
 from pensum.ui import scroll
+from pensum.ui.notes_box import NotesBox
 from pensum.ui.task_row import TaskRow
 
 
@@ -16,7 +17,6 @@ class TaskPage(Adw.NavigationPage):
         self.window = window
         self.task_id = task_id
         self.sub_rows = []
-        self._notes_source = None
         toolbar = Adw.ToolbarView()
         toolbar.add_top_bar(Adw.HeaderBar())
         # The two things done most with a task, within thumb reach
@@ -132,17 +132,8 @@ class TaskPage(Adw.NavigationPage):
         plan.add(self.repeat_row)
         page.add(plan)
 
-        notes = Adw.PreferencesGroup(title="Notes")
-        self.notes = Gtk.TextView(wrap_mode=Gtk.WrapMode.WORD_CHAR, top_margin=12,
-                                  bottom_margin=12, left_margin=12, right_margin=12)
-        self.notes.update_property([Gtk.AccessibleProperty.LABEL], ["Notes"])
-        self.notes.set_size_request(-1, 120)
-        self.notes.add_css_class("pensum-notes")
-        frame = Gtk.Frame(child=self.notes)
-        frame.add_css_class("view")
-        notes.add(frame)
-        self._notes_handler = self.notes.get_buffer().connect("changed", self._on_notes)
-        page.add(notes)
+        self.notes = NotesBox(window, task_id)
+        page.add(self.notes)
 
         self.subs = Adw.PreferencesGroup(title="Subtasks")
         self.sub_list = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
@@ -160,7 +151,7 @@ class TaskPage(Adw.NavigationPage):
         delete.connect("clicked", self._on_delete)
         danger.add(delete)
         page.add(danger)
-        self.connect("hidden", lambda *_: self._save_notes())
+        self.connect("hidden", lambda *_: self.notes.save())
         self.refresh(initial=True)
 
     @property
@@ -185,8 +176,9 @@ class TaskPage(Adw.NavigationPage):
         if initial:
             estimate = task.get("timeEstimate", 0)
             self.estimate_row.set_text(duration.format_short(estimate) if estimate else "")
-            with self._blocked(self.notes.get_buffer(), self._notes_handler):
-                self.notes.get_buffer().set_text(task.get("notes") or "")
+            self.notes.load()
+        else:
+            self.notes.sync()
         is_parent = bool(task.get("subTaskIds"))
         self.estimate_row.set_sensitive(not is_parent)
         self.tick()
@@ -334,14 +326,14 @@ class TaskPage(Adw.NavigationPage):
 
     def _on_today(self, row, *_):
         ds = self.window.ds
-        tasks.schedule_day(ds, self.task_id, ds.today() if row.get_active() else None)
+        planning.schedule_day(ds, self.task_id, ds.today() if row.get_active() else None)
         self._change()
 
     def _on_day(self, calendar):
         value = calendar.get_date()
         day = datetime(value.get_year(), value.get_month(),
                        value.get_day_of_month()).strftime("%Y-%m-%d")
-        tasks.schedule_day(self.window.ds, self.task_id, day)
+        planning.schedule_day(self.window.ds, self.task_id, day)
         self._change()
 
     def _on_time(self, *_):
@@ -357,11 +349,11 @@ class TaskPage(Adw.NavigationPage):
         """Plan the task at a time on its planned day, else today."""
         ds = self.window.ds
         day = ds.planned_day(self.task) or ds.today()
-        tasks.schedule_time(ds, self.task_id, day, hours, minutes)
+        planning.schedule_time(ds, self.task_id, day, hours, minutes)
         self._change()
 
     def _on_clear_time(self, *_):
-        tasks.clear_time(self.window.ds, self.task_id)
+        planning.clear_time(self.window.ds, self.task_id)
         self._change()
 
     def _on_remind(self, row, *_):
@@ -382,7 +374,7 @@ class TaskPage(Adw.NavigationPage):
         self.window.nav.push(RepeatPage(self.window, self.task_id))
 
     def _on_clear_day(self, *_):
-        tasks.schedule_day(self.window.ds, self.task_id, None)
+        planning.schedule_day(self.window.ds, self.task_id, None)
         self._change()
 
     def _on_deadline(self, calendar):
@@ -416,24 +408,6 @@ class TaskPage(Adw.NavigationPage):
     def _on_tags(self, *_):
         from pensum.ui.tags_dialog import TagsDialog
         TagsDialog(self.window, self.task_id).present(self.window)
-
-    def _on_notes(self, *_):
-        if self._notes_source is None:
-            self._notes_source = GLib.timeout_add(600, self._save_notes)
-
-    def _save_notes(self):
-        if self._notes_source is not None:
-            GLib.source_remove(self._notes_source)
-            self._notes_source = None
-        task = self.task
-        if task is None:
-            return GLib.SOURCE_REMOVE
-        buffer = self.notes.get_buffer()
-        text = buffer.get_text(buffer.get_start_iter(), buffer.get_end_iter(), False)
-        if text != (task.get("notes") or ""):
-            tasks.update(self.window.ds, self.task_id, notes=text)
-            self._change()
-        return GLib.SOURCE_REMOVE
 
     def _on_add_sub(self, entry):
         title = entry.get_text().strip()
