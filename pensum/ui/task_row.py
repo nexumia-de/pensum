@@ -79,10 +79,12 @@ class TaskRow(Adw.ActionRow):
         reorder the task; so does dragging the row."""
         group = Gio.SimpleActionGroup()
         menu = Gio.Menu()
+        self.move_actions = []
         for label, name, offset in MOVES:
             action = Gio.SimpleAction.new(name, None)
             action.connect("activate", lambda *_, o=offset: self.move(o))
             group.add_action(action)
+            self.move_actions.append(action)
             menu.append(label, f"row.{name}")
         self.backlog_action = Gio.SimpleAction.new("backlog", None)
         self.backlog_action.connect("activate", self._on_backlog)
@@ -200,6 +202,12 @@ class TaskRow(Adw.ActionRow):
         tip = "Stop Timer" if is_running else "Start Timer"
         self.play.set_tooltip_text(tip)
         self.play.update_property([Gtk.AccessibleProperty.LABEL], [tip])
+        # Nothing to move among: an overdue task, or one that Today lists
+        # by its time.
+        from pensum.store import order
+        movable = len(order.siblings(ds, self.task_id, self.context)) > 1
+        for action in self.move_actions:
+            action.set_enabled(movable)
         if is_running:
             self.add_css_class("pensum-running")
         else:

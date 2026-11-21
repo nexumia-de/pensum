@@ -63,6 +63,11 @@ For the analysis in [data model](super-productivity-data.md):
 git clone --depth 1 https://github.com/johannesjo/super-productivity ../super-productivity
 ```
 
+Single files at a commit can be read from `raw.githubusercontent.com`
+(reached on 2026-11-21); the source archive from `codeload.github.com`
+was blocked by the proxy that day (403), so a search over the whole
+source needs the clone.
+
 Read it, never copy code from it; values are transcribed as data
 (`pensum/store/sp-defaults.json`), fixtures copied with their licence.
 

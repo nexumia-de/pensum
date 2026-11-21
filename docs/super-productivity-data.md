@@ -98,6 +98,30 @@ Rules the reducers keep (`src/app/features/tasks/store/task.reducer.util.ts`):
   `project.taskIds` and usually have no tags.
 - `dueWithTime` wins over `dueDay`; new data sets only one of them
   (ARCHITECTURE-DECISIONS #1).
+- **Planning at a time** (`scheduleTaskWithTime` and
+  `reScheduleTaskWithTime` in `task-shared-scheduling.reducer.ts`,
+  `planner.reducer.ts`; read at commit `9980fd76`, 2026-11-21): the task
+  gets `dueWithTime`, loses `dueDay`, and gets the `remindAt` the action
+  carries or loses it; the task's id leaves every `planner.days` list
+  and is not added to one; `TODAY.taskIds` gets the id on top when the
+  time is on the logical today and the id is not in it yet (its place
+  stays when it is), and loses it when the time is on another day.
+  Subtasks are treated the same. Nothing else changes.
+  `tasks.schedule_time` writes exactly this (plus `modified`, as every
+  change of Pensum's does).
+- **Unplanning** (`unscheduleTask`): `dueDay`, `dueWithTime` and
+  `remindAt` are removed (not null), the id leaves `TODAY.taskIds` and
+  the planner's days (`tasks.schedule_day(…, None)`). Removing only the
+  time plans the task for that day (`planTaskForDay`: `dueDay` set,
+  `dueWithTime` and `remindAt` removed, last in Today's order).
+- `hasPlannedTime` is only declared in `task.model.ts`; none of the
+  files that plan a task (the two reducers above, `task.reducer.ts`,
+  `task.service.ts`, the schedule dialog) writes it. Pensum wrote it
+  until 2026-11-21 and now keeps it as read. The whole source could not
+  be searched (see [development environment](dev-environment.md)).
+- Super Productivity's Today list shows the stored order
+  (`computeOrderedTaskIdsForToday` in `work-context.selectors.ts`); only
+  its schedule view orders by time.
 - Marking done sets `isDone` and `doneOn`; undoing removes `doneOn`.
 
 ## Project and tag (`project.model.ts`, `tag.model.ts`, `work-context.model.ts`)

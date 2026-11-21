@@ -243,6 +243,64 @@ def test_long_press_opens_the_row_menu_on_release(app, tmp_path):
     window.close()
 
 
+def test_time_picker_plans_a_task_at_a_time(app, tmp_path):
+    """The Time row opens a picker that needs no keyboard; Today then lists
+    the task by its time and the row says it."""
+    from datetime import datetime
+    from pensum.ui.time_picker import TimePicker
+    window = new_window(app, tmp_path, demo.create())
+    ds = window.ds
+    window.show_list(Context.today())
+    iterate()
+    shown = [r.task_id for r in window.list_page.rows
+             if r.get_parent() is window.list_page.open_list]
+    task_id = next(i for i in reversed(shown) if not ds.tasks[i].get("dueWithTime"))
+    window.show_task(task_id)
+    iterate()
+    page = window.nav.get_visible_page()
+    assert page.time_row.get_subtitle() == "No time"
+    assert not page.clear_time.get_visible()
+    page.time_row.emit("activated")
+    iterate()
+    picker = window.get_visible_dialog()
+    assert isinstance(picker, TimePicker)
+    # No number field is focused, so no on-screen keyboard comes up.
+    assert picker.get_focus() is picker.apply
+    for spin in (picker.hours, picker.minutes):
+        assert spin.has_css_class("pensum-time-spin")
+    assert picker.minutes.get_value_as_int() == 0
+    picker.hours.set_value(0)
+    picker.minutes.set_value(5)
+    assert picker.minutes.get_text() == "05"
+    picker.apply.emit("clicked")
+    iterate()
+    task = ds.tasks[task_id]
+    moment = datetime.fromtimestamp(task["dueWithTime"] / 1000)
+    assert (moment.hour, moment.minute) == (0, 5) and "dueDay" not in task
+    assert ds.today(task["dueWithTime"]) == ds.today()
+    assert page.time_row.get_subtitle() == "00:05" and page.clear_time.get_visible()
+    assert validate.problems(ds.data) == []
+    # Five past midnight is the day's first appointment.
+    rows = [r for r in window.list_page.rows
+            if r.get_parent() is window.list_page.open_list]
+    assert rows[0].task_id == task_id and "At 00:05" in rows[0].get_subtitle()
+    # It follows the clock: nothing to move it among.
+    assert not rows[0].move_actions[0].get_enabled()
+    assert rows[-1].move_actions[0].get_enabled()
+    # The picker opens at the task's time; Remove Time keeps the day.
+    page.time_row.emit("activated")
+    iterate()
+    picker = window.get_visible_dialog()
+    assert (picker.hours.get_value_as_int(), picker.minutes.get_value_as_int()) == (0, 5)
+    picker.close()
+    page.clear_time.emit("clicked")
+    iterate()
+    assert "dueWithTime" not in task and task["dueDay"] == ds.today()
+    assert page.time_row.get_subtitle() == "No time"
+    assert validate.problems(ds.data) == []
+    window.close()
+
+
 def test_overdue_section(app, tmp_path):
     from pensum.store import dates, tasks
     window = new_window(app, tmp_path)

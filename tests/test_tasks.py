@@ -98,7 +98,7 @@ def test_schedule_move_and_tags(ds):
     assert task["id"] not in ds.tag_entities[defaults.TODAY_ID]["taskIds"]
     assert ds.data["planner"]["days"][tomorrow] == [task["id"]]
     tasks.schedule_day(ds, task["id"], None, NOW)
-    assert task["dueDay"] is None and ds.data["planner"]["days"][tomorrow] == []
+    assert "dueDay" not in task and ds.data["planner"]["days"][tomorrow] == []
 
     project = contexts.add_project(ds, "Home")
     tasks.move_to_project(ds, task["id"], project["id"], NOW)
@@ -276,11 +276,126 @@ def test_schedule_time(ds):
     task = tasks.add_task(ds, "t", Context.today(), NOW)
     day = ds.today(NOW)
     tasks.schedule_time(ds, task["id"], day, 14, 30, NOW)
-    assert "dueDay" not in task and task["hasPlannedTime"]
+    assert "dueDay" not in task
     assert ds.planned_day(task) == day and ds.is_due_today(task, day)
     assert task["id"] in ds.top_level_ids(Context.today(), day)
     tasks.clear_time(ds, task["id"], NOW)
     assert task["dueDay"] == day and "dueWithTime" not in task
+    valid(ds)
+
+
+def _at(day, hours, minutes):
+    from datetime import datetime
+    return int(datetime.combine(dates.parse_day(day), datetime.min.time()).replace(
+        hour=hours, minute=minutes).timestamp() * 1000)
+
+
+def test_schedule_time_writes_what_super_productivity_writes(ds):
+    """scheduleTaskWithTime: dueWithTime set, dueDay and (without a
+    reminder) remindAt removed, the planner's days without the task,
+    Today's order with it on top or without it; nothing else."""
+    import copy
+    day = ds.today(NOW)
+    tomorrow = dates.shift_day(day, 1)
+    inbox = Context("project", defaults.INBOX_ID)
+    first = tasks.add_task(ds, "first", Context.today(), NOW)
+    task = tasks.add_task(ds, "t", inbox, NOW)
+    tasks.schedule_day(ds, task["id"], tomorrow, NOW)
+    assert ds.data["planner"]["days"][tomorrow] == [task["id"]]
+    before = copy.deepcopy(ds.data)
+    today_order = ds.tag_entities[defaults.TODAY_ID]["taskIds"]
+
+    # A time today: on top of Today's order, out of the planner.
+    tasks.schedule_time(ds, task["id"], day, 14, 30, NOW + 1)
+    assert task["dueWithTime"] == _at(day, 14, 30)
+    assert "dueDay" not in task and "remindAt" not in task
+    assert today_order == [task["id"], first["id"]]
+    assert ds.data["planner"]["days"][tomorrow] == []
+    changed = {k for k in set(task) | set(before["task"]["entities"][task["id"]])
+               if task.get(k, "-") != before["task"]["entities"][task["id"]].get(k, "-")}
+    assert changed == {"dueWithTime", "dueDay", "modified"}
+    for name in ds.data:
+        if name not in ("task", "tag", "planner"):
+            assert ds.data[name] == before[name], name
+    assert ds.data["project"] == before["project"]
+    assert before["task"]["entities"][first["id"]] == ds.tasks[first["id"]]
+    valid(ds)
+
+    # Another time the same day: the place in Today's order stays.
+    today_order.remove(task["id"])
+    today_order.append(task["id"])
+    tasks.schedule_time(ds, task["id"], day, 16, 0, NOW + 2)
+    assert today_order == [first["id"], task["id"]]
+
+    # A time on another day: out of Today's order, and not in the
+    # planner's days (the time alone says the day).
+    tasks.schedule_time(ds, task["id"], tomorrow, 9, 0, NOW + 3)
+    assert today_order == [first["id"]]
+    assert ds.data["planner"]["days"][tomorrow] == []
+    assert ds.planned_day(task) == tomorrow and "dueDay" not in task
+    assert not ds.is_due_today(task, day)
+    valid(ds)
+
+    # A subtask at a time goes into Today's order as well.
+    sub = tasks.add_subtask(ds, first["id"], "sub", NOW)
+    tasks.schedule_time(ds, sub["id"], day, 8, 0, NOW + 4)
+    assert today_order == [sub["id"], first["id"]]
+    assert "hasPlannedTime" not in task and "hasPlannedTime" not in sub
+    valid(ds)
+
+
+def test_unplan_and_clear_time_remove_the_optional_fields(ds):
+    """unscheduleTask and planning for a day alone: dueWithTime and
+    remindAt are removed, never null."""
+    from pensum.store import reminders
+    day = ds.today(NOW)
+    task = tasks.add_task(ds, "t", Context("project", defaults.INBOX_ID), NOW)
+    tasks.schedule_time(ds, task["id"], day, 14, 30, NOW)
+    reminders.set_option(ds, task["id"], "m15", NOW)
+    assert task["remindAt"] == task["dueWithTime"] - 15 * 60_000
+    # The reminder keeps its lead when the time moves.
+    tasks.schedule_time(ds, task["id"], day, 15, 0, NOW)
+    assert task["remindAt"] == _at(day, 15, 0) - 15 * 60_000
+    tasks.clear_time(ds, task["id"], NOW)
+    assert task["dueDay"] == day
+    assert "dueWithTime" not in task and "remindAt" not in task
+    assert task["id"] in ds.tag_entities[defaults.TODAY_ID]["taskIds"]
+    valid(ds)
+    tasks.schedule_time(ds, task["id"], day, 14, 30, NOW)
+    reminders.set_option(ds, task["id"], "m15", NOW)
+    tasks.schedule_day(ds, task["id"], None, NOW)
+    assert "dueWithTime" not in task and "remindAt" not in task
+    assert "dueDay" not in task
+    assert task["id"] not in ds.tag_entities[defaults.TODAY_ID]["taskIds"]
+    assert all(task["id"] not in ids for ids in ds.data["planner"]["days"].values())
+    valid(ds)
+
+
+def test_today_lists_timed_tasks_first_by_time(ds):
+    day = ds.today(NOW)
+    today = Context.today()
+    a, b, c, d = (tasks.add_task(ds, n, today, NOW, top=False) for n in "abcd")
+    stored = list(ds.tag_entities[defaults.TODAY_ID]["taskIds"])
+    tasks.schedule_time(ds, d["id"], day, 9, 0, NOW)
+    tasks.schedule_time(ds, b["id"], day, 16, 0, NOW)
+    # The stored order is untouched: both were in Today already.
+    assert ds.tag_entities[defaults.TODAY_ID]["taskIds"] == stored
+    assert ds.top_level_ids(today, day) == stored
+    shown = [t["id"] for t in ds.list_tasks(today, day)[0]]
+    assert shown == [d["id"], b["id"], a["id"], c["id"]]
+    # Tasks with a time follow the clock, the others move among themselves.
+    assert order.siblings(ds, b["id"], today, day) == []
+    assert not order.move(ds, b["id"], today, -1, day)
+    assert order.siblings(ds, a["id"], today, day) == [a["id"], c["id"]]
+    assert order.move_to(ds, c["id"], today, a["id"], day)
+    assert [t["id"] for t in ds.list_tasks(today, day)[0]] == [
+        d["id"], b["id"], c["id"], a["id"]]
+    # A project's list keeps its own order.
+    inbox = Context("project", defaults.INBOX_ID)
+    assert [t["id"] for t in ds.list_tasks(inbox, day)[0]] == ds.top_level_ids(inbox, day)
+    # Done, a task is no appointment any more.
+    tasks.set_done(ds, d["id"], True, NOW)
+    assert [t["id"] for t in ds.list_tasks(today, day)[0]] == [b["id"], c["id"], a["id"]]
     valid(ds)
 
 

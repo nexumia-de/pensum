@@ -40,6 +40,7 @@ def create(now=None):
     tasks.set_done(ds, first["id"], True, now - ms(10))
 
     call = tasks.add_task(ds, "Call the plumber about the boiler", today, now, top=False)
+    tasks.schedule_time(ds, call["id"], ds.today(now), 14, 0, now)
     tasks.set_tags(ds, call["id"], [calls["id"]], now)
     tasks.set_estimate(ds, call["id"], ms(10), now)
     tasks.set_priority(ds, call["id"], 3, now)

@@ -38,6 +38,19 @@ keep the title, back and the menu ([adaptive rule 10](../../phosh-toolkit/docs/a
   editor), estimate, Today, planned day and time, deadline, priority,
   project, tags, notes, subtasks, and Delete at the end (out of easy
   reach on purpose). Mark as Done and Start/Stop Timer in a bottom bar, as normal buttons at least 44 px high (`.pensum-bar-button`); `pill` buttons there made gtk4-broadwayd crash in about half of the CI screenshots (checked locally with the GNOME 51 Flatpak, 2026-11-05).
+- **Time of day** (`pensum/ui/time_picker.py`): the task page's Time row
+  opens a dialog (a bottom sheet on the phone) with hours and minutes as
+  vertical spin buttons, plus and minus at least 44 px
+  (`.pensum-time-spin`), minutes in steps of five, and Set Time below.
+  Set Time has the focus when it opens, so the on-screen keyboard only
+  comes when a number is tapped to type it; the content scrolls then.
+  It starts at the task's time, else at the next full hour. Remove Time
+  on the row keeps the day. 24-hour clock, as in the rows ("At 14:30").
+- **Today's order**: open tasks with a time come first, in the order of
+  their times; the tasks without a time follow in the stored order and
+  only they are moved (menu, dragging). Super Productivity's own Today
+  list does not sort by time, so the stored order (`TODAY.taskIds`) is
+  never changed for it.
 - **Reorder by dragging** (`pensum/ui/row_drag.py`): a task row dropped
   on another row of the same list takes its place; a line in the accent
   colour shows where it lands (above the row when moving up, below when

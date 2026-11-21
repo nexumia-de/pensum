@@ -134,7 +134,8 @@ def schedule_day(ds, task_id, day, now=None):
     for ids in ds.data["planner"]["days"].values():
         _drop(ids, task_id)
     if day is None:
-        task["dueDay"] = None
+        # Removed, not null, as Super Productivity's unscheduleTask leaves it.
+        task.pop("dueDay", None)
         _drop(_today_order(ds), task_id)
     else:
         task["dueDay"] = day
@@ -149,34 +150,43 @@ def schedule_day(ds, task_id, day, now=None):
 
 
 def schedule_time(ds, task_id, day, hours, minutes, now=None):
-    """Plan a task at a time of day: dueWithTime replaces dueDay
-    (ARCHITECTURE-DECISIONS #1); Today's and the planner's lists follow."""
+    """Plan a task at a time of day, as Super Productivity's
+    scheduleTaskWithTime does: dueWithTime replaces dueDay
+    (ARCHITECTURE-DECISIONS #1), the planner's days let go of the task, and
+    Today's order gets it on top when the time is today and it is not in
+    there yet, or loses it when the time is on another day."""
     from datetime import datetime
     now = now or dates.now_ms()
-    before = ds.tasks[task_id]
-    # A reminder keeps its lead when the time moves.
-    lead = before["dueWithTime"] - before["remindAt"] if isinstance(
-        before.get("remindAt"), (int, float)) and before.get("dueWithTime") else None
-    schedule_day(ds, task_id, day, now)
     task = ds.tasks[task_id]
+    # A reminder keeps its lead when the time moves.
+    lead = task["dueWithTime"] - task["remindAt"] if isinstance(
+        task.get("remindAt"), (int, float)) and task.get("dueWithTime") else None
     moment = datetime.combine(dates.parse_day(day), datetime.min.time()).replace(
         hour=hours, minute=minutes)
     task["dueWithTime"] = int(moment.timestamp() * 1000)
+    task.pop("dueDay", None)
     if lead is not None and lead >= 0:
         task["remindAt"] = task["dueWithTime"] - lead
-    task.pop("dueDay", None)
-    task["hasPlannedTime"] = True
+    else:
+        task.pop("remindAt", None)
+    for ids in ds.data["planner"]["days"].values():
+        _drop(ids, task_id)
+    order = _today_order(ds)
+    if ds.today(task["dueWithTime"]) == ds.today(now):
+        if task_id not in order:
+            order.insert(0, task_id)
+    else:
+        _drop(order, task_id)
     _touch(task, now)
 
 
 def clear_time(ds, task_id, now=None):
-    """Keep the planned day, drop the time."""
+    """Keep the planned day, drop the time (and with it the reminder): the
+    task is planned for that day, as when a day without a time is chosen."""
     task = ds.tasks[task_id]
     if not task.get("dueWithTime"):
         return
-    day = ds.today(task["dueWithTime"])
-    schedule_day(ds, task_id, day, now)
-    task["hasPlannedTime"] = False
+    schedule_day(ds, task_id, ds.today(task["dueWithTime"]), now)
 
 
 def move_to_project(ds, task_id, project_id, now=None):

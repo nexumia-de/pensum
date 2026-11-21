@@ -148,8 +148,19 @@ class Dataset:
     def list_tasks(self, context, today=None):
         """(open, done) top-level tasks of a list."""
         tasks = [self.tasks[i] for i in self.top_level_ids(context, today)]
-        return ([t for t in tasks if not t.get("isDone")],
-                [t for t in tasks if t.get("isDone")])
+        open_tasks = [t for t in tasks if not t.get("isDone")]
+        if context.kind == "today":
+            # The day's appointments first, in the order of their times;
+            # the stored order is for the tasks without a time.
+            open_tasks = (sorted((t for t in open_tasks if self.has_time(t)),
+                                 key=lambda t: t["dueWithTime"])
+                          + [t for t in open_tasks if not self.has_time(t)])
+        return open_tasks, [t for t in tasks if t.get("isDone")]
+
+    @staticmethod
+    def has_time(task):
+        """An open task planned at a time of day."""
+        return bool(task.get("dueWithTime")) and not task.get("isDone")
 
     def backlog_tasks(self, project_id):
         project = self.project_entities.get(project_id) or {}

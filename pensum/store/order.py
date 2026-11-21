@@ -37,6 +37,9 @@ def _lists(ds, task_id, context, today):
         if task_id in backlog:
             return backlog, list(backlog)
     visible = ds.top_level_ids(context, today)
+    if context.kind == "today":
+        # Today shows the tasks with a time by their time, not by this order.
+        visible = [i for i in visible if not ds.has_time(ds.tasks[i])]
     if task_id not in visible:
         return None, []
     return _context_order(ds, context, today), visible

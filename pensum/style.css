@@ -68,3 +68,9 @@ row.pensum-drop-before {
 row.pensum-drop-after {
   box-shadow: inset 0 -3px @accent_color;
 }
+
+/* The time picker's plus and minus: at least 44 px for the thumb. */
+.pensum-time-spin > button {
+  min-width: 44px;
+  min-height: 44px;
+}

@@ -77,8 +77,15 @@ class TaskPage(Adw.NavigationPage):
         self.day_row.add_suffix(self.clear_day)
         self.day_row.add_suffix(day_button)
         plan.add(self.day_row)
-        self.time_row = Adw.EntryRow(title="Time (like 14:30)", show_apply_button=True)
-        self.time_row.connect("apply", self._on_time)
+        self.time_row = Adw.ActionRow(title="Time", activatable=True)
+        self.time_row.connect("activated", self._on_time)
+        self.clear_time = Gtk.Button(icon_name="edit-clear-symbolic",
+                                     valign=Gtk.Align.CENTER, tooltip_text="Remove Time")
+        self.clear_time.add_css_class("flat")
+        self.clear_time.update_property([Gtk.AccessibleProperty.LABEL], ["Remove Time"])
+        self.clear_time.connect("clicked", self._on_clear_time)
+        self.time_row.add_suffix(self.clear_time)
+        self.time_row.add_suffix(Gtk.Image(icon_name="go-next-symbolic"))
         plan.add(self.time_row)
         # A reminder is a lead before the time (pensum.store.reminders).
         self.remind_row = Adw.ComboRow(title="Reminder", model=Gtk.StringList.new(
@@ -194,10 +201,10 @@ class TaskPage(Adw.NavigationPage):
             day = dates.day_str(task["dueWithTime"])
         self.day_row.set_subtitle(self._day_label(day, today) if day else "Not planned")
         self.clear_day.set_visible(bool(day))
-        if initial or not self.time_row.has_focus():
-            due = task.get("dueWithTime")
-            self.time_row.set_text(datetime.fromtimestamp(due / 1000).strftime("%H:%M")
-                                   if due else "")
+        due = task.get("dueWithTime")
+        self.time_row.set_subtitle(datetime.fromtimestamp(due / 1000).strftime("%H:%M")
+                                   if due else "No time")
+        self.clear_time.set_visible(bool(due))
         option = reminders.option_of(task)
         keys = [key for key, _ in reminders.OPTIONS]
         with self._blocked(self.remind_row, self._remind_handler):
@@ -337,20 +344,24 @@ class TaskPage(Adw.NavigationPage):
         tasks.schedule_day(self.window.ds, self.task_id, day)
         self._change()
 
-    def _on_time(self, row):
-        text = row.get_text().strip()
+    def _on_time(self, *_):
+        """The picker starts at the task's time, else at the next full hour."""
+        from pensum.ui.time_picker import TimePicker
+        due = (self.task or {}).get("dueWithTime")
+        start = datetime.fromtimestamp(due / 1000) if due else datetime.now()
+        hours, minutes = ((start.hour, start.minute) if due
+                          else ((start.hour + 1) % 24, 0))
+        TimePicker(hours, minutes, self.set_time).present(self.window)
+
+    def set_time(self, hours, minutes):
+        """Plan the task at a time on its planned day, else today."""
         ds = self.window.ds
-        if not text:
-            tasks.clear_time(ds, self.task_id)
-            self._change()
-            return
-        try:
-            moment = datetime.strptime(text.replace(".", ":"), "%H:%M")
-        except ValueError:
-            self.window.toast("Write the time like 14:30")
-            return
         day = ds.planned_day(self.task) or ds.today()
-        tasks.schedule_time(ds, self.task_id, day, moment.hour, moment.minute)
+        tasks.schedule_time(ds, self.task_id, day, hours, minutes)
+        self._change()
+
+    def _on_clear_time(self, *_):
+        tasks.clear_time(self.window.ds, self.task_id)
         self._change()
 
     def _on_remind(self, row, *_):
