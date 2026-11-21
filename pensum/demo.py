@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 from pensum import demo_journey, demo_valley
 from pensum.game import records
-from pensum.store import contexts, dates, defaults, tasks, tracking
+from pensum.store import contexts, dates, defaults, order, sections, tasks, tracking
 from pensum.store.dataset import Context, Dataset
 from pensum.store.repeat import instances
 from pensum.store.repeat.instances import noon_ms
@@ -67,6 +67,10 @@ def create(now=None):
                           top=False)
     tasks.schedule_day(ds, plan["id"], (datetime.fromtimestamp(now / 1000)
                                         + timedelta(days=2)).strftime("%Y-%m-%d"), now)
+    # A section in the project's list (Super Productivity's sections).
+    launch = sections.add(ds, Context("project", work["id"]), "Launch",
+                          entity_id="demo-launch")
+    order.to_section(ds, plan["id"], Context("project", work["id"]), launch["id"])
     books = tasks.add_task(ds, "Return the library books", today, now, top=False)
     tasks.set_tags(ds, books["id"], [errands["id"]], now)
     tasks.schedule_day(ds, books["id"], (datetime.fromtimestamp(now / 1000)

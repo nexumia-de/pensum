@@ -74,3 +74,9 @@ row.pensum-drop-after {
   min-width: 44px;
   min-height: 44px;
 }
+
+/* A section's header and its menu button: at least 44 px for the thumb. */
+.pensum-touch {
+  min-width: 44px;
+  min-height: 44px;
+}

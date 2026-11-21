@@ -1,7 +1,7 @@
 """Changes to tasks, keeping every list Super Productivity derives from
 them consistent: project and tag order, subtask ids, the Today order and
 the parent's estimate and time. No GTK."""
-from pensum.store import dates, defaults
+from pensum.store import dates, defaults, sections
 from pensum.store.defaults import TODAY_ID
 from pensum.store.ids import new_id
 
@@ -44,6 +44,12 @@ def recalc_parent(ds, parent_id):
 
 def _today_order(ds):
     return ds.tag_entities[TODAY_ID]["taskIds"] if TODAY_ID in ds.tag_entities else []
+
+
+def _leave_today(ds, task_id):
+    """Out of Today's order, and with that out of Today's sections."""
+    _drop(_today_order(ds), task_id)
+    sections.strip(ds, [task_id], today=True)
 
 
 def add_task(ds, title, context, now=None, top=True):
@@ -136,14 +142,14 @@ def schedule_day(ds, task_id, day, now=None):
     if day is None:
         # Removed, not null, as Super Productivity's unscheduleTask leaves it.
         task.pop("dueDay", None)
-        _drop(_today_order(ds), task_id)
+        _leave_today(ds, task_id)
     else:
         task["dueDay"] = day
         if day == ds.today(now):
             if not task.get("parentId"):
                 _insert(_today_order(ds), task_id, top=False)
         else:
-            _drop(_today_order(ds), task_id)
+            _leave_today(ds, task_id)
             if day > ds.today(now) and not task.get("parentId"):
                 ds.data["planner"]["days"].setdefault(day, []).append(task_id)
     _touch(task, now)
@@ -176,7 +182,7 @@ def schedule_time(ds, task_id, day, hours, minutes, now=None):
         if task_id not in order:
             order.insert(0, task_id)
     else:
-        _drop(order, task_id)
+        _leave_today(ds, task_id)
     _touch(task, now)
 
 
@@ -197,6 +203,9 @@ def move_to_project(ds, task_id, project_id, now=None):
     if old:
         _drop(old["taskIds"], task_id)
         _drop(old["backlogTaskIds"], task_id)
+        # The old project's sections let go of the task and its subtasks.
+        sections.strip(ds, [task_id] + list(task.get("subTaskIds", ())),
+                       project_id=old["id"])
     ds.project_entities[project_id]["taskIds"].append(task_id)
     for sub in [task] + ds.subtasks(task):
         sub["projectId"] = project_id

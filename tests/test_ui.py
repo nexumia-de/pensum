@@ -301,6 +301,107 @@ def test_time_picker_plans_a_task_at_a_time(app, tmp_path):
     window.close()
 
 
+def test_sections_in_a_list(app, tmp_path):
+    """A project's list shows its sections below the tasks in no section;
+    they collapse, are added, renamed and deleted with Undo, and tasks move
+    into and out of them by the row menu and by dropping."""
+    from pensum.store import sections
+    from pensum.ui import row_drag
+    window = new_window(app, tmp_path, demo.create())
+    ds = window.ds
+    context = Context("project", "demo-website")
+    project = ds.project_entities["demo-website"]
+    window.show_list(context)
+    iterate()
+    page = window.list_page
+    assert [g.section_id for g in page.section_groups] == ["demo-launch"]
+    launch = page.section_groups[0]
+    loose = [r for r in page.rows if r.get_parent() is page.open_list]
+    inside = [r for r in page.rows if r.get_parent() is launch.list]
+    assert len(loose) == 1 and len(inside) == 1 and launch.list.get_visible()
+    planned, review = inside[0].task_id, loose[0].task_id
+    assert ds.data["section"]["entities"]["demo-launch"]["taskIds"] == [planned]
+    order_before = list(project["taskIds"])
+
+    # Collapse: stored in the section, the tasks hide.
+    page.section_groups[0].toggle.emit("clicked")
+    iterate()
+    assert ds.data["section"]["entities"]["demo-launch"]["isExpanded"] is False
+    assert not page.section_groups[0].list.get_visible()
+    page.section_groups[0].toggle.emit("clicked")
+    iterate()
+    assert page.section_groups[0].list.get_visible()
+
+    # Add a section from the list's menu; an empty one shows its header.
+    page.activate_action("list.add-section", None)
+    iterate()
+    dialog = window.get_visible_dialog()
+    dialog.get_extra_child().set_text("Later")
+    dialog.emit("response", "ok")
+    dialog.close()
+    iterate()
+    later_id = page.section_groups[1].section_id
+    assert ds.data["section"]["entities"][later_id] == {
+        "id": later_id, "contextId": "demo-website", "contextType": "PROJECT",
+        "title": "Later", "isExpanded": True, "taskIds": []}
+    assert validate.problems(ds.data) == []
+
+    # The row menu moves a task into a section and out of it again.
+    row = next(r for r in page.rows if r.task_id == review)
+    assert row.in_main_list
+    row.activate_action("row.section", GLib.Variant("s", later_id))
+    iterate()
+    assert ds.data["section"]["entities"][later_id]["taskIds"] == [review]
+    assert project["taskIds"] == order_before
+    assert not [r for r in page.rows if r.get_parent() is page.open_list]
+    row = next(r for r in page.rows if r.task_id == review)
+    row.activate_action("row.section", GLib.Variant("s", ""))
+    iterate()
+    assert ds.data["section"]["entities"][later_id]["taskIds"] == []
+    assert project["taskIds"] == order_before
+
+    # Dropping: on a section's header, on a row of another section, and
+    # back on a row in no section.
+    row = next(r for r in page.rows if r.task_id == review)
+    assert row_drag.drop_on_section(row, page.section_groups[1])
+    iterate()
+    assert ds.data["section"]["entities"][later_id]["taskIds"] == [review]
+    row = next(r for r in page.rows if r.task_id == review)
+    target = next(r for r in page.rows if r.task_id == planned)
+    assert row_drag.can_drop(row, target) and row_drag.drop(row, target)
+    iterate()
+    assert ds.data["section"]["entities"]["demo-launch"]["taskIds"] == [review, planned]
+    assert ds.data["section"]["entities"][later_id]["taskIds"] == []
+    row = next(r for r in page.rows if r.task_id == review)
+    row.activate_action("row.section", GLib.Variant("s", ""))
+    iterate()
+    row = next(r for r in page.rows if r.task_id == planned)
+    target = next(r for r in page.rows if r.task_id == review)
+    assert row_drag.drop(row, target)
+    iterate()
+    assert ds.data["section"]["entities"]["demo-launch"]["taskIds"] == []
+    assert project["taskIds"] == [planned, review]
+    assert validate.problems(ds.data) == []
+
+    # Delete with Undo: the tasks stay in the list.
+    row = next(r for r in page.rows if r.task_id == planned)
+    row.activate_action("row.section", GLib.Variant("s", "demo-launch"))
+    iterate()
+    page.section_groups[0].activate_action("section.delete", None)
+    iterate()
+    assert "demo-launch" not in ds.data["section"]["entities"]
+    assert [g.section_id for g in page.section_groups] == [later_id]
+    assert {r.task_id for r in page.rows if r.get_parent() is page.open_list} == {
+        planned, review}
+    assert validate.problems(ds.data) == []
+    # A tag's list has no sections and no entry to add one.
+    window.show_list(Context("tag", "demo-errands"))
+    iterate()
+    assert not sections.can_have(window.list_page.context)
+    assert not window.list_page.section_groups
+    window.close()
+
+
 def test_overdue_section(app, tmp_path):
     from pensum.store import dates, tasks
     window = new_window(app, tmp_path)
@@ -449,7 +550,7 @@ def test_delete_with_undo(app, tmp_path):
     iterate()
     assert task_id not in window.ds.tasks
     window.show_list(Context("project", "demo-garden"))
-    window.list_page._on_delete()
+    window.list_page.activate_action("list.delete", None)
     assert "demo-garden" not in window.ds.project_entities
     from pensum.store import contexts
     toast = window.undoable("deleted", lambda: contexts.delete_project(

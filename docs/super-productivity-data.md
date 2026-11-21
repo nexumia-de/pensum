@@ -53,7 +53,7 @@ moments are epoch milliseconds, durations milliseconds.
 | `archiveYoung`, `archiveOld` | finished-day tasks (`task`), their `timeTracking`, `lastTimeTrackingFlush` | read for totals, kept |
 | `globalConfig` | all settings, 21 sections | `misc.startOfNextDay*` and `tasks.defaultProjectId` used; rest kept |
 | `menuTree` | `projectTree`, `tagTree`: folders (`k: "f"`, `name`, `children`, `isExpanded`), project (`k: "p"`) and tag (`k: "t"`) nodes | order read; new entries appended |
-| `section` | sections inside a project or tag list (`contextId`, `contextType`, `title`, `taskIds`, `isExpanded`) | kept; deleted ids removed |
+| `section` | sections inside a project's or Today's list (`contextId`, `contextType`, `title`, `taskIds`, `isExpanded`) | read and written, see [Section](#section-sectionmodelts) |
 | `note` | notes (`projectId`, `content`, `isPinnedToToday`, `imgUrl`, `isLock`, `backgroundColor`, `created`, `modified`), `todayOrder` | kept |
 | `taskRepeatCfg` | repeating task rules (below) | kept |
 | `reminders` | `{id, remindAt, title, type: NOTE\|TASK, relatedId, recurringConfig?}` | kept; dropped with their task |
@@ -149,6 +149,59 @@ the list (stale ids there are harmless). "Today" is the logical day:
 it starts at `globalConfig.misc.startOfNextDayTime` (`HH:MM`) or the
 older `startOfNextDay` (hours), so work at 1:00 with a 4:00 boundary
 counts for the previous day (`DateService`, `isTodayWithOffset`).
+
+## Section (`section.model.ts`)
+
+Read at commit `9980fd76` (2026-11-21): `features/section/`
+(`section.model.ts`, `section.util.ts`, `section.service.ts`,
+`store/section.reducer.ts`, `store/section.actions.ts`),
+`root-store/meta/task-shared-meta-reducers/section-shared.reducer.ts`,
+the drop handling in `features/tasks/task-list/task-list.component.ts`
+and `docs/sync-and-op-log/section-conflict-replay.md`.
+
+- **Shape.** `section.ids` and `section.entities`; a section is `{id,
+  contextId, contextType: "PROJECT" | "TAG", title, isExpanded?,
+  taskIds}`. Only projects and the Today tag (`TAG`, `TODAY`) have
+  sections; other tags are refused (`isValidSectionContext`). A missing
+  `isExpanded` reads as open.
+- **Membership.** A section's `taskIds` say which top-level tasks are in
+  it and their order inside it; subtasks are never listed. The task
+  stays in the list's own order (`project.taskIds`, `TODAY.taskIds`) as
+  well; no task field names the section. The list shows the tasks in no
+  section first, in the list's order, then each section in the order of
+  its place in `section.ids`, with its tasks in the order of its
+  `taskIds` (`groupTasksBySection`); ids of tasks the list does not show
+  are skipped.
+- **Add:** a new id, the title trimmed and cut to 200 characters,
+  `isExpanded: true`, `taskIds: []`, appended to `section.ids`.
+  **Rename, collapse, expand:** only `title` (trimmed and cut again) or
+  `isExpanded` change. **Delete:** only the section goes
+  (`adapter.removeOne`); its tasks stay in the list and show in no
+  section.
+- **A task into a section, or to another place in it**
+  (`addTaskToSection {sectionId, taskId, afterTaskId, sourceSectionId}`):
+  the id leaves the source section when that is another one; in the
+  target it is added if missing and put right after `afterTaskId`, or
+  first when that is null (`moveItemAfterAnchor`, the rule of
+  [Order](#project-and-tag-projectmodelts-tagmodelts-work-contextmodelts)).
+  The list's own order does not change.
+- **A task out of a section** (`removeTaskFromSection`): the id leaves
+  the section, and in the list's own order it is put right after the
+  task shown before the drop place among the tasks in no section, or
+  first.
+- **Move up, down, to top, to bottom in the menu** change the section's
+  `taskIds` and, through the list's usual reducer, the list's own order
+  too. Pensum moves the task past the same neighbour in both.
+- **Tasks that leave.** A deleted or archived task and its subtasks
+  leave every section; a task moved to another project leaves the old
+  project's sections; an id that leaves `TODAY.taskIds` leaves Today's
+  sections; a deleted project takes its sections with it. Moving a task
+  to the backlog does not touch sections (Super Productivity refuses
+  that drag; its menu entry was not read).
+- Pensum: `pensum/store/sections.py`, the moves in
+  `pensum/store/order.py` (`move`, `move_to`, `to_section`). Sections
+  of other tags and a task listed in two sections are kept as read (the
+  task shows in the first).
 
 ## Time tracking (`time-tracking.model.ts`, `archive.model.ts`)
 
