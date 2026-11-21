@@ -6,6 +6,7 @@ from gi.repository import Adw, Gio, GLib, Gtk
 from pensum import duration
 from pensum.store import contexts, dates, tasks, tracking
 from pensum.store.dataset import Context
+from pensum.ui import scroll
 from pensum.ui.task_row import TaskRow
 
 
@@ -233,6 +234,9 @@ class TaskListPage(Adw.NavigationPage):
                                         else f"Add Task to {title}")
         self.strip.refresh()
         open_tasks, done_tasks = ds.list_tasks(self.context, today)
+        # Rebuilding the rows must not move the list under the finger.
+        adjustment = self.scroller.get_vadjustment()
+        scrolled = adjustment.get_value()
         self.rows = []
         overdue = ds.overdue_tasks(today) if self.context.kind == "today" else []
         self.overdue_list.remove_all()
@@ -267,11 +271,12 @@ class TaskListPage(Adw.NavigationPage):
         self.done_header.set_visible(bool(done_tasks))
         self.finish.set_label("Finish Day" if self.context.kind == "today" else "Archive Done")
         self.done_title.set_label(f"Done ({len(done_tasks)})")
+        adjustment.set_value(scrolled)
 
     def focus_row(self, task_id):
         for row in self.rows:
             if row.task_id == task_id:
-                row.grab_focus()
+                scroll.focus_in_place(row)
                 return True
         return False
 

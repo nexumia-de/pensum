@@ -123,8 +123,7 @@ def test_task_and_repeat_pages_set_reminders(app, tmp_path, watch):
     iterate()
     page = visible(window)
     assert not page.remind_row.get_sensitive()
-    page.time_row.set_text("23:59")
-    page._on_time(page.time_row)
+    page.set_time(23, 59)
     iterate()
     assert page.remind_row.get_sensitive()
     page.remind_row.set_selected(2)  # 5 minutes before

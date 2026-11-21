@@ -1,9 +1,11 @@
 """One task in a list: a check button to mark it done, the title with its
-time and subtask summary, and a button to start or stop its timer."""
+time and subtask summary, a button to start or stop its timer, and the
+row menu that moves it."""
 from gi.repository import Adw, Gdk, Gio, GLib, Gtk
 
 from pensum import duration
 from pensum.store import dates
+from pensum.ui import row_drag
 
 
 PRIORITY_NAMES = {1: "Low", 2: "Medium", 3: "High"}
@@ -73,13 +75,16 @@ class TaskRow(Adw.ActionRow):
         self.refresh()
 
     def _add_move_menu(self):
-        """Long press, right click or Alt+Up/Down reorder the task."""
+        """The row menu (long press, right click, Menu key) and Alt+Up/Down
+        reorder the task; so does dragging the row."""
         group = Gio.SimpleActionGroup()
         menu = Gio.Menu()
+        self.move_actions = []
         for label, name, offset in MOVES:
             action = Gio.SimpleAction.new(name, None)
             action.connect("activate", lambda *_, o=offset: self.move(o))
             group.add_action(action)
+            self.move_actions.append(action)
             menu.append(label, f"row.{name}")
         self.backlog_action = Gio.SimpleAction.new("backlog", None)
         self.backlog_action.connect("activate", self._on_backlog)
@@ -92,24 +97,61 @@ class TaskRow(Adw.ActionRow):
         self.popover = Gtk.PopoverMenu(menu_model=menu, has_arrow=True)
         self.popover.set_parent(self)
         self.connect("destroy", lambda *_: self.popover.unparent())
+        # A long press makes the row ready: dragging it then reorders
+        # (row_drag), letting go without moving opens the menu.
+        self.held = False
         press = Gtk.GestureLongPress(touch_only=False)
-        press.connect("pressed", self._on_menu)
+        press.connect("pressed", self._on_held)
         self.add_controller(press)
+        release = Gtk.GestureClick(button=Gdk.BUTTON_PRIMARY)
+        release.connect("pressed", lambda *_: self._set_held(False))
+        release.connect("released", self._on_release)
+        release.connect("cancel", lambda *_: self._set_held(False))
+        self.add_controller(release)
         click = Gtk.GestureClick(button=Gdk.BUTTON_SECONDARY)
-        click.connect("pressed", self._on_menu)
+        click.connect("pressed", self._on_secondary)
         self.add_controller(click)
         keys = Gtk.ShortcutController()
         for key, offset in (("<Alt>Up", -1), ("<Alt>Down", 1)):
             keys.add_shortcut(Gtk.Shortcut.new(
                 Gtk.ShortcutTrigger.parse_string(key),
                 Gtk.CallbackAction.new(lambda *_, o=offset: self.move(o) or True)))
+        keys.add_shortcut(Gtk.Shortcut.new(
+            Gtk.ShortcutTrigger.parse_string("Menu|<Shift>F10"),
+            Gtk.CallbackAction.new(lambda *_: self.show_menu() or True)))
         self.add_controller(keys)
+        row_drag.attach(self)
 
-    def _on_menu(self, gesture, x, y):
+    def _set_held(self, held):
+        self.held = held
+        if held:
+            self.add_css_class("pensum-held")
+        else:
+            self.remove_css_class("pensum-held")
+
+    def _on_held(self, _gesture, _x, _y):
+        self._set_held(True)
+
+    def _on_release(self, gesture, _n_press, x, y):
+        if not self.held:
+            return
+        self._set_held(False)
+        # Not a tap: the row must not open the task as well.
         gesture.set_state(Gtk.EventSequenceState.CLAIMED)
-        rect = Gdk.Rectangle()
-        rect.x, rect.y, rect.width, rect.height = int(x), int(y), 1, 1
-        self.popover.set_pointing_to(rect)
+        self.show_menu(x, y)
+
+    def _on_secondary(self, gesture, _n_press, x, y):
+        gesture.set_state(Gtk.EventSequenceState.CLAIMED)
+        self.show_menu(x, y)
+
+    def show_menu(self, x=None, y=None):
+        """The row menu at a point of the row; from the keyboard, at the row."""
+        if x is None:
+            self.popover.set_pointing_to(None)
+        else:
+            rect = Gdk.Rectangle()
+            rect.x, rect.y, rect.width, rect.height = int(x), int(y), 1, 1
+            self.popover.set_pointing_to(rect)
         self.popover.popup()
 
     def _on_backlog(self, *_):
@@ -121,8 +163,8 @@ class TaskRow(Adw.ActionRow):
             self.window.changed()
 
     def move(self, offset):
-        from pensum.store import tasks
-        if tasks.move(self.window.ds, self.task_id, self.context, offset):
+        from pensum.store import order
+        if order.move(self.window.ds, self.task_id, self.context, offset):
             self.window.changed()
             self.window.focus_task_row(self.task_id)
 
@@ -160,6 +202,12 @@ class TaskRow(Adw.ActionRow):
         tip = "Stop Timer" if is_running else "Start Timer"
         self.play.set_tooltip_text(tip)
         self.play.update_property([Gtk.AccessibleProperty.LABEL], [tip])
+        # Nothing to move among: an overdue task, or one that Today lists
+        # by its time.
+        from pensum.store import order
+        movable = len(order.siblings(ds, self.task_id, self.context)) > 1
+        for action in self.move_actions:
+            action.set_enabled(movable)
         if is_running:
             self.add_css_class("pensum-running")
         else:

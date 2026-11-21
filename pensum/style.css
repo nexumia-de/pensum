@@ -44,3 +44,33 @@
   padding: 6px 12px;
   min-height: 48px;
 }
+
+/* Reordering by dragging (pensum/ui/row_drag.py): a row held long enough
+   to be dragged, the row being dragged, and a line where it will land. */
+row.pensum-held {
+  background-color: alpha(currentColor, 0.1);
+}
+
+row.pensum-dragged {
+  background-color: @view_bg_color;
+  opacity: 0.4;
+}
+
+row.pensum-drop-before:drop(active),
+row.pensum-drop-after:drop(active) {
+  box-shadow: none;
+}
+
+row.pensum-drop-before {
+  box-shadow: inset 0 3px @accent_color;
+}
+
+row.pensum-drop-after {
+  box-shadow: inset 0 -3px @accent_color;
+}
+
+/* The time picker's plus and minus: at least 44 px for the thumb. */
+.pensum-time-spin > button {
+  min-width: 44px;
+  min-height: 44px;
+}

@@ -134,7 +134,8 @@ def schedule_day(ds, task_id, day, now=None):
     for ids in ds.data["planner"]["days"].values():
         _drop(ids, task_id)
     if day is None:
-        task["dueDay"] = None
+        # Removed, not null, as Super Productivity's unscheduleTask leaves it.
+        task.pop("dueDay", None)
         _drop(_today_order(ds), task_id)
     else:
         task["dueDay"] = day
@@ -149,34 +150,43 @@ def schedule_day(ds, task_id, day, now=None):
 
 
 def schedule_time(ds, task_id, day, hours, minutes, now=None):
-    """Plan a task at a time of day: dueWithTime replaces dueDay
-    (ARCHITECTURE-DECISIONS #1); Today's and the planner's lists follow."""
+    """Plan a task at a time of day, as Super Productivity's
+    scheduleTaskWithTime does: dueWithTime replaces dueDay
+    (ARCHITECTURE-DECISIONS #1), the planner's days let go of the task, and
+    Today's order gets it on top when the time is today and it is not in
+    there yet, or loses it when the time is on another day."""
     from datetime import datetime
     now = now or dates.now_ms()
-    before = ds.tasks[task_id]
-    # A reminder keeps its lead when the time moves.
-    lead = before["dueWithTime"] - before["remindAt"] if isinstance(
-        before.get("remindAt"), (int, float)) and before.get("dueWithTime") else None
-    schedule_day(ds, task_id, day, now)
     task = ds.tasks[task_id]
+    # A reminder keeps its lead when the time moves.
+    lead = task["dueWithTime"] - task["remindAt"] if isinstance(
+        task.get("remindAt"), (int, float)) and task.get("dueWithTime") else None
     moment = datetime.combine(dates.parse_day(day), datetime.min.time()).replace(
         hour=hours, minute=minutes)
     task["dueWithTime"] = int(moment.timestamp() * 1000)
+    task.pop("dueDay", None)
     if lead is not None and lead >= 0:
         task["remindAt"] = task["dueWithTime"] - lead
-    task.pop("dueDay", None)
-    task["hasPlannedTime"] = True
+    else:
+        task.pop("remindAt", None)
+    for ids in ds.data["planner"]["days"].values():
+        _drop(ids, task_id)
+    order = _today_order(ds)
+    if ds.today(task["dueWithTime"]) == ds.today(now):
+        if task_id not in order:
+            order.insert(0, task_id)
+    else:
+        _drop(order, task_id)
     _touch(task, now)
 
 
 def clear_time(ds, task_id, now=None):
-    """Keep the planned day, drop the time."""
+    """Keep the planned day, drop the time (and with it the reminder): the
+    task is planned for that day, as when a day without a time is chosen."""
     task = ds.tasks[task_id]
     if not task.get("dueWithTime"):
         return
-    day = ds.today(task["dueWithTime"])
-    schedule_day(ds, task_id, day, now)
-    task["hasPlannedTime"] = False
+    schedule_day(ds, task_id, ds.today(task["dueWithTime"]), now)
 
 
 def move_to_project(ds, task_id, project_id, now=None):
@@ -223,52 +233,6 @@ def set_tags(ds, task_id, tag_ids, now=None):
                 ds.tag_entities[tag_id]["taskIds"].append(task_id)
     task["tagIds"] = tag_ids
     _touch(task, now or dates.now_ms())
-
-
-def _order_list(ds, context, today):
-    """The stored order a list's moves change, with every shown task in it."""
-    if context.kind == "project":
-        return ds.project_entities[context.id]["taskIds"]
-    if context.kind == "tag":
-        order = ds.tag_entities[context.id]["taskIds"]
-    else:
-        order = _today_order(ds)
-    for i in ds.top_level_ids(context, today):
-        if i not in order:
-            order.append(i)
-    return order
-
-
-def move(ds, task_id, context, offset, today=None):
-    """Move a task by `offset` places among the tasks a list shows (or, for
-    a subtask, among its parent's subtasks); a large offset moves it to the
-    top or the bottom. Returns True when it moved."""
-    task = ds.tasks.get(task_id)
-    if not task:
-        return False
-    parent = ds.tasks.get(task.get("parentId"))
-    backlog = (ds.project_entities.get(context.id, {}).get("backlogTaskIds", [])
-               if context is not None and context.kind == "project" else [])
-    if parent:
-        order = parent["subTaskIds"]
-        visible = list(order)
-    elif task_id in backlog:
-        order = backlog
-        visible = list(order)
-    else:
-        order = _order_list(ds, context, today)
-        visible = ds.top_level_ids(context, today)
-    if task_id not in visible:
-        return False
-    index = visible.index(task_id)
-    target = max(0, min(len(visible) - 1, index + offset))
-    if target == index:
-        return False
-    neighbour = visible[target]
-    order.remove(task_id)
-    position = order.index(neighbour)
-    order.insert(position + (1 if offset > 0 else 0), task_id)
-    return True
 
 
 def delete(ds, task_id):
