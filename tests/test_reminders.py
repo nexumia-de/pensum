@@ -2,7 +2,7 @@
 stays valid for Super Productivity's import after every change (#13)."""
 from datetime import datetime
 
-from pensum.store import defaults, reminders, tasks, validate
+from pensum.store import defaults, planning, reminders, tasks, validate
 from pensum.store.dataset import Context, Dataset
 from pensum.store.repeat import instances, rules
 
@@ -16,7 +16,7 @@ def fresh():
 
 def timed(ds, hours=15, minutes=0):
     task = tasks.add_task(ds, "Call the plumber", Context.today(), now=NOON)
-    tasks.schedule_time(ds, task["id"], DAY, hours, minutes, now=NOON)
+    planning.schedule_time(ds, task["id"], DAY, hours, minutes, now=NOON)
     return ds.tasks[task["id"]]
 
 
@@ -32,9 +32,9 @@ def test_a_reminder_is_a_lead_before_the_time():
     assert reminders.due(ds, task["remindAt"]) == [task["id"]]
     assert validate.problems(ds.data) == []
     # The lead stays when the time moves; a day without a time drops it.
-    tasks.schedule_time(ds, task["id"], DAY, 16, 30, now=NOON)
+    planning.schedule_time(ds, task["id"], DAY, 16, 30, now=NOON)
     assert reminders.option_of(task) == "m15"
-    tasks.clear_time(ds, task["id"], NOON)
+    planning.clear_time(ds, task["id"], NOON)
     assert "remindAt" not in task and task["dueDay"] == DAY
     assert validate.problems(ds.data) == []
 

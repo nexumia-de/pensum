@@ -53,8 +53,8 @@ values are transcribed, no code is copied.
 
 - `pensum/store/reminders.py`: `set_option`, `dismiss`, `snooze`
   (10 minutes), `pending`, `due`, `next_at`, and for a rule `rule_time`
-  and `set_rule_time`. `tasks.schedule_time` keeps the lead when the
-  time moves; `tasks.schedule_day` drops the reminder with the time.
+  and `set_rule_time`. `planning.schedule_time` keeps the lead when the
+  time moves; `planning.schedule_day` drops the reminder with the time.
 - **Task page**: **Reminder** under the time, with the seven options;
   without a time it says "Set a time first". **Repeat page**: **Time**
   and **Reminder** for every new task of the rule.

@@ -248,9 +248,12 @@ def test_time_picker_plans_a_task_at_a_time(app, tmp_path):
     the task by its time and the row says it."""
     from datetime import datetime
     from pensum.ui.time_picker import TimePicker
+    from pensum.store import tasks
     window = new_window(app, tmp_path, demo.create())
     ds = window.ds
+    tasks.add_task(ds, "Water the plants", Context.today(), top=False)
     window.show_list(Context.today())
+    window.changed()
     iterate()
     shown = [r.task_id for r in window.list_page.rows
              if r.get_parent() is window.list_page.open_list]
@@ -403,10 +406,10 @@ def test_sections_in_a_list(app, tmp_path):
 
 
 def test_overdue_section(app, tmp_path):
-    from pensum.store import dates, tasks
+    from pensum.store import dates, planning, tasks
     window = new_window(app, tmp_path)
     task = tasks.add_task(window.ds, "Late", Context.today())
-    tasks.schedule_day(window.ds, task["id"], dates.shift_day(window.ds.today(), -3))
+    planning.schedule_day(window.ds, task["id"], dates.shift_day(window.ds.today(), -3))
     window.changed()
     iterate()
     page = window.list_page

@@ -4,7 +4,7 @@ import copy
 
 import pytest
 
-from pensum.store import archive, contexts, defaults, order, sections, tasks, validate
+from pensum.store import archive, contexts, defaults, order, planning, sections, tasks, validate
 from pensum.store.dataset import Context, Dataset
 
 NOW = 1_780_000_000_000  # 2026-05-28
@@ -109,7 +109,8 @@ def test_tasks_move_into_inside_and_out_of_sections(ds):
     assert order.move_to(ds, c, ctx, b)
     assert beds["taskIds"] == [c, b] and project["taskIds"] == [d, a, b, c]
 
-    # The menu's Move Down inside a section keeps both orders in step.
+    # The menu's Move Down and Up change the section's order and the
+    # project's own (test_menu_moves_with_sections).
     assert order.move(ds, c, ctx, 1)
     assert beds["taskIds"] == [b, c] and project["taskIds"] == [d, a, b, c]
     assert order.move(ds, c, ctx, -1)
@@ -136,7 +137,7 @@ def test_sections_let_go_of_tasks_that_leave(ds):
     sub = tasks.add_subtask(ds, a, "sub", NOW)["id"]
     for task_id in (a, b, c, d):
         order.to_section(ds, task_id, ctx, beds["id"])
-        tasks.schedule_day(ds, task_id, day, NOW)
+        planning.schedule_day(ds, task_id, day, NOW)
         assert order.to_section(ds, task_id, Context.today(), today["id"], today=day)
     assert beds["taskIds"] == [a, b, c, d] == today["taskIds"]
 
@@ -145,9 +146,9 @@ def test_sections_let_go_of_tasks_that_leave(ds):
     assert beds["taskIds"] == [b, c, d] and today["taskIds"] == [a, b, c, d]
     assert ds.tasks[sub]["projectId"] == other["id"]
     # Not planned for today any more: out of Today's sections only.
-    tasks.schedule_day(ds, b, None, NOW)
+    planning.schedule_day(ds, b, None, NOW)
     assert today["taskIds"] == [a, c, d] and beds["taskIds"] == [b, c, d]
-    tasks.schedule_time(ds, c, dates_shift(day), 9, 0, NOW)
+    planning.schedule_time(ds, c, dates_shift(day), 9, 0, NOW)
     assert today["taskIds"] == [a, d] and beds["taskIds"] == [b, c, d]
     # Deleted or archived: out of every section.
     tasks.delete(ds, d)
@@ -173,8 +174,8 @@ def test_today_sections_and_timed_tasks(ds):
     today = Context.today()
     a, b, c = (tasks.add_task(ds, n, today, NOW, top=False)["id"] for n in "abc")
     morning = sections.add(ds, today, "Morning")
-    tasks.schedule_time(ds, c, day, 9, 0, NOW)
-    tasks.schedule_time(ds, b, day, 8, 0, NOW)
+    planning.schedule_time(ds, c, day, 9, 0, NOW)
+    planning.schedule_time(ds, b, day, 8, 0, NOW)
     # Without a section the clock orders the timed tasks ...
     assert [t["id"] for t in ds.list_tasks(today, day)[0]] == [b, c, a]
     assert order.siblings(ds, b, today, day) == []
@@ -207,3 +208,64 @@ def test_sections_survive_reading_as_they_are(sp_backup):
     assert [s["id"] for s, _ in groups] == ["s1"] and groups[0][1] == []
     assert sections.is_expanded(groups[0][0])
     assert ds.data["section"] == before
+
+
+def test_menu_moves_with_sections(ds):
+    """Super Productivity moves a task in its section's order and in the
+    list's own order, each past the nearest task that is not done there;
+    a task in no section passes the sectioned ones on its way."""
+    project, ctx, (a, b, c, d) = garden(ds)
+    beds = sections.add(ds, ctx, "Beds")
+    for task_id in (d, b):
+        order.to_section(ds, task_id, ctx, beds["id"])
+    assert beds["taskIds"] == [d, b] and project["taskIds"] == [a, b, c, d]
+    # In the section b goes above d; in the project's order above a.
+    assert order.move(ds, b, ctx, -1)
+    assert beds["taskIds"] == [b, d] and project["taskIds"] == [b, a, c, d]
+    # c is in no section: one step would only pass a ... that is shown, so
+    # one step is enough here.
+    assert order.move(ds, c, ctx, -1)
+    assert project["taskIds"] == [b, c, a, d] and beds["taskIds"] == [b, d]
+    # Now only the sectioned b is above c: nothing shown to pass.
+    assert not order.move(ds, c, ctx, -1)
+    assert project["taskIds"] == [b, c, a, d]
+    # a down: d below is sectioned, nothing shown to pass either.
+    assert not order.move(ds, a, ctx, 1)
+    project["taskIds"][:] = [c, b, d, a]
+    # a up passes the sectioned d and b until it has passed c.
+    assert order.move(ds, a, ctx, -1)
+    assert project["taskIds"] == [a, c, b, d]
+    # To the bottom: the end of both lists.
+    assert order.move(ds, b, ctx, 100)
+    assert beds["taskIds"] == [d, b] and project["taskIds"] == [a, c, d, b]
+    valid(ds)
+
+
+def test_section_problems_are_what_super_productivity_repairs(ds):
+    """repairSections drops sections of a missing project or of a tag
+    other than Today, and ids without a task; Pensum reports them."""
+    project, ctx, (a, b, c, d) = garden(ds)
+    beds = sections.add(ds, ctx, "Beds")
+    morning = sections.add(ds, Context.today(), "Morning")
+    order.to_section(ds, a, ctx, beds["id"])
+    valid(ds)
+    beds["taskIds"].append("gone")
+    assert validate.problems(ds.data) == [f"section {beds['id']}: missing task gone"]
+    beds["taskIds"].remove("gone")
+    morning["contextId"] = "some-tag"
+    assert validate.problems(ds.data) == [f"section {morning['id']}: no such list"]
+    morning["contextId"] = defaults.TODAY_ID
+    beds["contextId"] = "no-project"
+    assert validate.problems(ds.data) == [f"section {beds['id']}: no such list"]
+    beds["contextId"] = project["id"]
+    ds.data["section"]["ids"].append("ghost")
+    assert validate.problems(ds.data) == ["section: ids and entities differ"]
+    ds.data["section"]["ids"].remove("ghost")
+    beds["taskIds"] = "a"
+    assert validate.problems(ds.data) == [f"section {beds['id']}: taskIds is no list"]
+    beds["taskIds"] = [a]
+    valid(ds)
+    # Nothing Pensum does leaves such a section behind.
+    tasks.delete(ds, a)
+    contexts.delete_project(ds, project["id"])
+    valid(ds)

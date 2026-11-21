@@ -3,7 +3,7 @@ the open tasks with the list's sections, the done ones and the backlog."""
 from gi.repository import Adw, Gtk
 
 from pensum import duration
-from pensum.store import dates, sections, tasks, tracking
+from pensum.store import dates, planning, sections, tasks, tracking
 from pensum.ui import list_menu, scroll
 from pensum.ui.section_group import SectionGroup
 from pensum.ui.task_row import TaskRow
@@ -137,7 +137,7 @@ class TaskListPage(Adw.NavigationPage):
         ds = self.window.ds
         today = ds.today()
         for task in ds.overdue_tasks(today):
-            tasks.schedule_day(ds, task["id"], today)
+            planning.schedule_day(ds, task["id"], today)
         self.window.changed()
 
     def _overdue_label(self, task):

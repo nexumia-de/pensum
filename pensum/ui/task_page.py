@@ -5,7 +5,7 @@ from datetime import datetime
 from gi.repository import Adw, GLib, Gtk, Pango
 
 from pensum import duration
-from pensum.store import dates, reminders, tasks
+from pensum.store import dates, planning, reminders, tasks
 from pensum.ui import scroll
 from pensum.ui.task_row import TaskRow
 
@@ -334,14 +334,14 @@ class TaskPage(Adw.NavigationPage):
 
     def _on_today(self, row, *_):
         ds = self.window.ds
-        tasks.schedule_day(ds, self.task_id, ds.today() if row.get_active() else None)
+        planning.schedule_day(ds, self.task_id, ds.today() if row.get_active() else None)
         self._change()
 
     def _on_day(self, calendar):
         value = calendar.get_date()
         day = datetime(value.get_year(), value.get_month(),
                        value.get_day_of_month()).strftime("%Y-%m-%d")
-        tasks.schedule_day(self.window.ds, self.task_id, day)
+        planning.schedule_day(self.window.ds, self.task_id, day)
         self._change()
 
     def _on_time(self, *_):
@@ -357,11 +357,11 @@ class TaskPage(Adw.NavigationPage):
         """Plan the task at a time on its planned day, else today."""
         ds = self.window.ds
         day = ds.planned_day(self.task) or ds.today()
-        tasks.schedule_time(ds, self.task_id, day, hours, minutes)
+        planning.schedule_time(ds, self.task_id, day, hours, minutes)
         self._change()
 
     def _on_clear_time(self, *_):
-        tasks.clear_time(self.window.ds, self.task_id)
+        planning.clear_time(self.window.ds, self.task_id)
         self._change()
 
     def _on_remind(self, row, *_):
@@ -382,7 +382,7 @@ class TaskPage(Adw.NavigationPage):
         self.window.nav.push(RepeatPage(self.window, self.task_id))
 
     def _on_clear_day(self, *_):
-        tasks.schedule_day(self.window.ds, self.task_id, None)
+        planning.schedule_day(self.window.ds, self.task_id, None)
         self._change()
 
     def _on_deadline(self, calendar):

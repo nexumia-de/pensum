@@ -4,6 +4,7 @@ A project and Today can have sections, other tags cannot. A section's
 `taskIds` say which top-level tasks are in it and in which order; the
 tasks stay in the list's own order (`project.taskIds`, `TODAY.taskIds`)
 as well. No GTK."""
+from pensum.store import list_moves
 from pensum.store.defaults import TODAY_ID
 from pensum.store.ids import new_id
 
@@ -97,19 +98,6 @@ def delete(ds, section_id):
             ids.remove(section_id)
 
 
-def _after_anchor(ids, task_id, after_id):
-    """Super Productivity's anchor rule (moveItemAfterAnchor): the id right
-    after the anchor, at the start without one; in place when the anchor is
-    gone and the id is in the list, else at the end."""
-    rest = [i for i in ids if i != task_id]
-    if after_id is None:
-        return [task_id] + rest
-    if after_id not in rest:
-        return list(ids) if task_id in ids else rest + [task_id]
-    place = rest.index(after_id) + 1
-    return rest[:place] + [task_id] + rest[place:]
-
-
 def place(ds, section_id, task_id, after_id=None, source_id=None):
     """Put a task into a section after `after_id` (None: first), also to
     move it inside the section (addTaskToSection). `source_id` is the
@@ -120,8 +108,7 @@ def place(ds, section_id, task_id, after_id=None, source_id=None):
         source["taskIds"][:] = [i for i in source["taskIds"] if i != task_id]
     target = entities.get(section_id)
     if target is not None:
-        target.setdefault("taskIds", [])[:] = _after_anchor(target["taskIds"], task_id,
-                                                            after_id)
+        list_moves.after_anchor(target.setdefault("taskIds", []), task_id, after_id)
 
 
 def take_out(ds, section_id, task_id, context, after_id=None):
@@ -136,8 +123,7 @@ def take_out(ds, section_id, task_id, context, after_id=None):
     source = ds.project_entities if key[0] == "PROJECT" else ds.tag_entities
     entity = source.get(key[1])
     if entity is not None:
-        entity.setdefault("taskIds", [])[:] = _after_anchor(entity["taskIds"], task_id,
-                                                            after_id)
+        list_moves.after_anchor(entity.setdefault("taskIds", []), task_id, after_id)
 
 
 def strip(ds, task_ids, project_id=None, today=False):
