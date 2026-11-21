@@ -165,8 +165,8 @@ modules:
       - install -Dm644 extras/libargon2/LICENSE -t ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/libargon2
     sources:
       - type: archive
-        url: https://files.pythonhosted.org/packages/0b/43/bb8b6e8708d49a5ab36781333af092d9f483b198a2710d01281204640055/argon2_cffi_bindings-26.1.0.tar.gz
-        sha256: 63505c71542a44b68b1e38060450fb006404170da375feb31af153e7f9c6205d
+        url: https://files.pythonhosted.org/packages/76/3b/f7bd1daac24c7017b6d09d05c56bb3f71aaae76b2ac4234ed2c00e0dd2d2/argon2_cffi_bindings-26.2.0.tar.gz
+        sha256: f21ab89bb9850f32b9ca038d9961424bb0d3669d579cbbbfed068cffa6fc0643
         x-checker-data:
           type: json
           url: https://pypi.org/pypi/argon2-cffi-bindings/json
