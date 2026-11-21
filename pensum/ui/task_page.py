@@ -6,6 +6,7 @@ from gi.repository import Adw, GLib, Gtk, Pango
 
 from pensum import duration
 from pensum.store import dates, reminders, tasks
+from pensum.ui import scroll
 from pensum.ui.task_row import TaskRow
 
 
@@ -243,7 +244,7 @@ class TaskPage(Adw.NavigationPage):
     def focus_row(self, task_id):
         for row in self.sub_rows:
             if row.task_id == task_id:
-                row.grab_focus()
+                scroll.focus_in_place(row)
                 return True
         return False
 

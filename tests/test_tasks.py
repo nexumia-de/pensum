@@ -2,7 +2,7 @@
 Productivity's import checks accept."""
 import pytest
 
-from pensum.store import backup, contexts, dates, defaults, tasks, tracking, validate
+from pensum.store import backup, contexts, dates, defaults, order, tasks, tracking, validate
 from pensum.store.dataset import Context, Dataset
 
 NOW = 1_780_000_000_000  # 2026-05-28
@@ -118,7 +118,7 @@ def test_schedule_move_and_tags(ds):
 def test_reorder(ds):
     a = tasks.add_task(ds, "a", Context.today(), NOW, top=False)
     b = tasks.add_task(ds, "b", Context.today(), NOW, top=False)
-    tasks.move(ds, b["id"], Context.today(), -1, ds.today(NOW))
+    order.move(ds, b["id"], Context.today(), -1, ds.today(NOW))
     assert ds.top_level_ids(Context.today(), ds.today(NOW)) == [b["id"], a["id"]]
 
 
@@ -140,17 +140,17 @@ def test_changes_on_real_backup_stay_valid(sp_backup):
 def test_move_to_edges_and_subtasks(ds):
     a, b, c = (tasks.add_task(ds, n, Context.today(), NOW, top=False) for n in "abc")
     day = ds.today(NOW)
-    assert tasks.move(ds, c["id"], Context.today(), -100, day)
+    assert order.move(ds, c["id"], Context.today(), -100, day)
     assert ds.top_level_ids(Context.today(), day) == [c["id"], a["id"], b["id"]]
-    assert tasks.move(ds, c["id"], Context.today(), 100, day)
+    assert order.move(ds, c["id"], Context.today(), 100, day)
     assert ds.top_level_ids(Context.today(), day) == [a["id"], b["id"], c["id"]]
-    assert not tasks.move(ds, c["id"], Context.today(), 1, day)
+    assert not order.move(ds, c["id"], Context.today(), 1, day)
     s1 = tasks.add_subtask(ds, a["id"], "s1", NOW)
     s2 = tasks.add_subtask(ds, a["id"], "s2", NOW)
-    assert tasks.move(ds, s2["id"], None, -1)
+    assert order.move(ds, s2["id"], None, -1)
     assert a["subTaskIds"] == [s2["id"], s1["id"]]
     project = Context("project", defaults.INBOX_ID)
-    assert tasks.move(ds, a["id"], project, 1, day)
+    assert order.move(ds, a["id"], project, 1, day)
     valid(ds)
 
 
@@ -238,7 +238,7 @@ def test_backlog(ds):
     assert ds.top_level_ids(ctx) == [b["id"]]
     assert [t["id"] for t in ds.backlog_tasks(project["id"])] == [a["id"]]
     tasks.set_backlog(ds, b["id"], True)
-    assert tasks.move(ds, a["id"], ctx, -1)
+    assert order.move(ds, a["id"], ctx, -1)
     assert project["backlogTaskIds"] == [a["id"], b["id"]]
     assert tasks.set_backlog(ds, a["id"], False)
     assert ds.top_level_ids(ctx) == [a["id"]]
@@ -281,4 +281,77 @@ def test_schedule_time(ds):
     assert task["id"] in ds.top_level_ids(Context.today(), day)
     tasks.clear_time(ds, task["id"], NOW)
     assert task["dueDay"] == day and "dueWithTime" not in task
+    valid(ds)
+
+
+def test_drop_writes_only_the_list_shown(ds):
+    """Dropping a task on another one changes the one id list Super
+    Productivity keeps for that list, and no task."""
+    import copy
+    day = ds.today(NOW)
+    project = contexts.add_project(ds, "Garden")
+    tag = contexts.add_tag(ds, "Outside", NOW)
+    ctx = Context("project", project["id"])
+    a, b, c, d = (tasks.add_task(ds, n, ctx, NOW, top=False) for n in "abcd")
+    ids = [t["id"] for t in (a, b, c, d)]
+    for task in (a, b, c):
+        tasks.set_tags(ds, task["id"], [tag["id"]], NOW)
+        tasks.schedule_day(ds, task["id"], day, NOW)
+    before = copy.deepcopy(ds.data)
+    today_order = ds.tag_entities[defaults.TODAY_ID]["taskIds"]
+
+    # Down: the task lands after the one it was dropped on.
+    assert order.move_to(ds, ids[0], ctx, ids[2], day)
+    assert project["taskIds"] == [ids[1], ids[2], ids[0], ids[3]]
+    assert ds.tag_entities[tag["id"]]["taskIds"] == ids[:3]
+    assert today_order == ids[:3]
+    # Up: before it.
+    assert order.move_to(ds, ids[3], ctx, ids[1], day)
+    assert project["taskIds"] == [ids[3], ids[1], ids[2], ids[0]]
+    assert order.move_to(ds, ids[2], Context("tag", tag["id"]), ids[0], day)
+    assert ds.tag_entities[tag["id"]]["taskIds"] == [ids[2], ids[0], ids[1]]
+    assert order.move_to(ds, ids[1], Context.today(), ids[0], day)
+    assert today_order == [ids[1], ids[0], ids[2]]
+    assert project["taskIds"] == [ids[3], ids[1], ids[2], ids[0]]
+    assert ds.data["task"] == before["task"]
+    valid(ds)
+
+    # Not on itself, not on a task of another list.
+    assert not order.move_to(ds, ids[0], ctx, ids[0], day)
+    assert not order.move_to(ds, ids[3], Context.today(), ids[0], day)
+    assert not order.move_to(ds, ids[0], Context.today(), ids[3], day)
+    assert order.siblings(ds, ids[3], Context.today(), day) == []
+
+
+def test_drop_among_subtasks_backlog_and_past_hidden_tasks(ds):
+    project = contexts.add_project(ds, "Garden")
+    ctx = Context("project", project["id"])
+    a, b, c = (tasks.add_task(ds, n, ctx, NOW, top=False) for n in "abc")
+    subs = [tasks.add_subtask(ds, a["id"], n, NOW)["id"] for n in ("s1", "s2", "s3")]
+    assert order.move_to(ds, subs[2], None, subs[0])
+    assert a["subTaskIds"] == [subs[2], subs[0], subs[1]]
+    assert project["taskIds"] == [a["id"], b["id"], c["id"]]
+    # A subtask is not dropped on a top-level task, nor the other way.
+    assert not order.move_to(ds, subs[0], ctx, b["id"])
+    assert not order.move_to(ds, b["id"], ctx, subs[0])
+    tasks.set_backlog(ds, c["id"], True)
+    tasks.set_backlog(ds, b["id"], True)
+    assert project["backlogTaskIds"] == [b["id"], c["id"]]
+    assert order.move_to(ds, c["id"], ctx, b["id"])
+    assert project["backlogTaskIds"] == [c["id"], b["id"]]
+    assert not order.move_to(ds, a["id"], ctx, b["id"])
+    assert project["taskIds"] == [a["id"]]
+    # Ids the list does not show (stale ones in Today's order) stay.
+    day = ds.today(NOW)
+    x, y, z = (tasks.add_task(ds, n, Context.today(), NOW, top=False) for n in "xyz")
+    today_order = ds.tag_entities[defaults.TODAY_ID]["taskIds"]
+    today_order.insert(1, "stale")
+    assert order.move_to(ds, z["id"], Context.today(), x["id"], day)
+    assert today_order == [z["id"], x["id"], "stale", y["id"]]
+    # Super Productivity's rule: right after the task shown before it.
+    assert order.move_to(ds, y["id"], Context.today(), x["id"], day)
+    assert today_order == [z["id"], y["id"], x["id"], "stale"]
+    assert order.move_to(ds, z["id"], Context.today(), x["id"], day)
+    assert today_order == [y["id"], x["id"], z["id"], "stale"]
+    today_order.remove("stale")
     valid(ds)

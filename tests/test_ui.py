@@ -1,6 +1,7 @@
 """The pages through the real widgets: lists, adding and finishing tasks,
 the task page with subtasks and timer, list menus and preferences. Needs
 a display (CI runs pytest under xvfb-run)."""
+import json
 import os
 import re
 
@@ -140,6 +141,105 @@ def test_reorder_menu_and_archived_projects(app, tmp_path):
     archived._on_unarchive(None, "demo-garden")
     iterate()
     assert not window.ds.project_entities["demo-garden"]["isArchived"]
+    window.close()
+
+
+def test_drag_rows_to_reorder(app, tmp_path):
+    """A row dropped on another row of its list takes its place, in the
+    list's own id list; rows of other lists refuse it."""
+    from pensum.ui import row_drag
+    window = new_window(app, tmp_path, demo.create())
+    ds = window.ds
+    window.show_list(Context("project", "demo-garden"))
+    iterate()
+    page = window.list_page
+    project = ds.project_entities["demo-garden"]
+    rows = [r for r in page.rows if r.get_parent() is page.open_list]
+    ids = [r.task_id for r in rows]
+    assert len(ids) >= 3 and project["taskIds"][:len(ids)] == ids
+    for row in rows:
+        kinds = {type(c) for c in row.observe_controllers()}
+        assert {Gtk.DragSource, Gtk.DropTarget} <= kinds
+    tasks_before = json.dumps(ds.data["task"], sort_keys=True)
+    today_before = list(ds.tag_entities["TODAY"]["taskIds"])
+    assert row_drag.can_drop(rows[0], rows[2]) and not row_drag.can_drop(rows[0], rows[0])
+    assert row_drag.drop(rows[0], rows[2])
+    iterate()
+    moved = [ids[1], ids[2], ids[0]] + ids[3:]
+    assert project["taskIds"][:len(ids)] == moved
+    assert [r.task_id for r in page.rows if r.get_parent() is page.open_list] == moved
+    assert json.dumps(ds.data["task"], sort_keys=True) == tasks_before
+    assert ds.tag_entities["TODAY"]["taskIds"] == today_before
+    assert validate.problems(ds.data) == []
+
+    # Subtasks reorder on the task page, in the parent's subTaskIds.
+    parent = next(t for t in ds.tasks.values() if len(t.get("subTaskIds", ())) >= 2)
+    subs = list(parent["subTaskIds"])
+    window.show_task(parent["id"])
+    iterate()
+    sub_rows = window.nav.get_visible_page().sub_rows
+    assert row_drag.drop(sub_rows[-1], sub_rows[0])
+    iterate()
+    assert parent["subTaskIds"] == [subs[-1]] + subs[:-1]
+    # A subtask is not dropped into the list behind the page.
+    assert not row_drag.can_drop(window.nav.get_visible_page().sub_rows[0],
+                                 page.rows[0])
+    assert validate.problems(ds.data) == []
+    window.close()
+
+
+def test_reordering_keeps_a_long_list_where_it_is(app, tmp_path):
+    from pensum.store import tasks
+    from pensum.ui import row_drag
+    window = new_window(app, tmp_path, demo.create())
+    context = Context("project", "demo-garden")
+    for number in range(30):
+        tasks.add_task(window.ds, f"Bed {number}", context, top=False)
+    window.show_list(context)
+    window.changed()
+    iterate()
+    page = window.list_page
+    adjustment = page.scroller.get_vadjustment()
+    adjustment.set_value(adjustment.get_upper())
+    iterate()
+    scrolled = adjustment.get_value()
+    assert scrolled > 0
+    last = page.rows[-1].task_id
+    assert row_drag.drop(page.rows[-1], page.rows[-3])
+    iterate()
+    assert adjustment.get_value() == scrolled
+    assert window.get_focus().task_id == last
+    window.get_focus().move(1)
+    iterate()
+    assert adjustment.get_value() == scrolled
+    assert window.get_focus().task_id == last
+    window.close()
+
+
+def test_long_press_opens_the_row_menu_on_release(app, tmp_path):
+    """Holding a row makes it ready to drag; the menu with Move Up and
+    Move Down opens when it is let go, and from the keyboard."""
+    window = new_window(app, tmp_path, demo.create())
+    window.show_list(Context("project", "demo-garden"))
+    iterate()
+    row = window.list_page.rows[0]
+    row._on_held(None, 10, 10)
+    assert row.held and row.has_css_class("pensum-held")
+    assert not row.popover.get_visible()
+    release = next(c for c in row.observe_controllers()
+                   if isinstance(c, Gtk.GestureClick) and c.get_button() == 1)
+    row._on_release(release, 1, 10, 10)
+    iterate()
+    assert row.popover.get_visible() and not row.held
+    row.popover.popdown()
+    row.show_menu()
+    iterate()
+    assert row.popover.get_visible()
+    row.popover.popdown()
+    first, second = (r.task_id for r in window.list_page.rows[:2])
+    row.activate_action("row.down", None)
+    iterate()
+    assert [r.task_id for r in window.list_page.rows[:2]] == [second, first]
     window.close()
 
 

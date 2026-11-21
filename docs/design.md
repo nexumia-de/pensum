@@ -38,8 +38,22 @@ keep the title, back and the menu ([adaptive rule 10](../../phosh-toolkit/docs/a
   editor), estimate, Today, planned day and time, deadline, priority,
   project, tags, notes, subtasks, and Delete at the end (out of easy
   reach on purpose). Mark as Done and Start/Stop Timer in a bottom bar, as normal buttons at least 44 px high (`.pensum-bar-button`); `pill` buttons there made gtk4-broadwayd crash in about half of the CI screenshots (checked locally with the GNOME 51 Flatpak, 2026-11-05).
-- **Row menu**: long press or right click on a task row opens Move to
-  Top / Up / Down / to Bottom; Alt+↑/↓ does the same from the keyboard.
+- **Reorder by dragging** (`pensum/ui/row_drag.py`): a task row dropped
+  on another row of the same list takes its place; a line in the accent
+  colour shows where it lands (above the row when moving up, below when
+  moving down), the dragged row is dimmed. A pointer drags at once. A
+  finger drags after a long press (the row is tinted when it is ready),
+  because until then a drag scrolls the list. Near the upper or lower
+  edge the list scrolls. Open tasks, done tasks, the backlog and a
+  task's subtasks each reorder among themselves; overdue tasks have no
+  order. Checked with a real pointer (Xvfb) and with real touch events
+  in a headless Mutter on 2026-11-21; the feel on the phone is still to
+  be checked there.
+- **Row menu**: a long press let go without moving, a right click or the
+  Menu key (Shift+F10) on a task row opens Move to Top / Up / Down / to
+  Bottom, the accessible way to reorder; Alt+↑/↓ moves the focused row.
+  The list stays where it is scrolled and the moved row keeps the focus
+  (`pensum/ui/scroll.py`).
 - **Timer bar** at the very bottom while a task runs: title, time today,
   stop button; tapping it opens the task. Hidden on that task's own page, without the reveal animation (animating it while the page slid in crashed gtk4-broadwayd).
 - **Undo**: deleting a task or a list and Finish Day act at once and
@@ -95,5 +109,4 @@ nothing scrolls sideways at 360 px.
 
 # Not yet done
 
-Drag to reorder, swipe actions on rows,
-Markdown rendering of notes.
+Swipe actions on rows, Markdown rendering of notes.

@@ -108,6 +108,16 @@ top-level tasks), `theme` (colours, background images), `advancedCfg`
 `isDone`, `doneOn`, `isEnableBacklog`, `backlogTaskIds`, `noteIds`,
 `issueIntegrationCfgs`; tags add `color` and `created`.
 
+**Order.** A list's order is only these id lists: `project.taskIds`
+(and `backlogTaskIds`), `tag.taskIds`, `TODAY.taskIds`, and for subtasks
+the parent's `subTaskIds`; reordering changes no task. A drop is stored
+as "after the task now shown before it" (`moveItemAfterAnchor` in
+`work-context-meta.helper.ts`): the id is taken out and put right after
+that anchor, or at the start of the id list when it is shown first; ids
+the list does not show stay where they are. `pensum.store.order.move_to`
+writes a drop this way; `move` (menu, Alt+↑/↓) swaps with the shown
+neighbour.
+
 `TODAY` is a **virtual tag** (ARCHITECTURE-DECISIONS #2): a task is in
 Today when its `dueDay` is today, or `dueWithTime` falls on today; the
 id `TODAY` is never in `task.tagIds`, and `TODAY.taskIds` only orders

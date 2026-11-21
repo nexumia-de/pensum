@@ -30,7 +30,7 @@ lost when the same backup goes back to Super Productivity.
 | Tags: create, rename, delete, tag tasks | `tag`, `task.tagIds`, `menuTree.tagTree` | **M1, done** |
 | Today list (virtual tag, logical day) | `task.dueDay`/`dueWithTime`, `TODAY.taskIds` | **M1, done** |
 | Plan a task for a day | `task.dueDay`, `planner.days` | **M1, done** |
-| Reorder tasks | `project/tag.taskIds`, `subTaskIds` | **M1**: menu (long press, right click, Alt+↑/↓) done; drag open (#3) |
+| Reorder tasks | `project.taskIds`/`backlogTaskIds`, `tag.taskIds`, `TODAY.taskIds`, `subTaskIds` | **M1**: done: drag (touch: after a long press), row menu, Alt+↑/↓ (#3) |
 | Move a task to another project | `task.projectId` | **M1, done** |
 | Overdue tasks in Today | `dueDay` < today | **M2, done** (#6) |
 | Plan with time of day, schedule timeline | `dueWithTime`, `hasPlannedTime`, `globalConfig.schedule` | **M2**: time of day done (#7); timeline open |
