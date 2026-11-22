@@ -19,14 +19,17 @@ class Settings:
     # Stay in the background while a reminder is pending, so it also
     # comes when the window is closed (pensum.reminder_watch).
     remind_when_closed: bool = True
-    # The Super Productivity sync folder last read (pensum.sync): "webdav"
-    # or "local", the server, user and folder (the password is in the
-    # keyring), and the syncVersion read last from which source.
+    # The Super Productivity sync folder last read (pensum.sync): "webdav",
+    # "local" or "github", the server, user and folder (the password is in
+    # the keyring), the GitHub repository and folder in it (the token is in
+    # the keyring), and the syncVersion read last from which source.
     sync_kind: str = "webdav"
     sync_url: str = ""
     sync_user: str = ""
     sync_folder: str = "super-productivity"
     sync_local_path: str = ""
+    sync_github_repo: str = ""
+    sync_github_folder: str = ""
     sync_seen_source: str = ""
     sync_seen_version: int = 0
     # Day Planner's client id in the sync folder's vector clocks (#30).

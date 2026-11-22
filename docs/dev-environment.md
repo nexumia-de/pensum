@@ -123,6 +123,14 @@ without login on 2026-11-12.
 
 # Sync test
 
+With `TABULARIUM` set to a checkout of nexumia-de/tabularium the sync
+test runs a fourth scenario, `git`: the WebDAV folder is a clone of a
+bare repository, the plugin's Git step runs around each Super
+Productivity sync and Pensum uses the GitHub stand-in
+(`tests/github_fake.py`, port 2346) ([Git Sync](git-sync.md#tests)).
+Playwright as preinstalled on the cloud image works when
+`tests/real_app` has no `node_modules` of its own (2026-11-22).
+
 On the cloud image Playwright's Chromium is preinstalled for another
 Playwright version; a folder of links under the version
 `tests/real_app` asks for makes it run (2026-11-22, 2 min against the

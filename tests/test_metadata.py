@@ -38,22 +38,28 @@ def test_phone_metadata():
     assert root.find("url[@type='donation']").text == pensum.SUPPORT_URL
 
 
-def test_manifest_has_no_file_access_and_network_only_for_webdav():
+def test_manifest_has_no_file_access_and_network_only_for_sync():
     manifest = (ROOT / f"{APP_ID}.yml").read_text()
     args = [line.strip()[2:] for line in manifest.splitlines()
             if line.strip().startswith("- --")]
     assert not [a for a in args if a.startswith("--filesystem")]
-    # The network is for a sync folder on WebDAV (#28): only that module
-    # opens connections; it reads with GET and replaces a file only with a
-    # conditional PUT when Day Planner sends changes (#30).
+    # The network is for a sync folder on WebDAV (#28) or in a GitHub
+    # repository kept by Git Sync: only those modules open connections.
+    # WebDAV reads with GET and replaces a file only with a conditional PUT
+    # when Day Planner sends changes (#30); GitHub writes only the branch
+    # day-planner, never main (docs/git-sync.md).
     assert "--share=network" in args
     network = re.compile(r"^\s*(import|from)\s+(urllib|http|socket|ssl|requests)\b", re.M)
     users = {p.relative_to(ROOT).as_posix() for p in (ROOT / "pensum").rglob("*.py")
              if network.search(p.read_text())}
-    assert users == {"pensum/sync/webdav.py"}
+    assert users == {"pensum/sync/webdav.py", "pensum/sync/github.py"}
     webdav = (ROOT / "pensum/sync/webdav.py").read_text()
     assert re.findall(r'method="(\w+)"', webdav) == ["GET", "PUT"]
     assert '"If-Match"' in webdav
+    github = (ROOT / "pensum/sync/github.py").read_text()
+    assert re.findall(r'"(PATCH|POST)", f?"git/refs[^"]*"', github) == ["POST", "PATCH"]
+    assert 'f"git/refs/heads/{HANDOFF}"' in github and "heads/{MAIN}\"," not in github
+    assert 'HANDOFF = "day-planner"' in github
     commit = re.search(r"- name: phosh-toolkit.*?commit: (\w+)", manifest, re.S)
     assert commit and len(commit.group(1)) == 40
 
