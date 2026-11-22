@@ -15,6 +15,7 @@ def main_menu():
     backup.append(_("Read Sync Folder…"), "app.show-sync")
     menu.append_section(None, backup)
     plan = Gio.Menu()
+    plan.append(_("Planner"), "app.show-planner")
     plan.append(_("Daily Summary"), "app.show-summary")
     menu.append_section(None, plan)
     rest = Gio.Menu()

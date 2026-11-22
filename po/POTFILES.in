@@ -11,6 +11,7 @@ pensum/store/dataset.py
 pensum/store/focus.py
 pensum/store/metric.py
 pensum/store/notes.py
+pensum/store/planner.py
 pensum/store/reminders.py
 pensum/store/worklog.py
 pensum/sync/crypto.py
@@ -46,6 +47,7 @@ pensum/ui/notes_box.py
 pensum/ui/notes_page.py
 pensum/ui/notes_view.py
 pensum/ui/pinned_notes.py
+pensum/ui/planner_page.py
 pensum/ui/repeat_page.py
 pensum/ui/search_page.py
 pensum/ui/section_group.py

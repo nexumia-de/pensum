@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pensum\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-22 06:01+0000\n"
+"POT-Creation-Date: 2026-11-22 06:02+0000\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -36,31 +36,38 @@ msgstr "Später erinnern"
 msgid "Enjoy your break"
 msgstr "Genieß deine Pause"
 
-#: pensum/game/sentences.py:13 pensum/ui/repeat_page.py:12
+#: pensum/game/sentences.py:13 pensum/ui/planner_page.py:16
+#: pensum/ui/repeat_page.py:12
 msgid "Monday"
 msgstr "Montag"
 
-#: pensum/game/sentences.py:13 pensum/ui/repeat_page.py:12
+#: pensum/game/sentences.py:13 pensum/ui/planner_page.py:16
+#: pensum/ui/repeat_page.py:12
 msgid "Tuesday"
 msgstr "Dienstag"
 
-#: pensum/game/sentences.py:13 pensum/ui/repeat_page.py:12
+#: pensum/game/sentences.py:13 pensum/ui/planner_page.py:16
+#: pensum/ui/repeat_page.py:12
 msgid "Wednesday"
 msgstr "Mittwoch"
 
-#: pensum/game/sentences.py:13 pensum/ui/repeat_page.py:12
+#: pensum/game/sentences.py:13 pensum/ui/planner_page.py:16
+#: pensum/ui/repeat_page.py:12
 msgid "Thursday"
 msgstr "Donnerstag"
 
-#: pensum/game/sentences.py:13 pensum/ui/repeat_page.py:12
+#: pensum/game/sentences.py:13 pensum/ui/planner_page.py:16
+#: pensum/ui/repeat_page.py:12
 msgid "Friday"
 msgstr "Freitag"
 
-#: pensum/game/sentences.py:14 pensum/ui/repeat_page.py:13
+#: pensum/game/sentences.py:14 pensum/ui/planner_page.py:17
+#: pensum/ui/repeat_page.py:13
 msgid "Saturday"
 msgstr "Samstag"
 
-#: pensum/game/sentences.py:14 pensum/ui/repeat_page.py:13
+#: pensum/game/sentences.py:14 pensum/ui/planner_page.py:17
+#: pensum/ui/repeat_page.py:13
 msgid "Sunday"
 msgstr "Sonntag"
 
@@ -69,7 +76,7 @@ msgstr "Sonntag"
 msgid "Monday to Friday"
 msgstr "Montag bis Freitag"
 
-#: pensum/main.py:197
+#: pensum/main.py:198
 msgid ""
 "Tasks and time tracking for the phone. Reads and writes Super Productivity's "
 "backup files. Not affiliated with the Super Productivity project."
@@ -78,11 +85,11 @@ msgstr ""
 "Sicherungsdateien von Super Productivity. Steht in keiner Verbindung zum "
 "Projekt Super Productivity."
 
-#: pensum/main.py:201
+#: pensum/main.py:202
 msgid "Support Development"
 msgstr "Entwicklung unterstützen"
 
-#: pensum/preferences.py:10 pensum/ui/sidebar.py:22
+#: pensum/preferences.py:10 pensum/ui/sidebar.py:23
 msgid "Preferences"
 msgstr "Einstellungen"
 
@@ -146,7 +153,7 @@ msgid "Automatic Backups"
 msgstr "Automatische Sicherungen"
 
 #: pensum/preferences.py:55 pensum/ui/journey/page.py:23
-#: pensum/ui/journey/page.py:103 pensum/ui/sidebar.py:128
+#: pensum/ui/journey/page.py:103 pensum/ui/sidebar.py:129
 msgid "Journeys"
 msgstr "Reisen"
 
@@ -228,8 +235,8 @@ msgstr ""
 msgid "The file can't be read: {reason}"
 msgstr "Die Datei kann nicht gelesen werden: {reason}"
 
-#: pensum/store/dataset.py:80 pensum/ui/sidebar.py:123
-#: pensum/ui/task_list.py:21 pensum/ui/task_page.py:67
+#: pensum/store/dataset.py:80 pensum/ui/planner_page.py:15
+#: pensum/ui/sidebar.py:124 pensum/ui/task_list.py:21 pensum/ui/task_page.py:67
 #: pensum/ui/task_page.py:288 pensum/ui/time_dialog.py:45
 msgid "Today"
 msgstr "Heute"
@@ -401,7 +408,7 @@ msgstr "Dem Zertifikat des Servers wird nicht vertraut."
 msgid "Can't reach the server."
 msgstr "Der Server ist nicht erreichbar."
 
-#: pensum/ui/archived_page.py:12 pensum/ui/sidebar.py:21
+#: pensum/ui/archived_page.py:12 pensum/ui/sidebar.py:22
 msgid "Archived Projects"
 msgstr "Archivierte Projekte"
 
@@ -415,7 +422,7 @@ msgstr "Archiviere ein Projekt über das Menü seiner Liste."
 
 #: pensum/ui/archived_page.py:37 pensum/ui/search_page.py:52
 #: pensum/ui/section_group.py:17 pensum/ui/section_group.py:93
-#: pensum/ui/sidebar.py:130 pensum/ui/sidebar.py:132
+#: pensum/ui/sidebar.py:131 pensum/ui/sidebar.py:133
 #: pensum/ui/tags_dialog.py:28 pensum/ui/task_page.py:232
 #: pensum/ui/task_page.py:242 pensum/ui/task_page.py:441
 #: pensum/ui/task_row.py:144 pensum/ui/task_row.py:211
@@ -1091,6 +1098,26 @@ msgstr "Keine Notizen"
 msgid "Pinned Notes"
 msgstr "Angeheftete Notizen"
 
+#
+#: pensum/ui/planner_page.py:24 pensum/ui/sidebar.py:18
+msgid "Planner"
+msgstr "Planer"
+
+#: pensum/ui/planner_page.py:49 pensum/ui/task_row.py:47
+#, python-brace-format
+msgid "{time} estimated"
+msgstr "{time} geschätzt"
+
+#
+#: pensum/ui/planner_page.py:54
+msgid "Nothing planned"
+msgstr "Nichts geplant"
+
+#
+#: pensum/ui/planner_page.py:72 pensum/ui/planner_page.py:73
+msgid "Move to Another Day"
+msgstr "Auf einen anderen Tag verschieben"
+
 #: pensum/ui/repeat_page.py:14
 msgid "Mon"
 msgstr "Mo"
@@ -1305,7 +1332,7 @@ msgstr "Wiederholung beendet"
 msgid "Undo"
 msgstr "Rückgängig"
 
-#: pensum/ui/search_page.py:12 pensum/ui/sidebar.py:49 pensum/ui/sidebar.py:51
+#: pensum/ui/search_page.py:12 pensum/ui/sidebar.py:50 pensum/ui/sidebar.py:52
 msgid "Search"
 msgstr "Suche"
 
@@ -1375,53 +1402,53 @@ msgstr "Sicherung exportieren…"
 msgid "Read Sync Folder…"
 msgstr "Sync-Ordner lesen…"
 
-#: pensum/ui/sidebar.py:18 pensum/ui/summary_page.py:23
+#: pensum/ui/sidebar.py:19 pensum/ui/summary_page.py:23
 msgid "Daily Summary"
 msgstr "Tagesrückblick"
 
-#: pensum/ui/sidebar.py:23
+#: pensum/ui/sidebar.py:24
 #, python-brace-format
 msgid "About {name}"
 msgstr "Über {name}"
 
-#: pensum/ui/sidebar.py:30
+#: pensum/ui/sidebar.py:31
 msgid "New Project…"
 msgstr "Neues Projekt…"
 
-#: pensum/ui/sidebar.py:31
+#: pensum/ui/sidebar.py:32
 msgid "New Tag…"
 msgstr "Neues Schlagwort…"
 
-#: pensum/ui/sidebar.py:43 pensum/ui/sidebar.py:44
+#: pensum/ui/sidebar.py:44 pensum/ui/sidebar.py:45
 msgid "Main Menu"
 msgstr "Hauptmenü"
 
-#: pensum/ui/sidebar.py:54 pensum/ui/sidebar.py:55
+#: pensum/ui/sidebar.py:55 pensum/ui/sidebar.py:56
 msgid "Add List"
 msgstr "Liste hinzufügen"
 
-#: pensum/ui/sidebar.py:74
+#: pensum/ui/sidebar.py:75
 msgid "New Project"
 msgstr "Neues Projekt"
 
-#: pensum/ui/sidebar.py:74 pensum/ui/tags_dialog.py:32
+#: pensum/ui/sidebar.py:75 pensum/ui/tags_dialog.py:32
 msgid "New Tag"
 msgstr "Neues Schlagwort"
 
-#: pensum/ui/sidebar.py:82
+#: pensum/ui/sidebar.py:83
 msgid "Create"
 msgstr "Anlegen"
 
-#: pensum/ui/sidebar.py:98
+#: pensum/ui/sidebar.py:99
 #, python-brace-format
 msgid "{title}, {count} open"
 msgstr "{title}, {count} offen"
 
-#: pensum/ui/sidebar.py:110 pensum/ui/sync_page.py:42
+#: pensum/ui/sidebar.py:111 pensum/ui/sync_page.py:42
 msgid "Projects"
 msgstr "Projekte"
 
-#: pensum/ui/sidebar.py:110 pensum/ui/sync_page.py:43
+#: pensum/ui/sidebar.py:111 pensum/ui/sync_page.py:43
 #: pensum/ui/tags_dialog.py:10 pensum/ui/task_page.py:132
 msgid "Tags"
 msgstr "Schlagwörter"
@@ -1849,11 +1876,6 @@ msgstr "Frist heute"
 #, python-brace-format
 msgid "Deadline {date}"
 msgstr "Frist {date}"
-
-#: pensum/ui/task_row.py:47
-#, python-brace-format
-msgid "{time} estimated"
-msgstr "{time} geschätzt"
 
 #: pensum/ui/task_row.py:51
 #, python-brace-format

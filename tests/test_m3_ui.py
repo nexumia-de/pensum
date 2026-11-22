@@ -148,3 +148,19 @@ def test_attachments_on_the_task_page(window):
     group._remove(task["attachments"][1]["id"])
     assert len(task["attachments"]) == 1
     valid(window)
+
+
+def test_planner_moves_a_task(window):
+    from gi.repository import GLib
+    from pensum.store import planning
+    from pensum.ui.planner_page import PlannerPage
+    task = tasks.add_task(window.ds, "Write", Context.today())
+    tomorrow = dates.shift_day(window.ds.today(), 1)
+    page = PlannerPage(window)
+    window.nav.push(page)
+    iterate()
+    page._on_move(None, GLib.Variant("(ss)", (task["id"], tomorrow)))
+    assert window.ds.planned_day(task) == tomorrow
+    assert task["id"] in window.ds.data["planner"]["days"][tomorrow]
+    planning.schedule_day(window.ds, task["id"], None)
+    valid(window)

@@ -31,6 +31,7 @@ Change history is in [log.md](log.md).
 * [Daily summary](daily-summary.md) - The day's work, breaks and focus sessions and the evaluation in `metric`.
 * [Project notes](project-notes.md) - A project's notes in `note`, pinned to Today, the reducers' order rules.
 * [Task attachments](attachments.md) - `task.attachments` on the task page; links and files open through the portal, commands never run.
+* [Planner](planner.md) - Today and the next six days, the estimate left per day, moving a task to another day.
 
 # Reminders
 

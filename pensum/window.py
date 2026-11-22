@@ -301,6 +301,12 @@ class Window(Adw.ApplicationWindow):
     def show_summary(self):
         from pensum.ui.summary_page import SummaryPage
         self.nav.push(SummaryPage(self))
+
+    def show_planner(self):
+        from pensum.ui.planner_page import PlannerPage
+        self.nav.pop_to_page(self.main_page)
+        self.nav.push(PlannerPage(self))
+
     def show_task(self, task_id):
         if task_id not in self.ds.tasks:
             return
