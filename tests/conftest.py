@@ -18,6 +18,8 @@ def xdg(tmp_path, monkeypatch):
     for name in ("XDG_CONFIG_HOME", "XDG_DATA_HOME", "XDG_CACHE_HOME"):
         monkeypatch.setenv(name, str(tmp_path / name.lower()))
     monkeypatch.delenv("PENSUM_DEMO", raising=False)
+    # The token of "Report a Problem…" stays out of the real keyring.
+    monkeypatch.setenv("PHOSH_TOOLKIT_TEST_KEYRING", "memory")
     # QuestArc's texts follow the locale (German through the engine); the
     # tests read English unless a test sets another.
     monkeypatch.setenv("LANG", "C.UTF-8")

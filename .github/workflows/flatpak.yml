@@ -10,7 +10,7 @@ jobs:
   flatpak:
     permissions:
       contents: write
-    uses: nexumia-de/phosh-toolkit/.github/workflows/flatpak.yml@main
+    uses: nexumia-de/phosh-toolkit/.github/workflows/flatpak.yml@1910057162098f0963b44623e91b3650f685c49b # v0.8.1
     with:
       manifest: de.nexumia.Pensum.yml
       # Tags publish Pensum, every push to main publishes Pensum (Nightly);

@@ -1078,3 +1078,32 @@ def test_import_without_loss_asks_the_plain_question(app, tmp_path):
     assert dialog.get_response_label("delete") == "Replace"
     dialog.close()
     window.close()
+
+
+def test_report_a_problem_is_in_the_menu_and_about_links_the_form(app, monkeypatch):
+    """"Report a Problem…" (phosh-toolkit docs/feedback.md): the action
+    exists, the main menu offers it next to About, and the About dialog's
+    issue link is the repository's bug form with version and device."""
+    from urllib.parse import parse_qs, urlparse
+
+    from pensum import REPO_SLUG, VERSION_LABEL
+    from pensum.ui import sidebar
+
+    assert app.lookup_action("report-problem") is not None
+    menu = sidebar.main_menu()
+    targets = []
+    for i in range(menu.get_n_items()):
+        section = menu.get_item_link(i, "section")
+        for j in range(section.get_n_items()):
+            targets.append(section.get_item_attribute_value(j, "action").get_string())
+    assert targets.index("app.report-problem") < targets.index("app.about")
+
+    shown = []
+    monkeypatch.setattr(Adw.AboutDialog, "present", lambda self, *_: shown.append(self))
+    app._on_about()
+    url = urlparse(shown[0].get_issue_url())
+    assert url.path == f"/{REPO_SLUG}/issues/new"
+    query = parse_qs(url.query)
+    assert query["template"] == ["bug.yml"]
+    assert query["version"] == [VERSION_LABEL]
+    assert query["device"]

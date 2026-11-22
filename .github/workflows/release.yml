@@ -19,7 +19,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    uses: nexumia-de/phosh-toolkit/.github/workflows/release.yml@main
+    uses: nexumia-de/phosh-toolkit/.github/workflows/release.yml@1910057162098f0963b44623e91b3650f685c49b # v0.8.1
     with:
       version: ${{ inputs.version }}
     secrets:
