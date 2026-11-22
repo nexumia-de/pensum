@@ -25,9 +25,11 @@ the shared protocol is in its `docs/protocol.md`[^protocol].
 # How it fits
 
 - Super Productivity syncs ("Local file", manual sync only) into a
-  clone of a private repository; the plugin runs prepare (fetch, take
-  Day Planner's hand-over), Super Productivity's sync, finish (commit,
-  push). Only the plugin writes `main`.
+  folder; the plugin runs prepare (bring the repository's and Day
+  Planner's changes into the folder), Super Productivity's sync, finish
+  (commit what it wrote), all through GitHub's REST API, no `git`
+  command (since Git Sync 0.3.0: Super Productivity from Flathub cannot
+  run one). Only the plugin moves `main`.
 - Day Planner: Sync Folder → Kind **GitHub Repository**, the
   repository `owner/name`, an optional folder in it, and a fine-grained
   token for that one repository with Contents: read and write (in the
@@ -97,9 +99,12 @@ alone. Day Planner then:
   page on another host not followed), the setup links, and finding and
   choosing the repository on the page.
 - `tests/real_app/run_sync.sh`, scenario git (with `TABULARIUM` set to a
-  tabularium checkout; CI pins one): the WebDAV folder is the clone, each
-  Super Productivity sync runs between the plugin's prepare and finish
-  (`git_cycle.mjs`), Pensum reads and sends through the stand-in; round 3
+  tabularium checkout; CI pins one): each Super Productivity sync into
+  the WebDAV folder runs between the plugin's prepare and finish
+  (`git_cycle.mjs`: tabularium's engine in its stand-in for Super
+  Productivity's plugin host, `scripts/host.mjs`), which keep the folder
+  in the bare repository behind the stand-in; Pensum reads and sends
+  through the same stand-in; round 3
   checks the hand-over was taken and Super Productivity shows Pensum's
   edits. Green against the live web app on 2026-11-22.
 - Not tested against github.com itself: the cloud session has no GitHub
