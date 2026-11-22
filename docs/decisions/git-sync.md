@@ -17,14 +17,14 @@ details were chosen by the agent ([tabularium's decision](https://github.com/nex
 
 - WebDAV needs a server; SuperSync is not planned (#34).
 - Super Productivity has no Git sync, and a plugin cannot add a sync
-  provider; a desktop plugin may run `git` (node execution) and trigger
-  Super Productivity's own sync.
+  provider; a desktop plugin may read and write files (node execution),
+  call allowed hosts and trigger Super Productivity's own sync.
 
 # Decision
 
 - **Desktop**: the plugin Git Sync (tabularium) drives Super
-  Productivity's local-file sync through a clone of a private
-  repository and is the only writer of `main`.
+  Productivity's local-file sync, keeps the folder in a private
+  repository through GitHub's API and is the only writer of `main`.
 - **Day Planner**: a third kind of sync folder, GitHub Repository; reads
   `main`, writes only the branch `day-planner`, through the REST API with
   a fine-grained token for that one repository ([Git Sync](../git-sync.md)).

@@ -6,10 +6,11 @@
 # checks that wrong decodes fail and that reading changes no file. Runs
 # three times: plain files, compressed and encrypted ones (#29), and the
 # split v3 files whose ops Pensum replays (#30). With TABULARIUM (a
-# checkout of nexumia-de/tabularium) a fourth time through Git Sync: the
-# WebDAV folder is a clone of a bare repository, each Super Productivity
-# sync runs between the plugin's prepare and finish (git_cycle.mjs), and
-# Pensum reads and sends through the GitHub stand-in (tests/github_fake.py).
+# checkout of nexumia-de/tabularium) a fourth time through Git Sync: each
+# Super Productivity sync into the WebDAV folder runs between the
+# plugin's prepare and finish (git_cycle.mjs), which keep the folder in a
+# bare repository behind the GitHub stand-in (tests/github_fake.py), and
+# Pensum reads and sends through the same stand-in.
 #
 #   tests/real_app/run_sync.sh [OUT_DIR]
 #
@@ -58,7 +59,7 @@ scenario encrypted "" 1 "test password"
 scenario split 1 "" ""
 
 # Git Sync (nexumia-de/tabularium, docs/git-sync.md): only the plugin's
-# cycle pushes main; Pensum hands its edits over on day-planner, which
+# cycle moves main; Pensum hands its edits over on day-planner, which
 # the cycle before round 3 must take.
 if [ -n "${TABULARIUM:-}" ]; then
   echo "== git"
@@ -66,8 +67,7 @@ if [ -n "${TABULARIUM:-}" ]; then
     PENSUM_SYNC_PASSWORD="" PENSUM_SYNC_SOURCE=github \
     PENSUM_GITHUB_API=http://127.0.0.1:2346
   git init -q --bare -b main "$out/git-origin.git"
-  git clone -q "$out/git-origin.git" "$out/dav/git" 2>/dev/null
-  git -C "$out/dav/git" checkout -q -B main
+  mkdir -p "$out/dav/git"
   "$python" "$here/../github_fake.py" "$out/git-origin.git" 2346 test > "$out/github.log" 2>&1 &
   gh_pid=$!
   mkdir -p "$out/git"

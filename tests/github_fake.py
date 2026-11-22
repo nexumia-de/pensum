@@ -1,6 +1,7 @@
 """A stand-in for the part of GitHub's REST API that pensum.sync.github
 uses (refs, compare, commits, trees, blobs, and /user/repos for the
-guided setup), on a real bare repository
+guided setup), and that Git Sync (nexumia-de/tabularium) uses besides
+(the Contents API's first commit, removals in a tree), on a real bare repository
 through git plumbing, so tests and the sync test (run_sync.sh, scenario
 git) need no GitHub account. Answers like GitHub for the cases Day
 Planner relies on: 404 for a missing ref, 409 for an empty repository,
@@ -99,7 +100,9 @@ def handler(repo, token, prefix):
                     status = "behind"
                 else:
                     status = "diverged"
-                return self.reply(200, {"status": status, "merge_base_commit": {"sha": merge}})
+                ahead = int(r.out("rev-list", "--count", f"{base}..{head}"))
+                return self.reply(200, {"status": status, "ahead_by": ahead,
+                                        "merge_base_commit": {"sha": merge}})
             if parts[:2] == ["git", "commits"] and method == "GET":
                 return self.reply(200, {"sha": parts[2],
                                         "tree": {"sha": r.out("rev-parse", f"{parts[2]}^{{tree}}")}})
@@ -114,6 +117,27 @@ def handler(repo, token, prefix):
                 data = r.git("cat-file", "blob", parts[2]).stdout
                 return self.reply(200, {"sha": parts[2], "encoding": "base64",
                                         "content": base64.encodebytes(data).decode()})
+            if parts[0] == "git" and method == "POST" and r.empty():
+                return self.reply(409, {"message": "Git Repository is empty."})
+            if parts[0] == "contents" and method == "PUT":
+                # The first commit of an empty repository (Git Sync's start).
+                branch = body.get("branch") or "main"
+                parent = r.ref(branch)
+                with tempfile.TemporaryDirectory() as tmp:
+                    env = {"GIT_INDEX_FILE": os.path.join(tmp, "index")}
+                    if parent:
+                        r.git("read-tree", parent, env=env)
+                    blob = r.out("hash-object", "-w", "--stdin",
+                                 data=base64.b64decode(body["content"]))
+                    r.git("update-index", "--add", "--cacheinfo",
+                          f"100644,{blob},{'/'.join(parts[1:])}", env=env)
+                    tree = r.out("write-tree", env=env)
+                env = {"GIT_AUTHOR_NAME": "API", "GIT_AUTHOR_EMAIL": "api@localhost",
+                       "GIT_COMMITTER_NAME": "GitHub", "GIT_COMMITTER_EMAIL": "noreply@github.com"}
+                args = ["commit-tree", tree, "-m", body["message"]] + (["-p", parent] if parent else [])
+                commit = r.out(*args, env=env)
+                r.git("update-ref", f"refs/heads/{branch}", commit, parent or ZERO)
+                return self.reply(201, {"commit": {"sha": commit}})
             if parts == ["git", "blobs"] and method == "POST":
                 data = (body["content"].encode() if body.get("encoding") == "utf-8"
                         else base64.b64decode(body["content"]))
@@ -124,8 +148,12 @@ def handler(repo, token, prefix):
                     if body.get("base_tree"):
                         r.git("read-tree", body["base_tree"], env=env)
                     for e in body["tree"]:
-                        r.git("update-index", "--add", "--cacheinfo",
-                              f"{e['mode']},{e['sha']},{e['path']}", env=env)
+                        if e["sha"] is None:  # GitHub removes the path
+                            r.git("update-index", "--index-info", env=env,
+                                  data=f"0 {ZERO}\t{e['path']}\n".encode())
+                        else:
+                            r.git("update-index", "--add", "--cacheinfo",
+                                  f"{e['mode']},{e['sha']},{e['path']}", env=env)
                     return self.reply(201, {"sha": r.out("write-tree", env=env)})
             if parts == ["git", "commits"] and method == "POST":
                 author = body.get("author") or {"name": "API", "email": "api@localhost"}
@@ -160,6 +188,9 @@ def handler(repo, token, prefix):
 
         def do_PATCH(self):
             self.route("PATCH")
+
+        def do_PUT(self):
+            self.route("PUT")
 
     return Handler
 
