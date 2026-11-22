@@ -1,6 +1,7 @@
 # Directory Update Log
 
 ## 2026-11-22
+* **New** [daily summary](daily-summary.md) (#23): `pensum/ui/summary_page.py`, the evaluation in `pensum/store/metric.py` (impact, energy, reflection as `metric.model.ts`, the evaluation sheet and the reflection note write them at `9980fd76`); Daily Summary in the main menu and after Finish Day.
 * **New** [worklog](worklog.md) (#22): `pensum/store/worklog.py` (tasks of a list in a range, per-day totals, the CSV of `worklog-export.util.ts` at `9980fd76`), `pensum/ui/worklog_page.py` (week and month, Export Time Sheet), Worklog in a list's menu.
 * **New** [break reminder](breaks.md) (#20): `pensum/store/breaks.py` (counter and `timeTracking` `b`/`bt`, from `take-a-break.service.ts` and `work-context.service.ts` at `9980fd76`), `pensum/break_watch.py` (checked once a minute, application actions for the notification's buttons).
 * **New** [focus mode](focus-mode.md) (#19): `pensum/store/focus.py` (Super Productivity's Pomodoro, Flowtime and countdown strategies, read at commit `9980fd76`), `pensum/store/metric.py` (the slice `metric`, `logFocusSession`), `pensum/ui/focus_page.py`; the task page's header has a Focus button. Breaks pause tracking, sessions are logged in `metric.focusSessions`, phase ends come as notifications.

@@ -165,6 +165,7 @@ python.install_sources(
   'pensum/ui/section_group.py',
   'pensum/ui/sync_page.py',
   'pensum/ui/sidebar.py',
+  'pensum/ui/summary_page.py',
   'pensum/ui/tags_dialog.py',
   'pensum/ui/time_dialog.py',
   'pensum/ui/time_picker.py',

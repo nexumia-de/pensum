@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pensum\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-22 05:58+0000\n"
+"POT-Creation-Date: 2026-11-22 05:59+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -75,17 +75,17 @@ msgstr ""
 msgid "Monday to Friday"
 msgstr ""
 
-#: pensum/main.py:192
+#: pensum/main.py:197
 msgid ""
 "Tasks and time tracking for the phone. Reads and writes Super Productivity's "
 "backup files. Not affiliated with the Super Productivity project."
 msgstr ""
 
-#: pensum/main.py:196
+#: pensum/main.py:201
 msgid "Support Development"
 msgstr ""
 
-#: pensum/preferences.py:10 pensum/ui/sidebar.py:19
+#: pensum/preferences.py:10 pensum/ui/sidebar.py:22
 msgid "Preferences"
 msgstr ""
 
@@ -143,7 +143,7 @@ msgid "Automatic Backups"
 msgstr ""
 
 #: pensum/preferences.py:55 pensum/ui/journey/page.py:23
-#: pensum/ui/journey/page.py:103 pensum/ui/sidebar.py:125
+#: pensum/ui/journey/page.py:103 pensum/ui/sidebar.py:128
 msgid "Journeys"
 msgstr ""
 
@@ -166,7 +166,8 @@ msgid "Planned at {time}"
 msgstr ""
 
 #: pensum/reminder_watch.py:119 pensum/ui/notes_box.py:89
-#: pensum/ui/search_page.py:51 pensum/ui/task_page.py:181
+#: pensum/ui/search_page.py:51 pensum/ui/summary_page.py:72
+#: pensum/ui/task_page.py:181
 msgid "Done"
 msgstr ""
 
@@ -217,7 +218,7 @@ msgstr ""
 msgid "The file can't be read: {reason}"
 msgstr ""
 
-#: pensum/store/dataset.py:80 pensum/ui/sidebar.py:120
+#: pensum/store/dataset.py:80 pensum/ui/sidebar.py:123
 #: pensum/ui/task_list.py:21 pensum/ui/task_page.py:67
 #: pensum/ui/task_page.py:284 pensum/ui/time_dialog.py:45
 msgid "Today"
@@ -382,7 +383,7 @@ msgstr ""
 msgid "Can't reach the server."
 msgstr ""
 
-#: pensum/ui/archived_page.py:12 pensum/ui/sidebar.py:18
+#: pensum/ui/archived_page.py:12 pensum/ui/sidebar.py:21
 msgid "Archived Projects"
 msgstr ""
 
@@ -396,7 +397,7 @@ msgstr ""
 
 #: pensum/ui/archived_page.py:37 pensum/ui/search_page.py:52
 #: pensum/ui/section_group.py:17 pensum/ui/section_group.py:93
-#: pensum/ui/sidebar.py:127 pensum/ui/sidebar.py:129
+#: pensum/ui/sidebar.py:130 pensum/ui/sidebar.py:132
 #: pensum/ui/tags_dialog.py:28 pensum/ui/task_page.py:228
 #: pensum/ui/task_page.py:238 pensum/ui/task_page.py:437
 #: pensum/ui/task_row.py:144 pensum/ui/task_row.py:211
@@ -1168,7 +1169,7 @@ msgstr ""
 msgid "Undo"
 msgstr ""
 
-#: pensum/ui/search_page.py:12 pensum/ui/sidebar.py:46 pensum/ui/sidebar.py:48
+#: pensum/ui/search_page.py:12 pensum/ui/sidebar.py:49 pensum/ui/sidebar.py:51
 msgid "Search"
 msgstr ""
 
@@ -1238,51 +1239,110 @@ msgstr ""
 msgid "Read Sync Folder…"
 msgstr ""
 
-#: pensum/ui/sidebar.py:20
+#: pensum/ui/sidebar.py:18 pensum/ui/summary_page.py:23
+msgid "Daily Summary"
+msgstr ""
+
+#: pensum/ui/sidebar.py:23
 #, python-brace-format
 msgid "About {name}"
 msgstr ""
 
-#: pensum/ui/sidebar.py:27
+#: pensum/ui/sidebar.py:30
 msgid "New Project…"
 msgstr ""
 
-#: pensum/ui/sidebar.py:28
+#: pensum/ui/sidebar.py:31
 msgid "New Tag…"
 msgstr ""
 
-#: pensum/ui/sidebar.py:40 pensum/ui/sidebar.py:41
+#: pensum/ui/sidebar.py:43 pensum/ui/sidebar.py:44
 msgid "Main Menu"
 msgstr ""
 
-#: pensum/ui/sidebar.py:51 pensum/ui/sidebar.py:52
+#: pensum/ui/sidebar.py:54 pensum/ui/sidebar.py:55
 msgid "Add List"
 msgstr ""
 
-#: pensum/ui/sidebar.py:71
+#: pensum/ui/sidebar.py:74
 msgid "New Project"
 msgstr ""
 
-#: pensum/ui/sidebar.py:71 pensum/ui/tags_dialog.py:32
+#: pensum/ui/sidebar.py:74 pensum/ui/tags_dialog.py:32
 msgid "New Tag"
 msgstr ""
 
-#: pensum/ui/sidebar.py:79
+#: pensum/ui/sidebar.py:82
 msgid "Create"
 msgstr ""
 
-#: pensum/ui/sidebar.py:95
+#: pensum/ui/sidebar.py:98
 #, python-brace-format
 msgid "{title}, {count} open"
 msgstr ""
 
-#: pensum/ui/sidebar.py:107 pensum/ui/sync_page.py:42
+#: pensum/ui/sidebar.py:110 pensum/ui/sync_page.py:42
 msgid "Projects"
 msgstr ""
 
-#: pensum/ui/sidebar.py:107 pensum/ui/sync_page.py:43
+#: pensum/ui/sidebar.py:110 pensum/ui/sync_page.py:43
 #: pensum/ui/tags_dialog.py:10 pensum/ui/task_page.py:132
 msgid "Tags"
+msgstr ""
+
+#: pensum/ui/summary_page.py:14
+msgid "No progress"
+msgstr ""
+
+#: pensum/ui/summary_page.py:14
+msgid "Some progress"
+msgstr ""
+
+#: pensum/ui/summary_page.py:14
+msgid "Good progress"
+msgstr ""
+
+#: pensum/ui/summary_page.py:14
+msgid "Big impact"
+msgstr ""
+
+#: pensum/ui/summary_page.py:18
+msgid "Exhausted"
+msgstr ""
+
+#: pensum/ui/summary_page.py:18
+msgid "OK"
+msgstr ""
+
+#: pensum/ui/summary_page.py:18
+msgid "Good"
+msgstr ""
+
+#: pensum/ui/summary_page.py:31
+msgid "Done Today"
+msgstr ""
+
+#: pensum/ui/summary_page.py:34
+msgid "How Was Your Day?"
+msgstr ""
+
+#: pensum/ui/summary_page.py:35
+msgid "Impact of your work"
+msgstr ""
+
+#: pensum/ui/summary_page.py:37
+msgid "Your energy"
+msgstr ""
+
+#: pensum/ui/summary_page.py:38
+msgid "A thought about today"
+msgstr ""
+
+#: pensum/ui/summary_page.py:64
+#, python-brace-format
+msgid ""
+"{time} worked, {done} tasks done, {breaks} breaks ({pause}), {sessions} "
+"focus sessions"
 msgstr ""
 
 #: pensum/ui/sync_page.py:22
@@ -1425,7 +1485,7 @@ msgstr ""
 msgid "No Open Tasks"
 msgstr ""
 
-#: pensum/ui/task_list.py:82 pensum/ui/task_list.py:217
+#: pensum/ui/task_list.py:82 pensum/ui/task_list.py:219
 msgid "Finish Day"
 msgstr ""
 
@@ -1442,39 +1502,39 @@ msgstr ""
 msgid "1 done task archived"
 msgstr ""
 
-#: pensum/ui/task_list.py:166 pensum/ui/task_list.py:253
+#: pensum/ui/task_list.py:168 pensum/ui/task_list.py:255
 #, python-brace-format
 msgid "{time} worked"
 msgstr ""
 
-#: pensum/ui/task_list.py:174
+#: pensum/ui/task_list.py:176
 msgid "Add Task to Today"
 msgstr ""
 
-#: pensum/ui/task_list.py:175
+#: pensum/ui/task_list.py:177
 #, python-brace-format
 msgid "Add Task to {list}"
 msgstr ""
 
-#: pensum/ui/task_list.py:190
+#: pensum/ui/task_list.py:192
 #, python-brace-format
 msgid "Overdue ({count})"
 msgstr ""
 
-#: pensum/ui/task_list.py:211
+#: pensum/ui/task_list.py:213
 #, python-brace-format
 msgid "Backlog ({count})"
 msgstr ""
 
-#: pensum/ui/task_list.py:214
+#: pensum/ui/task_list.py:216
 msgid "Tasks you plan for today show here."
 msgstr ""
 
-#: pensum/ui/task_list.py:218
+#: pensum/ui/task_list.py:220
 msgid "Archive Done"
 msgstr ""
 
-#: pensum/ui/task_list.py:219
+#: pensum/ui/task_list.py:221
 #, python-brace-format
 msgid "Done ({count})"
 msgstr ""

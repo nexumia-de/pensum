@@ -83,3 +83,28 @@ def test_break_reminder_and_the_break_counted(window, monkeypatch):
     assert entry["b"] == 1 and entry["bt"] == 5 * MIN
     window.timer.stop()
     valid(window)
+
+
+def test_worklog_and_summary(window):
+    from pensum.store import metric
+    from pensum.ui.summary_page import SummaryPage
+    from pensum.ui.worklog_page import WorklogPage
+    task = tasks.add_task(window.ds, "Write", Context.today())
+    today = window.ds.today()
+    tracking.set_time_on_day(window.ds, task["id"], today, 90 * MIN)
+    page = WorklogPage(window, Context.today())
+    window.nav.push(page)
+    iterate()
+    assert any("1h 30m" in text for text in labels(page))
+    summary = SummaryPage(window)
+    window.nav.push(summary)
+    iterate()
+    assert "Write" in labels(summary)
+    summary.impact.set_selected(3)
+    summary.energy.set_selected(2)
+    summary.reflection.set_text("Good day")
+    summary._on_reflection(summary.reflection)
+    found = metric.for_day(window.ds, today)
+    assert (found["impactOfWork"], found["energyCheckin"]) == (3, 2)
+    assert found["reflections"][0]["text"] == "Good day"
+    valid(window)

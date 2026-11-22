@@ -297,6 +297,10 @@ class Window(Adw.ApplicationWindow):
         from pensum.ui.focus_page import FocusPage
         if task_id in self.ds.tasks:
             self.nav.push(FocusPage(self, task_id))
+
+    def show_summary(self):
+        from pensum.ui.summary_page import SummaryPage
+        self.nav.push(SummaryPage(self))
     def show_task(self, task_id):
         if task_id not in self.ds.tasks:
             return

@@ -42,6 +42,7 @@ class Application(Adw.Application):
                                ("show-lists", self._on_show_lists),
                                ("show-archived", self._on_show_archived),
                                ("show-sync", self._on_show_sync),
+                               ("show-summary", lambda *_: self._window_do("show_summary")),
                                ("show-journey", self._on_show_journey),
                                ("show-run", self._on_show_run),
                                ("show-own-habit", self._on_show_own_habit),
@@ -124,6 +125,10 @@ class Application(Adw.Application):
     def _on_show_archived(self, *_):
         if self._window():
             self._window().show_archived()
+
+    def _window_do(self, method):
+        if self._window():
+            getattr(self._window(), method)()
 
     def _on_show_sync(self, *_):
         if self._window():

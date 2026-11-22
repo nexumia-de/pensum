@@ -45,6 +45,7 @@ pensum/ui/repeat_page.py
 pensum/ui/search_page.py
 pensum/ui/section_group.py
 pensum/ui/sidebar.py
+pensum/ui/summary_page.py
 pensum/ui/sync_page.py
 pensum/ui/tags_dialog.py
 pensum/ui/task_list.py

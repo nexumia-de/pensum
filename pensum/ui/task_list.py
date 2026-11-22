@@ -133,6 +133,8 @@ class TaskListPage(Adw.NavigationPage):
         self.window.undoable(_("{count} done tasks archived").format(count=count)
                              if count != 1 else _("1 done task archived"),
                              lambda: archive.archive_tasks(ds, done))
+        if self.context.kind == "today":
+            self.window.show_summary()  # the day's summary and evaluation (#23)
 
     def _on_move_overdue(self, *_):
         ds = self.window.ds
