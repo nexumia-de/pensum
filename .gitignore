@@ -23,3 +23,5 @@ _build/
 # Real-app test output (tests/real_app/run.sh)
 /tests/real_app/out/
 /tests/real_app/out-sync/
+# Python wheels downloaded while working (the manifest fetches its own)
+*.whl
