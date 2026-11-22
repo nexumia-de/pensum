@@ -1,6 +1,7 @@
 # Directory Update Log
 
 ## 2026-11-22
+* **Update** (#13): the reminders' phone checks are a checklist in [owner checks](owner-checks.md); the feature itself is on main since `0e77110`.
 * **New** [owner checks](owner-checks.md) (#2): the round trip with the owner's own data and a 19.3.x app are the only parts of #2 that CI's `real-app` job (Super Productivity 20.0.0) does not cover; they are a checklist now.
 
 ## 2026-11-21

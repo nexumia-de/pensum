@@ -26,3 +26,18 @@ Left:
       no repair dialog, everything as on the phone.
 - [ ] If a 19.3.x Super Productivity is still in use anywhere: the same
       import there (CI tests 20.0.0 only).
+
+## Reminders on the phone (#13)
+
+Built and tested on a private session bus with a test notification
+server ([reminders](reminders.md)). Left, on the phone with the
+installed Flatpak:
+
+- [ ] A task reminder comes at its time while Day Planner's window is
+      closed; **Done** marks the task done, **Snooze** brings it back.
+- [ ] After a reboot Phosh starts the portal's autostart entry and the
+      windowless application keeps running.
+- [ ] With the screen off: does the reminder come at its time or only
+      when the phone wakes? (Nothing in the sandbox sets a wake alarm.)
+- [ ] The notification's buttons on the lock screen.
+- [ ] Memory of the windowless process over a day.
