@@ -447,5 +447,5 @@ for a non-empty tree, and now does it the same way.
 
 - The data model above was read at 19.3.1; CI tests 20.0.0. A 19.3.x
   app has not imported Pensum's files.
-- The round trip on the owner's own data and devices
-  ([#2](https://github.com/nexumia-de/pensum/issues/2)).
+- The round trip on the owner's own data and devices: a checklist in
+  [owner checks](owner-checks.md#round-trip-with-the-owners-data-2) (#2).

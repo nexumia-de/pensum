@@ -43,6 +43,7 @@ Change history is in [log.md](log.md).
 
 # Development
 
+* [Owner checks](owner-checks.md) - What only the owner can check or do (phone, own data, accounts, other projects), per issue; nothing in it has been run by an agent.
 * [Bundled dependencies](dependencies.md) - Only phosh-toolkit's shared package; Super Productivity's default values as data.
 * [Release channels](release-channels.md) - Stable from tags, nightly from main, screenshots from the demo dataset.
 * [Development environment](dev-environment.md) - Hosts, host packages, run, test, screenshot, Flatpak.
