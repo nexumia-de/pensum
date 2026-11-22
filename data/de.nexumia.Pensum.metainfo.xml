@@ -52,46 +52,67 @@
   <screenshots>
     <screenshot type="default">
       <caption>Today's tasks with their time and estimates</caption>
-      <image>https://github.com/nexumia-de/pensum/releases/download/v0.3.0/today-phone-light.png</image>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.4.0/today-phone-light.png</image>
     </screenshot>
     <screenshot>
       <caption>Today's tasks with their time and estimates</caption>
-      <image>https://github.com/nexumia-de/pensum/releases/download/v0.3.0/today-desktop-light.png</image>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.4.0/today-desktop-light.png</image>
     </screenshot>
     <screenshot>
       <caption>A task with its timer running</caption>
-      <image>https://github.com/nexumia-de/pensum/releases/download/v0.3.0/task-phone-light.png</image>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.4.0/task-phone-light.png</image>
     </screenshot>
     <screenshot>
       <caption>A task with its timer running</caption>
-      <image>https://github.com/nexumia-de/pensum/releases/download/v0.3.0/task-desktop-light.png</image>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.4.0/task-desktop-light.png</image>
     </screenshot>
     <screenshot>
       <caption>Projects and tags</caption>
-      <image>https://github.com/nexumia-de/pensum/releases/download/v0.3.0/lists-phone-light.png</image>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.4.0/lists-phone-light.png</image>
     </screenshot>
     <screenshot>
       <caption>Projects and tags</caption>
-      <image>https://github.com/nexumia-de/pensum/releases/download/v0.3.0/lists-desktop-light.png</image>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.4.0/lists-desktop-light.png</image>
     </screenshot>
     <screenshot>
       <caption>A project's tasks</caption>
-      <image>https://github.com/nexumia-de/pensum/releases/download/v0.3.0/project-phone-light.png</image>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.4.0/project-phone-light.png</image>
     </screenshot>
     <screenshot>
       <caption>A project's tasks</caption>
-      <image>https://github.com/nexumia-de/pensum/releases/download/v0.3.0/project-desktop-light.png</image>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.4.0/project-desktop-light.png</image>
     </screenshot>
     <screenshot>
       <caption>A habit journey: what it builds and its current station</caption>
-      <image>https://github.com/nexumia-de/pensum/releases/download/v0.3.0/journey-phone-light.png</image>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.4.0/journey-phone-light.png</image>
     </screenshot>
     <screenshot>
       <caption>A habit journey: what it builds and its current station</caption>
-      <image>https://github.com/nexumia-de/pensum/releases/download/v0.3.0/journey-desktop-light.png</image>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.4.0/journey-desktop-light.png</image>
     </screenshot>
   </screenshots>
   <releases>
+    <release version="0.4.0" date="2026-11-22">
+      <description>
+        <ul>
+          <li>A task's attachments are shown on its page; links and files open, and links can be added.</li>
+          <li>A calm reminder to take a break after an hour of tracked work, with Snooze.</li>
+          <li>Daily summary: what you did today, with Super Productivity's evaluation of the day.</li>
+          <li>Focus mode: Pomodoro, Flowtime or a countdown for a task, with breaks that pause the timer.</li>
+          <li>Day Planner speaks German: every page follows the system language.</li>
+          <li>Notes are shown formatted: headings, bold, lists, links and checklists you can tick; Edit switches to the text.</li>
+          <li>Folders in the sidebar: group projects and tags, open and close them.</li>
+          <li>Planner: today and the next six days with their tasks, and moving a task to another day.</li>
+          <li>Project notes: write notes for a project and pin them to Today.</li>
+          <li>Reorder tasks and subtasks by dragging them: on a touch screen press and hold a task, then move it.</li>
+          <li>Group a project's or Today's tasks into sections that collapse, as in Super Productivity.</li>
+          <li>Send Changes on the sync page sends edited task titles, notes, done states and estimates to Super Productivity's sync folder.</li>
+          <li>Worklog: time per day of a list for a week or a month, and the time sheet exported as CSV.</li>
+          <li>Choose a task's time with a picker made for touch; Today lists the tasks with a time first, in the order of their times.</li>
+          <li>Journey marks are drawn in Day Planner's indigo again instead of the system's accent colour.</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.3.0" date="2026-11-20">
       <description>
         <ul>
