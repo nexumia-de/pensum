@@ -1,8 +1,8 @@
 """A list's menu: add a section, rename, archive, delete the list."""
-from gi.repository import Gio
+from gi.repository import Gio, GLib
 
 from pensum.i18n import _
-from pensum.store import contexts, sections
+from pensum.store import contexts, menu_tree, sections
 from pensum.store.dataset import Context
 
 
@@ -22,6 +22,10 @@ def install(page):
     notes = Gio.SimpleAction.new("notes", None)
     notes.connect("activate", lambda *_: _on_notes(page))
     group.add_action(notes)
+    # Move the list into a folder of the menu (#27); "" is no folder.
+    action = Gio.SimpleAction.new("to-folder", GLib.VariantType.new("s"))
+    action.connect("activate", lambda _a, value: _on_to_folder(page, value.get_string()))
+    group.add_action(action)
     page.insert_action_group("list", group)
 
 
@@ -36,6 +40,13 @@ def model(page):
         menu.append(_("Notes"), "list.notes")
     if context.kind == "today":
         return menu
+    folders = menu_tree.folders(page.window.ds, context.kind)
+    if folders:
+        moves = Gio.Menu()
+        moves.append(_("No Folder"), "list.to-folder::")
+        for folder_id, name, depth in folders:
+            moves.append("  " * depth + name, f"list.to-folder::{folder_id}")
+        menu.append_submenu(_("Move to Folder"), moves)
     menu.append(_("Rename…"), "list.rename")
     if context.kind == "project" and context.id != "INBOX_PROJECT":
         archived = page.window.ds.project_entities[context.id].get("isArchived")
@@ -54,6 +65,12 @@ def _on_notes(page):
 def _on_worklog(page):
     from pensum.ui.worklog_page import WorklogPage
     page.window.nav.push(WorklogPage(page.window, page.context))
+
+
+def _on_to_folder(page, folder_id):
+    menu_tree.move_to_folder(page.window.ds, page.context.kind, page.context.id,
+                             folder_id or None)
+    page.window.changed()
 
 
 def _on_add_section(page):

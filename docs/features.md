@@ -45,7 +45,7 @@ lost when the same backup goes back to Super Productivity.
 | Finish day: archive done tasks | `archiveYoung`, `archiveOld`, `task` | **M2, done** (#16) |
 | Project notes | `note`, `project.noteIds` | **M3, done** (#24, [notes](project-notes.md)): list, edit, pin to Today, remove with Undo; pinned notes on Today |
 | Attachments and project bookmarks | `task.attachments` | **M3, done** (#25, [attachments](attachments.md)): shown, opened through the portal, links added and removed; commands never run; project bookmarks not built |
-| Menu folders for projects and tags | `menuTree` folders | M3 (shown; editing later) |
+| Menu folders for projects and tags | `menuTree` folders | **M3, done** (#27, [folders](menu-folders.md)): shown, opened and closed, created, renamed, deleted, lists moved into them |
 | Hide subtasks, task view customiser | `_hideSubTasksMode` | backlog |
 | Multi-select of tasks | – | backlog |
 
@@ -68,8 +68,9 @@ lost when the same backup goes back to Super Productivity.
 
 Habit journeys come from [QuestArc](https://github.com/nexumia-de/quest-arc)
 and are not a Super Productivity feature: [journeys](journeys.md).
-Every line marked M3 in this file is on hold until the roadmap's
-_Habits first_ is done ([decision](decisions/habits-first.md)).
+The lines marked M3 were on hold until the roadmap's _Habits first_
+was done ([decision](decisions/habits-first.md)); they were built on
+2026-11-22.
 
 | Feature | Data | Pensum |
 |---|---|---|

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pensum\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-22 06:02+0000\n"
+"POT-Creation-Date: 2026-11-22 06:03+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -150,7 +150,7 @@ msgid "Automatic Backups"
 msgstr ""
 
 #: pensum/preferences.py:55 pensum/ui/journey/page.py:23
-#: pensum/ui/journey/page.py:103 pensum/ui/sidebar.py:129
+#: pensum/ui/journey/page.py:103 pensum/ui/sidebar.py:135
 msgid "Journeys"
 msgstr ""
 
@@ -226,7 +226,7 @@ msgid "The file can't be read: {reason}"
 msgstr ""
 
 #: pensum/store/dataset.py:80 pensum/ui/planner_page.py:15
-#: pensum/ui/sidebar.py:124 pensum/ui/task_list.py:21 pensum/ui/task_page.py:67
+#: pensum/ui/sidebar.py:130 pensum/ui/task_list.py:21 pensum/ui/task_page.py:67
 #: pensum/ui/task_page.py:288 pensum/ui/time_dialog.py:45
 msgid "Today"
 msgstr ""
@@ -404,11 +404,11 @@ msgstr ""
 
 #: pensum/ui/archived_page.py:37 pensum/ui/search_page.py:52
 #: pensum/ui/section_group.py:17 pensum/ui/section_group.py:93
-#: pensum/ui/sidebar.py:131 pensum/ui/sidebar.py:133
-#: pensum/ui/tags_dialog.py:28 pensum/ui/task_page.py:232
-#: pensum/ui/task_page.py:242 pensum/ui/task_page.py:441
-#: pensum/ui/task_row.py:144 pensum/ui/task_row.py:211
-#: pensum/ui/task_row.py:225 pensum/ui/tracker_bar.py:49
+#: pensum/ui/sidebar.py:147 pensum/ui/tags_dialog.py:28
+#: pensum/ui/task_page.py:232 pensum/ui/task_page.py:242
+#: pensum/ui/task_page.py:441 pensum/ui/task_row.py:144
+#: pensum/ui/task_row.py:211 pensum/ui/task_row.py:225
+#: pensum/ui/tracker_bar.py:49
 msgid "Untitled"
 msgstr ""
 
@@ -425,7 +425,7 @@ msgstr ""
 msgid "Unarchive"
 msgstr ""
 
-#: pensum/ui/archived_page.py:54 pensum/ui/list_menu.py:91
+#: pensum/ui/archived_page.py:54 pensum/ui/list_menu.py:108
 msgid "Project back in the sidebar"
 msgstr ""
 
@@ -915,60 +915,69 @@ msgid ""
 "end its repeat on its Repeat page so you don't keep both."
 msgstr ""
 
-#: pensum/ui/list_menu.py:33
+#: pensum/ui/list_menu.py:37
 msgid "Add Section…"
 msgstr ""
 
-#: pensum/ui/list_menu.py:34 pensum/ui/worklog_page.py:35
+#: pensum/ui/list_menu.py:38 pensum/ui/worklog_page.py:35
 msgid "Worklog"
 msgstr ""
 
-#: pensum/ui/list_menu.py:36 pensum/ui/notes_box.py:15
+#: pensum/ui/list_menu.py:40 pensum/ui/notes_box.py:15
 #: pensum/ui/notes_box.py:34 pensum/ui/notes_page.py:17
 msgid "Notes"
 msgstr ""
 
-#: pensum/ui/list_menu.py:39 pensum/ui/section_group.py:43
+#: pensum/ui/list_menu.py:46
+msgid "No Folder"
+msgstr ""
+
+#: pensum/ui/list_menu.py:49
+msgid "Move to Folder"
+msgstr ""
+
+#: pensum/ui/list_menu.py:50 pensum/ui/section_group.py:43
 msgid "Rename…"
 msgstr ""
 
-#: pensum/ui/list_menu.py:42
+#: pensum/ui/list_menu.py:53
 msgid "Unarchive Project"
 msgstr ""
 
-#: pensum/ui/list_menu.py:42
+#: pensum/ui/list_menu.py:53
 msgid "Archive Project"
 msgstr ""
 
-#: pensum/ui/list_menu.py:45 pensum/ui/section_group.py:44
+#: pensum/ui/list_menu.py:56 pensum/ui/section_group.py:44
 msgid "Delete"
 msgstr ""
 
-#: pensum/ui/list_menu.py:67
+#: pensum/ui/list_menu.py:84
 msgid "Add Section"
 msgstr ""
 
-#: pensum/ui/list_menu.py:67
+#: pensum/ui/list_menu.py:84
 msgid "Add"
 msgstr ""
 
-#: pensum/ui/list_menu.py:78
+#: pensum/ui/list_menu.py:95
 msgid "Rename Project"
 msgstr ""
 
-#: pensum/ui/list_menu.py:78
+#: pensum/ui/list_menu.py:95
 msgid "Rename Tag"
 msgstr ""
 
-#: pensum/ui/list_menu.py:79 pensum/ui/section_group.py:85
+#: pensum/ui/list_menu.py:96 pensum/ui/section_group.py:85
+#: pensum/ui/sidebar_folders.py:85
 msgid "Rename"
 msgstr ""
 
-#: pensum/ui/list_menu.py:88
+#: pensum/ui/list_menu.py:105
 msgid "Project archived"
 msgstr ""
 
-#: pensum/ui/list_menu.py:108 pensum/ui/task_page.py:443
+#: pensum/ui/list_menu.py:125 pensum/ui/task_page.py:443
 #, python-brace-format
 msgid "“{title}” deleted"
 msgstr ""
@@ -1262,7 +1271,7 @@ msgstr ""
 msgid "Undo"
 msgstr ""
 
-#: pensum/ui/search_page.py:12 pensum/ui/sidebar.py:50 pensum/ui/sidebar.py:52
+#: pensum/ui/search_page.py:12 pensum/ui/sidebar.py:54 pensum/ui/sidebar.py:56
 msgid "Search"
 msgstr ""
 
@@ -1349,38 +1358,80 @@ msgstr ""
 msgid "New Tag…"
 msgstr ""
 
-#: pensum/ui/sidebar.py:44 pensum/ui/sidebar.py:45
+#: pensum/ui/sidebar.py:34
+msgid "New Project Folder…"
+msgstr ""
+
+#: pensum/ui/sidebar.py:35
+msgid "New Tag Folder…"
+msgstr ""
+
+#: pensum/ui/sidebar.py:48 pensum/ui/sidebar.py:49
 msgid "Main Menu"
 msgstr ""
 
-#: pensum/ui/sidebar.py:55 pensum/ui/sidebar.py:56
+#: pensum/ui/sidebar.py:59 pensum/ui/sidebar.py:60
 msgid "Add List"
 msgstr ""
 
-#: pensum/ui/sidebar.py:75
+#: pensum/ui/sidebar.py:81
 msgid "New Project"
 msgstr ""
 
-#: pensum/ui/sidebar.py:75 pensum/ui/tags_dialog.py:32
+#: pensum/ui/sidebar.py:81 pensum/ui/tags_dialog.py:32
 msgid "New Tag"
 msgstr ""
 
-#: pensum/ui/sidebar.py:83
+#: pensum/ui/sidebar.py:89 pensum/ui/sidebar_folders.py:71
 msgid "Create"
 msgstr ""
 
-#: pensum/ui/sidebar.py:99
+#: pensum/ui/sidebar.py:105
 #, python-brace-format
 msgid "{title}, {count} open"
 msgstr ""
 
-#: pensum/ui/sidebar.py:111 pensum/ui/sync_page.py:42
+#: pensum/ui/sidebar.py:117 pensum/ui/sync_page.py:42
 msgid "Projects"
 msgstr ""
 
-#: pensum/ui/sidebar.py:111 pensum/ui/sync_page.py:43
+#: pensum/ui/sidebar.py:117 pensum/ui/sync_page.py:43
 #: pensum/ui/tags_dialog.py:10 pensum/ui/task_page.py:132
 msgid "Tags"
+msgstr ""
+
+#: pensum/ui/sidebar_folders.py:21
+msgid "Rename Folder…"
+msgstr ""
+
+#: pensum/ui/sidebar_folders.py:22
+msgid "Delete Folder"
+msgstr ""
+
+#: pensum/ui/sidebar_folders.py:24 pensum/ui/sidebar_folders.py:25
+msgid "Folder Menu"
+msgstr ""
+
+#: pensum/ui/sidebar_folders.py:32
+#, python-brace-format
+msgid "Folder {name}, open"
+msgstr ""
+
+#: pensum/ui/sidebar_folders.py:33
+#, python-brace-format
+msgid "Folder {name}, closed"
+msgstr ""
+
+#: pensum/ui/sidebar_folders.py:71
+msgid "New Folder"
+msgstr ""
+
+#: pensum/ui/sidebar_folders.py:85
+msgid "Rename Folder"
+msgstr ""
+
+#: pensum/ui/sidebar_folders.py:91
+msgid "Folder deleted; its lists stay"
 msgstr ""
 
 #: pensum/ui/summary_page.py:14

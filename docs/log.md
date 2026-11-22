@@ -1,6 +1,7 @@
 # Directory Update Log
 
 ## 2026-11-22
+* **New** [menu folders](menu-folders.md) (#27): `pensum/store/menu_tree.py` (`menu-tree.reducer.ts` and `menu-tree.service.ts` at `9980fd76`), `pensum/ui/sidebar_folders.py`, the sidebar shows folders, Move to Folder in a list's menu. [Roadmap](roadmap.md) and [features](features.md): M3 is built. UI tests of all M3 pages in `tests/test_m3_ui.py`.
 * **New** [planner](planner.md) (#26): `pensum/store/planner.py`, `pensum/ui/planner_page.py`, Planner in the main menu.
 * **New** [task attachments](attachments.md) (#25): `pensum/store/attachments.py`, `pensum/ui/attachments_group.py` on the task page; commands are never run, only `http`, `https`, `mailto` and `file` links open.
 * **New** [project notes](project-notes.md) (#24): `pensum/store/notes.py` (the note and project reducers' rules at `9980fd76`), `pensum/ui/notes_page.py`, `pensum/ui/pinned_notes.py` on Today, Notes in a project's menu.

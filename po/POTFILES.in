@@ -9,6 +9,7 @@ pensum/store/backup.py
 pensum/store/breaks.py
 pensum/store/dataset.py
 pensum/store/focus.py
+pensum/store/menu_tree.py
 pensum/store/metric.py
 pensum/store/notes.py
 pensum/store/planner.py
@@ -52,6 +53,7 @@ pensum/ui/repeat_page.py
 pensum/ui/search_page.py
 pensum/ui/section_group.py
 pensum/ui/sidebar.py
+pensum/ui/sidebar_folders.py
 pensum/ui/summary_page.py
 pensum/ui/sync_page.py
 pensum/ui/tags_dialog.py

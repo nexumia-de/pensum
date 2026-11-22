@@ -30,6 +30,10 @@ def add_menu():
     menu = Gio.Menu()
     menu.append(_("New Project…"), "win.new-project")
     menu.append(_("New Tag…"), "win.new-tag")
+    folders = Gio.Menu()
+    folders.append(_("New Project Folder…"), "win.new-project-folder")
+    folders.append(_("New Tag Folder…"), "win.new-tag-folder")
+    menu.append_section(None, folders)
     return menu
 
 
@@ -68,6 +72,8 @@ class Sidebar(Adw.Bin):
         toolbar.set_content(Gtk.ScrolledWindow(
             child=self.listbox, hscrollbar_policy=Gtk.PolicyType.NEVER))
         self._contexts = []
+        from pensum.ui import sidebar_folders
+        sidebar_folders.install(window)
 
     def _on_new(self, action, param, kind):
         from pensum.ui.dialogs import name_dialog
@@ -128,13 +134,26 @@ class Sidebar(Adw.Bin):
             entries.insert(0 if self.window.journeys.in_use() else 1,
                            (Context("journey", "questarc"), _("Journeys"),
                             "mark-location-symbolic"))
-        entries += [(Context("project", p["id"]), p.get("title") or _("Untitled"),
-                     "folder-symbolic") for p in ds.projects()]
-        entries += [(Context("tag", t["id"]), t.get("title") or _("Untitled"),
-                     "pensum-tag-symbolic") for t in ds.tags()]
-        for context, title, icon in entries:
+        from pensum.store import menu_tree
+        from pensum.ui.sidebar_folders import INDENT, folder_row
+        for kind, items, icon in (("project", ds.projects(), "folder-symbolic"),
+                                  ("tag", ds.tags(), "pensum-tag-symbolic")):
+            by_id = {e["id"]: e for e in items}
+            for what, value, depth in menu_tree.entries(ds, kind, list(by_id)):
+                if what == "folder":
+                    entries.append((folder_row(self.window, kind, value, depth), None, None))
+                else:
+                    entries.append((Context(kind, value), by_id[value].get("title")
+                                    or _("Untitled"), icon, depth))
+        for entry in entries:
+            if entry[1] is None:  # a folder row
+                self.listbox.append(entry[0])
+                continue
+            context, title, icon = entry[:3]
             count = 0 if context.kind == "journey" else len(ds.list_tasks(context, today)[0])
             row = self._row(context, title, icon, count)
+            if len(entry) > 3 and entry[3]:
+                row.get_child().set_margin_start(entry[3] * INDENT)
             self.listbox.append(row)
             if context == selected:
                 self.listbox.select_row(row)
@@ -148,6 +167,10 @@ class Sidebar(Adw.Bin):
             row = row.get_next_sibling()
 
     def _on_activated(self, listbox, row):
+        if getattr(row, "folder", None):
+            from pensum.ui.sidebar_folders import toggle
+            toggle(self.window, row)
+            return
         if row.context.kind == "journey":
             self.window.show_journey()
             return

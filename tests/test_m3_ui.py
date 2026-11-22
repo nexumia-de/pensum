@@ -164,3 +164,20 @@ def test_planner_moves_a_task(window):
     assert task["id"] in window.ds.data["planner"]["days"][tomorrow]
     planning.schedule_day(window.ds, task["id"], None)
     valid(window)
+
+
+def test_sidebar_shows_folders(window):
+    from pensum.store import contexts, menu_tree
+    project = contexts.add_project(window.ds, "Garden")
+    folder = menu_tree.add_folder(window.ds, "project", "Home")
+    menu_tree.move_to_folder(window.ds, "project", project["id"], folder["id"])
+    window.changed()
+    iterate()
+    shown = labels(window.sidebar)
+    assert "Home" in shown and "Garden" in shown
+    menu_tree.set_expanded(window.ds, "project", folder["id"], False)
+    window.changed()
+    iterate()
+    shown = labels(window.sidebar)
+    assert "Home" in shown and "Garden" not in shown
+    valid(window)

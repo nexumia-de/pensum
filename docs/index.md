@@ -32,6 +32,7 @@ Change history is in [log.md](log.md).
 * [Project notes](project-notes.md) - A project's notes in `note`, pinned to Today, the reducers' order rules.
 * [Task attachments](attachments.md) - `task.attachments` on the task page; links and files open through the portal, commands never run.
 * [Planner](planner.md) - Today and the next six days, the estimate left per day, moving a task to another day.
+* [Menu folders](menu-folders.md) - Folders of `menuTree` in the sidebar: open and close, create, rename, delete, move lists into them.
 
 # Reminders
 
