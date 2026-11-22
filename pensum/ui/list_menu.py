@@ -18,6 +18,10 @@ def install(page):
     worklog = Gio.SimpleAction.new("worklog", None)
     worklog.connect("activate", lambda *_: _on_worklog(page))
     group.add_action(worklog)
+    # A project's notes (#24).
+    notes = Gio.SimpleAction.new("notes", None)
+    notes.connect("activate", lambda *_: _on_notes(page))
+    group.add_action(notes)
     page.insert_action_group("list", group)
 
 
@@ -28,6 +32,8 @@ def model(page):
     if sections.can_have(context):
         menu.append(_("Add Section…"), "list.add-section")
     menu.append(_("Worklog"), "list.worklog")
+    if context.kind == "project":
+        menu.append(_("Notes"), "list.notes")
     if context.kind == "today":
         return menu
     menu.append(_("Rename…"), "list.rename")
@@ -38,6 +44,11 @@ def model(page):
     if context.id != "INBOX_PROJECT":
         menu.append(_("Delete"), "list.delete")
     return menu
+
+
+def _on_notes(page):
+    from pensum.ui.notes_page import NotesPage
+    page.window.nav.push(NotesPage(page.window, page.context.id))
 
 
 def _on_worklog(page):

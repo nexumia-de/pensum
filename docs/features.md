@@ -43,7 +43,7 @@ lost when the same backup goes back to Super Productivity.
 | Short syntax when adding (`#tag +project 1h @tomorrow`) | `globalConfig.shortSyntax` | **M2, done** (#14): `+project`, `#tag`, estimate, spent/estimate, `p1`–`p3`, `@today/@tomorrow/@weekday [HH:MM]`; repeat (`@every`), deadline (`!`) and URLs open |
 | Search | titles and notes, archive included | **M2, done** (#15) |
 | Finish day: archive done tasks | `archiveYoung`, `archiveOld`, `task` | **M2, done** (#16) |
-| Project notes | `note`, `project.noteIds` | M3 |
+| Project notes | `note`, `project.noteIds` | **M3, done** (#24, [notes](project-notes.md)): list, edit, pin to Today, remove with Undo; pinned notes on Today |
 | Attachments and project bookmarks | `task.attachments` | M3 (show and open links) |
 | Menu folders for projects and tags | `menuTree` folders | M3 (shown; editing later) |
 | Hide subtasks, task view customiser | `_hideSubTasksMode` | backlog |

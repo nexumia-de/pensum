@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pensum\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-22 05:59+0000\n"
+"POT-Creation-Date: 2026-11-22 06:00+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -418,7 +418,7 @@ msgstr ""
 msgid "Unarchive"
 msgstr ""
 
-#: pensum/ui/archived_page.py:54 pensum/ui/list_menu.py:80
+#: pensum/ui/archived_page.py:54 pensum/ui/list_menu.py:91
 msgid "Project back in the sidebar"
 msgstr ""
 
@@ -884,61 +884,62 @@ msgid ""
 "end its repeat on its Repeat page so you don't keep both."
 msgstr ""
 
-#: pensum/ui/list_menu.py:29
+#: pensum/ui/list_menu.py:33
 msgid "Add Section…"
 msgstr ""
 
-#: pensum/ui/list_menu.py:30 pensum/ui/worklog_page.py:35
+#: pensum/ui/list_menu.py:34 pensum/ui/worklog_page.py:35
 msgid "Worklog"
 msgstr ""
 
-#: pensum/ui/list_menu.py:33 pensum/ui/section_group.py:43
+#: pensum/ui/list_menu.py:36 pensum/ui/notes_box.py:15
+#: pensum/ui/notes_box.py:34 pensum/ui/notes_page.py:17
+msgid "Notes"
+msgstr ""
+
+#: pensum/ui/list_menu.py:39 pensum/ui/section_group.py:43
 msgid "Rename…"
 msgstr ""
 
-#: pensum/ui/list_menu.py:36
+#: pensum/ui/list_menu.py:42
 msgid "Unarchive Project"
 msgstr ""
 
-#: pensum/ui/list_menu.py:36
+#: pensum/ui/list_menu.py:42
 msgid "Archive Project"
 msgstr ""
 
-#: pensum/ui/list_menu.py:39 pensum/ui/section_group.py:44
+#: pensum/ui/list_menu.py:45 pensum/ui/section_group.py:44
 msgid "Delete"
 msgstr ""
 
-#: pensum/ui/list_menu.py:56
+#: pensum/ui/list_menu.py:67
 msgid "Add Section"
 msgstr ""
 
-#: pensum/ui/list_menu.py:56
+#: pensum/ui/list_menu.py:67
 msgid "Add"
 msgstr ""
 
-#: pensum/ui/list_menu.py:67
+#: pensum/ui/list_menu.py:78
 msgid "Rename Project"
 msgstr ""
 
-#: pensum/ui/list_menu.py:67
+#: pensum/ui/list_menu.py:78
 msgid "Rename Tag"
 msgstr ""
 
-#: pensum/ui/list_menu.py:68 pensum/ui/section_group.py:85
+#: pensum/ui/list_menu.py:79 pensum/ui/section_group.py:85
 msgid "Rename"
 msgstr ""
 
-#: pensum/ui/list_menu.py:77
+#: pensum/ui/list_menu.py:88
 msgid "Project archived"
 msgstr ""
 
-#: pensum/ui/list_menu.py:97 pensum/ui/task_page.py:439
+#: pensum/ui/list_menu.py:108 pensum/ui/task_page.py:439
 #, python-brace-format
 msgid "“{title}” deleted"
-msgstr ""
-
-#: pensum/ui/notes_box.py:15 pensum/ui/notes_box.py:34
-msgid "Notes"
 msgstr ""
 
 #: pensum/ui/notes_box.py:89
@@ -953,8 +954,52 @@ msgstr ""
 msgid "Edit the Notes"
 msgstr ""
 
+#: pensum/ui/notes_page.py:26
+msgid "No Notes"
+msgstr ""
+
+#: pensum/ui/notes_page.py:27
+msgid "Notes keep what belongs to the project but is no task."
+msgstr ""
+
+#: pensum/ui/notes_page.py:33
+msgid "New Note"
+msgstr ""
+
+#: pensum/ui/notes_page.py:47 pensum/ui/pinned_notes.py:19
+msgid "Empty Note"
+msgstr ""
+
+#: pensum/ui/notes_page.py:51 pensum/ui/notes_page.py:52
+msgid "Pinned to Today"
+msgstr ""
+
+#: pensum/ui/notes_page.py:71 pensum/ui/notes_page.py:93
+msgid "Note"
+msgstr ""
+
+#: pensum/ui/notes_page.py:77 pensum/ui/notes_page.py:78
+msgid "Remove Note"
+msgstr ""
+
+#: pensum/ui/notes_page.py:84
+msgid "Pin to Today"
+msgstr ""
+
+#: pensum/ui/notes_page.py:95
+msgid "Markdown, as in Super Productivity."
+msgstr ""
+
+#: pensum/ui/notes_page.py:116
+msgid "Note removed"
+msgstr ""
+
 #: pensum/ui/notes_view.py:58
 msgid "No notes"
+msgstr ""
+
+#: pensum/ui/pinned_notes.py:13
+msgid "Pinned Notes"
 msgstr ""
 
 #: pensum/ui/repeat_page.py:14
@@ -1477,64 +1522,64 @@ msgstr ""
 msgid "Add Task"
 msgstr ""
 
-#: pensum/ui/task_list.py:60
+#: pensum/ui/task_list.py:63
 msgid "Move All to Today"
 msgstr ""
 
-#: pensum/ui/task_list.py:69
+#: pensum/ui/task_list.py:72
 msgid "No Open Tasks"
 msgstr ""
 
-#: pensum/ui/task_list.py:82 pensum/ui/task_list.py:219
+#: pensum/ui/task_list.py:85 pensum/ui/task_list.py:223
 msgid "Finish Day"
 msgstr ""
 
-#: pensum/ui/task_list.py:84
+#: pensum/ui/task_list.py:87
 msgid "Move the done tasks into the archive"
 msgstr ""
 
-#: pensum/ui/task_list.py:133
+#: pensum/ui/task_list.py:136
 #, python-brace-format
 msgid "{count} done tasks archived"
 msgstr ""
 
-#: pensum/ui/task_list.py:134
+#: pensum/ui/task_list.py:137
 msgid "1 done task archived"
 msgstr ""
 
-#: pensum/ui/task_list.py:168 pensum/ui/task_list.py:255
+#: pensum/ui/task_list.py:171 pensum/ui/task_list.py:259
 #, python-brace-format
 msgid "{time} worked"
 msgstr ""
 
-#: pensum/ui/task_list.py:176
+#: pensum/ui/task_list.py:179
 msgid "Add Task to Today"
 msgstr ""
 
-#: pensum/ui/task_list.py:177
+#: pensum/ui/task_list.py:180
 #, python-brace-format
 msgid "Add Task to {list}"
 msgstr ""
 
-#: pensum/ui/task_list.py:192
+#: pensum/ui/task_list.py:196
 #, python-brace-format
 msgid "Overdue ({count})"
 msgstr ""
 
-#: pensum/ui/task_list.py:213
+#: pensum/ui/task_list.py:217
 #, python-brace-format
 msgid "Backlog ({count})"
 msgstr ""
 
-#: pensum/ui/task_list.py:216
+#: pensum/ui/task_list.py:220
 msgid "Tasks you plan for today show here."
 msgstr ""
 
-#: pensum/ui/task_list.py:220
+#: pensum/ui/task_list.py:224
 msgid "Archive Done"
 msgstr ""
 
-#: pensum/ui/task_list.py:221
+#: pensum/ui/task_list.py:225
 #, python-brace-format
 msgid "Done ({count})"
 msgstr ""

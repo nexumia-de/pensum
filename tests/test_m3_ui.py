@@ -24,6 +24,31 @@ def window(app, tmp_path):
     iterate()
 
 
+def test_notes_page_adds_edits_pins_and_removes(window):
+    from pensum.store import notes
+    from pensum.ui.notes_page import NotesPage
+    project = window.ds.default_project_id()
+    page = NotesPage(window, project)
+    window.nav.push(page)
+    iterate()
+    assert "No Notes" in labels(page)
+    page._on_add(None)
+    iterate()
+    note_page = window.visible_page()
+    note_page.text.get_buffer().set_text("Seeds\nbuy them")
+    note = notes.of_project(window.ds, project)[0]
+    assert note["content"] == "Seeds\nbuy them"
+    window.nav.pop()
+    iterate()
+    assert "Seeds" in labels(page)
+    notes.set_pinned(window.ds, note["id"], True)
+    window.show_list(Context.today())
+    window.changed()
+    iterate()
+    assert "Seeds" in labels(window.list_page)  # pinned notes on Today
+    valid(window)
+
+
 def test_focus_countdown_tracks_logs_and_stops(window):
     from pensum.store import focus, metric
     from pensum.ui.focus_page import FocusPage
