@@ -58,7 +58,7 @@ lost when the same backup goes back to Super Productivity.
 | Edit time spent per day | `timeSpentOnDay` | **M2, done** (#17) |
 | Worklog: time sheet by day, week, month, export | `task`, archives, `advancedCfg.worklogExportSettings` | M3 |
 | Daily summary and evaluation | `metric` | M3 |
-| Focus mode: Pomodoro, Flowtime, countdown | `globalConfig.pomodoro`, `focusMode`, `flowtime` | M3 |
+| Focus mode: Pomodoro, Flowtime, countdown | `globalConfig.pomodoro`, `focusMode`, `flowtime` | **M3, done** (#19, [focus](focus-mode.md)) |
 | Break reminder | `globalConfig.takeABreak`, `timeTracking.b/bt` | M3 |
 | Idle detection | `globalConfig.idle` | out of scope (Phosh has no idle API for apps; the phone sleeps) |
 | Tracking reminder ("you are not tracking") | `globalConfig.timeTracking.isTrackingReminderEnabled` | backlog |

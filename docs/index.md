@@ -23,6 +23,10 @@ Change history is in [log.md](log.md).
 
 * [Markdown in notes](markdown-notes.md) - What Super Productivity renders in a task's notes, the subset Day Planner shows with Pango markup, checkboxes that can be ticked, links only on a tap, and that the stored note stays as typed.
 
+# Focus and reports (M3)
+
+* [Focus mode](focus-mode.md) - Pomodoro, Flowtime and countdown for the running task, breaks that pause tracking, sessions in `metric.focusSessions`.
+
 # Reminders
 
 * [Own journeys](own-journeys.md) - the quick form for a habit of the user's own, the journey QuestArc's engine writes and checks, the `journey:<id>` record, importing, exporting and removing a journey file.

@@ -5,6 +5,8 @@ pensum/preferences.py
 pensum/reminder_watch.py
 pensum/store/backup.py
 pensum/store/dataset.py
+pensum/store/focus.py
+pensum/store/metric.py
 pensum/store/reminders.py
 pensum/sync/crypto.py
 pensum/sync/envelope.py
@@ -16,6 +18,7 @@ pensum/sync/webdav.py
 pensum/ui/archived_page.py
 pensum/ui/backup_actions.py
 pensum/ui/dialogs.py
+pensum/ui/focus_page.py
 pensum/ui/journey/art.py
 pensum/ui/journey/banners.py
 pensum/ui/journey/card.py

@@ -290,6 +290,10 @@ class Window(Adw.ApplicationWindow):
         self.show_place(anchor_id)
         self.nav.push(ChangeMomentPage(self, anchor_id))
 
+    def show_focus(self, task_id):
+        from pensum.ui.focus_page import FocusPage
+        if task_id in self.ds.tasks:
+            self.nav.push(FocusPage(self, task_id))
     def show_task(self, task_id):
         if task_id not in self.ds.tasks:
             return
