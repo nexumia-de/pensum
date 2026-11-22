@@ -1,7 +1,8 @@
 #!/bin/sh
 # The sync test (docs/dev-environment.md, sync test): a WebDAV test
 # server, Super Productivity syncing to it (sp_sync.mjs), and Pensum
-# reading the folder (check_sync.py), in two rounds; check_sync.py also
+# reading the folder (check_sync.py), in three rounds, Pensum sending its
+# edits before the third (pensum_send.py, #30); check_sync.py also
 # checks that wrong decodes fail and that reading changes no file. Runs
 # three times: plain files, compressed and encrypted ones (#29), and the
 # split v3 files whose ops Pensum replays (#30).
@@ -36,7 +37,9 @@ scenario() {
   export PENSUM_DAV_FOLDER="$1" PENSUM_SYNC_SPLIT="$2" PENSUM_SYNC_COMPRESS="$3" \
     PENSUM_SYNC_PASSWORD="$4"
   mkdir -p "$out/$1"
-  for round in 1 2; do
+  for round in 1 2 3; do
+    # Before round 3 Pensum sends its edits (#30).
+    [ $round != 3 ] || "$python" "$here/pensum_send.py" "$out/$1"
     node "$here/sp_sync.mjs" "$out/$1" $round
     "$python" "$here/check_sync.py" "$out/$1" $round
   done

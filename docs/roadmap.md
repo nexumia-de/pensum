@@ -85,7 +85,10 @@ incl. compressed and encrypted ones written by a real Super
 Productivity and never changes the folder (#28, #29). Then: reads v3;
 writes ops that Super Productivity replays to the same
 state, proven by end-to-end tests in both directions with concurrent
-edits ([sync files](super-productivity-sync.md)).
+edits ([sync files](super-productivity-sync.md)). Writing started on
+2026-11-22 with task edits for one Day Planner and one Super
+Productivity ([decision](decisions/sync-writing.md)); every further
+kind of change follows with its own end-to-end round.
 
 # Risks
 

@@ -15,6 +15,29 @@ class NeedsPassword(SyncError):
     """The files are encrypted and no password was given."""
 
 
+def flags(text):
+    """(compressed, encrypted, model version) of a sync file's prefix."""
+    match = PREFIX.match(text)
+    if not match:
+        raise SyncError(_("A sync file is not in Super Productivity's format."))
+    compressed, encrypted, version = match.groups()
+    return bool(compressed), bool(encrypted), version
+
+
+def encode(payload, version, compressed=False, encrypted=False, password=None):
+    """A sync file as Super Productivity writes it: compressed before
+    encrypted, the prefix naming both (#30)."""
+    body = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+    if compressed:
+        body = crypto.compress(body)
+    if encrypted:
+        if not password:
+            raise NeedsPassword(_("The sync files are encrypted. Enter the "
+                                  "encryption password set in Super Productivity."))
+        body = crypto.encrypt(body, password)
+    return f"pf_{'C' if compressed else ''}{'E' if encrypted else ''}{version}__{body}"
+
+
 def decode(text, password=None, cache=None):
     """The JSON object a sync file carries, and its model version.
     `cache` keeps derived keys between the files of one read."""

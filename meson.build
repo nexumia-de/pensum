@@ -68,6 +68,7 @@ python.install_sources(
 )
 python.install_sources(
   'pensum/sync/__init__.py',
+  'pensum/sync/base.py',
   'pensum/sync/changes.py',
   'pensum/sync/crypto.py',
   'pensum/sync/envelope.py',
@@ -76,6 +77,7 @@ python.install_sources(
   'pensum/sync/reader.py',
   'pensum/sync/summary.py',
   'pensum/sync/webdav.py',
+  'pensum/sync/writer.py',
   subdir: 'pensum' / 'sync',
 )
 
@@ -175,6 +177,7 @@ python.install_sources(
   'pensum/ui/sidebar.py',
   'pensum/ui/sidebar_folders.py',
   'pensum/ui/summary_page.py',
+  'pensum/ui/sync_send.py',
   'pensum/ui/tags_dialog.py',
   'pensum/ui/time_dialog.py',
   'pensum/ui/time_picker.py',
