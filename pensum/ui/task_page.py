@@ -19,7 +19,13 @@ class TaskPage(Adw.NavigationPage):
         self.task_id = task_id
         self.sub_rows = []
         toolbar = Adw.ToolbarView()
-        toolbar.add_top_bar(Adw.HeaderBar())
+        header = Adw.HeaderBar()
+        # Focus mode for this task (#19).
+        focus = Gtk.Button(icon_name="alarm-symbolic", tooltip_text=_("Focus"))
+        focus.update_property([Gtk.AccessibleProperty.LABEL], [_("Focus")])
+        focus.connect("clicked", lambda *_: window.show_focus(self.task_id))
+        header.pack_end(focus)
+        toolbar.add_top_bar(header)
         # The two things done most with a task, within thumb reach
         # (phosh-toolkit adaptive rule 10).
         actions = Gtk.Box(spacing=12, homogeneous=True, margin_top=6, margin_bottom=6,
@@ -135,6 +141,9 @@ class TaskPage(Adw.NavigationPage):
 
         self.notes = NotesBox(window, task_id)
         page.add(self.notes)
+        from pensum.ui.attachments_group import AttachmentsGroup
+        self.attachments = AttachmentsGroup(window, task_id)
+        page.add(self.attachments)
 
         self.subs = Adw.PreferencesGroup(title=_("Subtasks"))
         self.sub_list = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
@@ -166,6 +175,7 @@ class TaskPage(Adw.NavigationPage):
         if task is None:
             return
         ds = self.window.ds
+        self.attachments.refresh()
         if initial or not self.title_row.has_focus():
             self.title_row.set_text(task.get("title") or "")
         self.set_title(task.get("title") or _("Task"))

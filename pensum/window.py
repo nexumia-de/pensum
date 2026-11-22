@@ -49,6 +49,8 @@ class Window(Adw.ApplicationWindow):
         self.day_watch = DayWatch(lambda: self.ds, self.changed)
         from pensum.ui.journey.model import JourneyModel
         self.journeys = JourneyModel(self)
+        from pensum.break_watch import BreakWatch
+        self.break_watch = BreakWatch(self)
 
         from pensum.ui.sidebar import Sidebar
         from pensum.ui.task_list import TaskListPage
@@ -190,6 +192,7 @@ class Window(Adw.ApplicationWindow):
         self.flush()
         self.timer.halt()
         self.day_watch.stop()
+        self.break_watch.stop()
         self.closed = True
         GLib.idle_add(self._after_close)
         return False
@@ -289,6 +292,20 @@ class Window(Adw.ApplicationWindow):
         from pensum.ui.journey.change_moment_page import ChangeMomentPage
         self.show_place(anchor_id)
         self.nav.push(ChangeMomentPage(self, anchor_id))
+
+    def show_focus(self, task_id):
+        from pensum.ui.focus_page import FocusPage
+        if task_id in self.ds.tasks:
+            self.nav.push(FocusPage(self, task_id))
+
+    def show_summary(self):
+        from pensum.ui.summary_page import SummaryPage
+        self.nav.push(SummaryPage(self))
+
+    def show_planner(self):
+        from pensum.ui.planner_page import PlannerPage
+        self.nav.pop_to_page(self.main_page)
+        self.nav.push(PlannerPage(self))
 
     def show_task(self, task_id):
         if task_id not in self.ds.tasks:

@@ -11,6 +11,8 @@ encryption/web-crypto.ts):
   Productivity tries the older layout when the newer one fails;
 - compression is applied before encryption, so decryption comes first.
 
+Writing (#30) does the same backwards with a new random salt and IV.
+
 Argon2id comes from argon2-cffi-bindings (bundled), AES-GCM from the
 runtime's OpenSSL (libcrypto) through ctypes; PBKDF2 from hashlib."""
 import base64
@@ -19,6 +21,7 @@ import ctypes
 import ctypes.util
 import gzip
 import hashlib
+import os
 import re
 from functools import lru_cache
 
@@ -59,6 +62,20 @@ def decompress(text):
         return gzip.decompress(b64decode(text)).decode("utf-8")
     except (OSError, EOFError, UnicodeDecodeError) as error:
         raise SyncError(_("A sync file is damaged (gzip).")) from error
+
+
+def compress(text):
+    """base64 of gzip of the UTF-8 text, as compression.ts writes it."""
+    return base64.b64encode(gzip.compress(text.encode("utf-8"))).decode("ascii")
+
+
+def encrypt(text, password):
+    """base64 of `[salt 16][iv 12][ciphertext + tag]` with an Argon2id key,
+    the layout Super Productivity 20 writes (encryption.ts)."""
+    salt, iv = os.urandom(SALT_LENGTH), os.urandom(IV_LENGTH)
+    key = argon2id(password.encode("utf-8"), salt)
+    sealed = aes_gcm_encrypt(key, iv, text.encode("utf-8"))
+    return base64.b64encode(salt + iv + sealed).decode("ascii")
 
 
 def decrypt(text, password, cache=None):
@@ -115,6 +132,7 @@ def argon2id(secret, salt):
 
 EVP_CTRL_GCM_SET_IVLEN = 0x9
 EVP_CTRL_GCM_SET_TAG = 0x11
+EVP_CTRL_GCM_GET_TAG = 0x10
 
 
 @lru_cache(maxsize=1)
@@ -138,6 +156,9 @@ def _libcrypto():
                                           ctypes.c_int]
         lib.EVP_DecryptFinal_ex.argtypes = [ctypes.c_void_p, ctypes.c_void_p,
                                             ctypes.POINTER(ctypes.c_int)]
+        lib.EVP_EncryptInit_ex.argtypes = lib.EVP_DecryptInit_ex.argtypes
+        lib.EVP_EncryptUpdate.argtypes = lib.EVP_DecryptUpdate.argtypes
+        lib.EVP_EncryptFinal_ex.argtypes = lib.EVP_DecryptFinal_ex.argtypes
         return lib
     raise SyncError(_("Encrypted sync files need OpenSSL, which is missing."))
 
@@ -169,5 +190,29 @@ def aes_gcm_decrypt(key, iv, sealed):
                                    ctypes.byref(rest)) != 1:
             return None
         return out.raw[:written + rest.value]
+    finally:
+        lib.EVP_CIPHER_CTX_free(ctx)
+
+
+def aes_gcm_encrypt(key, iv, plain):
+    """The ciphertext with its 16-byte tag appended (Web Crypto's layout)."""
+    lib = _libcrypto()
+    ctx = lib.EVP_CIPHER_CTX_new()
+    if not ctx:
+        raise SyncError(_("OpenSSL failed."))
+    try:
+        out = ctypes.create_string_buffer(len(plain) + 16)
+        length, rest = ctypes.c_int(0), ctypes.c_int(0)
+        tag = ctypes.create_string_buffer(TAG_LENGTH)
+        ok = (lib.EVP_EncryptInit_ex(ctx, lib.EVP_aes_256_gcm(), None, None, None) == 1
+              and lib.EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, len(iv), None) == 1
+              and lib.EVP_EncryptInit_ex(ctx, None, None, key, iv) == 1
+              and lib.EVP_EncryptUpdate(ctx, out, ctypes.byref(length), plain, len(plain)) == 1
+              and lib.EVP_EncryptFinal_ex(ctx, ctypes.addressof(out) + length.value,
+                                          ctypes.byref(rest)) == 1
+              and lib.EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, TAG_LENGTH, tag) == 1)
+        if not ok:
+            raise SyncError(_("OpenSSL failed."))
+        return out.raw[:length.value + rest.value] + tag.raw
     finally:
         lib.EVP_CIPHER_CTX_free(ctx)

@@ -43,11 +43,11 @@ lost when the same backup goes back to Super Productivity.
 | Short syntax when adding (`#tag +project 1h @tomorrow`) | `globalConfig.shortSyntax` | **M2, done** (#14): `+project`, `#tag`, estimate, spent/estimate, `p1`–`p3`, `@today/@tomorrow/@weekday [HH:MM]`; repeat (`@every`), deadline (`!`) and URLs open |
 | Search | titles and notes, archive included | **M2, done** (#15) |
 | Finish day: archive done tasks | `archiveYoung`, `archiveOld`, `task` | **M2, done** (#16) |
-| Project notes | `note`, `project.noteIds` | M3 |
-| Attachments and project bookmarks | `task.attachments` | M3 (show and open links) |
-| Menu folders for projects and tags | `menuTree` folders | M3 (shown; editing later) |
-| Hide subtasks, task view customiser | `_hideSubTasksMode` | backlog |
-| Multi-select of tasks | – | backlog |
+| Project notes | `note`, `project.noteIds` | **M3, done** (#24, [notes](project-notes.md)): list, edit, pin to Today, remove with Undo; pinned notes on Today |
+| Attachments and project bookmarks | `task.attachments` | **M3, done** (#25, [attachments](attachments.md)): shown, opened through the portal, links added and removed; commands never run; project bookmarks not built |
+| Menu folders for projects and tags | `menuTree` folders | **M3, done** (#27, [folders](menu-folders.md)): shown, opened and closed, created, renamed, deleted, lists moved into them |
+| Hide subtasks, task view customiser | `_hideSubTasksMode` | not planned (#35): a desktop list mode; the data stays untouched |
+| Multi-select of tasks | – | not planned (#35) |
 
 # Time
 
@@ -56,27 +56,28 @@ lost when the same backup goes back to Super Productivity.
 | Timer on the current task, booked per day | `task.currentTaskId`, `timeSpentOnDay`, `timeTracking` | **M1, done** |
 | Work start and end per day | `timeTracking.*[id][day].s/e` | **M1, done** (written) |
 | Edit time spent per day | `timeSpentOnDay` | **M2, done** (#17) |
-| Worklog: time sheet by day, week, month, export | `task`, archives, `advancedCfg.worklogExportSettings` | M3 |
-| Daily summary and evaluation | `metric` | M3 |
-| Focus mode: Pomodoro, Flowtime, countdown | `globalConfig.pomodoro`, `focusMode`, `flowtime` | M3 |
-| Break reminder | `globalConfig.takeABreak`, `timeTracking.b/bt` | M3 |
+| Worklog: time sheet by day, week, month, export | `task`, archives, `advancedCfg.worklogExportSettings` | **M3, done** (#22, [worklog](worklog.md)): week and month, CSV with the list's settings |
+| Daily summary and evaluation | `metric` | **M3, done** (#23, [summary](daily-summary.md)) |
+| Focus mode: Pomodoro, Flowtime, countdown | `globalConfig.pomodoro`, `focusMode`, `flowtime` | **M3, done** (#19, [focus](focus-mode.md)) |
+| Break reminder | `globalConfig.takeABreak`, `timeTracking.b/bt` | **M3, done** (#20, [breaks](breaks.md)): notification only, no blocker |
 | Idle detection | `globalConfig.idle` | out of scope (Phosh has no idle API for apps; the phone sleeps) |
-| Tracking reminder ("you are not tracking") | `globalConfig.timeTracking.isTrackingReminderEnabled` | backlog |
+| Tracking reminder ("you are not tracking") | `globalConfig.timeTracking.isTrackingReminderEnabled` | not planned (#35): off by default, nags on a sleeping phone; the break reminder (#20) stays |
 | Anti-procrastination ("domina mode") | `globalConfig.dominaMode` | out of scope |
 
 # Habits and views
 
 Habit journeys come from [QuestArc](https://github.com/nexumia-de/quest-arc)
 and are not a Super Productivity feature: [journeys](journeys.md).
-Every line marked M3 in this file is on hold until the roadmap's
-_Habits first_ is done ([decision](decisions/habits-first.md)).
+The lines marked M3 were on hold until the roadmap's _Habits first_
+was done ([decision](decisions/habits-first.md)); they were built on
+2026-11-22.
 
 | Feature | Data | Pensum |
 |---|---|---|
 | Habits: counters and stopwatches with streaks | `simpleCounter` | not planned (#21, [decision](decisions/habits-first.md)): the journeys are Day Planner's habits; the data stays untouched |
-| Planner: days ahead | `planner`, `dueDay` | M3 |
-| Boards: Kanban, Eisenhower | `boards`, tags | backlog |
-| Calendar events next to the plan (iCal, CalDAV) | `issueProvider` (calendar) | backlog |
+| Planner: days ahead | `planner`, `dueDay` | **M3, done** (#26, [planner](planner.md)): seven days, move by menu |
+| Boards: Kanban, Eisenhower | `boards`, tags | not planned (#32): no room at 360 px; the data stays untouched |
+| Calendar events next to the plan (iCal, CalDAV) | `issueProvider` (calendar) | not planned (#33): Phosh's own calendar shows the events; the planner (#26) shows the days |
 
 # Data and sync
 
@@ -86,11 +87,11 @@ _Habits first_ is done ([decision](decisions/habits-first.md)).
 | Automatic local backups | `backups/*.json` | **M1, done** |
 | Light and dark style | – (Pensum's own setting) | **M1, done** |
 | Day boundary ("start of next day") | `globalConfig.misc.startOfNextDay*` | **M1, done** |
-| Read a WebDAV/local-folder sync file | `sync-data.json` | **M4, done** (#28): WebDAV/Nextcloud (password in the keyring) or a local folder, v2 and current v3 snapshots, shown and offered as an import, tested against a real Super Productivity ([sync files](super-productivity-sync.md#what-pensum-reads-28)). v3 with ops after the snapshot replayed (#30); a folder with a change Pensum can't apply yet is refused |
-| Sync as a client (WebDAV, Nextcloud) | ops in `recentOps` | M4: replaying ops read-only started (#30: add, change, delete tasks, add subtasks); writing open |
+| Read a WebDAV/local-folder sync file | `sync-data.json` | **M4, done** (#28): WebDAV/Nextcloud (password in the keyring) or a local folder, v2 and current v3 snapshots, shown and offered as an import, tested against a real Super Productivity ([sync files](super-productivity-sync.md#what-pensum-reads-28)). v3 with ops after the snapshot replayed (#30); a folder with a change Pensum can't apply yet is refused. v3 (Surgical sync) is written like v2: ops appended to `sync-ops.json`, the snapshot untouched (#31) |
+| Sync as a client (WebDAV, Nextcloud) | ops in `recentOps` | **M4, first step done** (#30, [decision](decisions/sync-writing.md)): replaying add, change, delete tasks and subtasks; **Send Changes** writes a task's title, notes, done state and estimate as Super Productivity's own `updateTask` ops, tested end to end against a real Super Productivity with a concurrent edit; adding and deleting tasks and tracked time come one kind at a time, each with its own end-to-end round |
 | Encrypted and compressed sync files | `pf_CE…` envelope | **M4, done** (#29): gzip, Argon2id + AES-GCM and the older PBKDF2 layout, password in the keyring, tested with files Super Productivity wrote itself |
-| SuperSync server | – | backlog (after file sync) |
-| Dropbox, OneDrive | OAuth | backlog |
+| SuperSync server | – | not planned (#34): the shared WebDAV/local folder is read and written (#28–#31); decryption and op replay are the base if that changes |
+| Dropbox, OneDrive | OAuth | not planned (#34): app registrations under the owner's accounts |
 
 # Out of scope
 

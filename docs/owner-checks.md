@@ -69,3 +69,15 @@ hides them. Apps pin only releases. Left:
 - [ ] After that: make a habit with the form on the phone, walk a few
       days, export, and check what Super Productivity's plugin shows
       (it does not read own journeys before quest-arc#40 reaches it).
+
+## Sending changes to the sync folder (#30)
+
+Day Planner sends task edits (title, notes, done, estimate); tested
+against a real Super Productivity and a WebDAV test server in CI. Left,
+with the owner's own folder (make a backup export first):
+
+- [ ] Read and import the folder on the phone, rename a task and mark
+      one done, Send Changes; sync Super Productivity on the desktop: no
+      sync error, both edits shown.
+- [ ] The same with the owner's server: does it give ETags (strong
+      ones)? Without, Day Planner compares the file before writing.

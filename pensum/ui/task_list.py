@@ -53,6 +53,9 @@ class TaskListPage(Adw.NavigationPage):
         from pensum.ui.journey.today_strip import TodayStrip
         self.strip = TodayStrip(window)
         box.append(self.strip)
+        from pensum.ui.pinned_notes import PinnedNotes
+        self.pinned = PinnedNotes(window)
+        box.append(self.pinned)
         overdue_header = Gtk.Box(spacing=12)
         self.overdue_title = Gtk.Label(xalign=0, hexpand=True)
         self.overdue_title.add_css_class("heading")
@@ -133,6 +136,8 @@ class TaskListPage(Adw.NavigationPage):
         self.window.undoable(_("{count} done tasks archived").format(count=count)
                              if count != 1 else _("1 done task archived"),
                              lambda: archive.archive_tasks(ds, done))
+        if self.context.kind == "today":
+            self.window.show_summary()  # the day's summary and evaluation (#23)
 
     def _on_move_overdue(self, *_):
         ds = self.window.ds
@@ -174,6 +179,7 @@ class TaskListPage(Adw.NavigationPage):
             _("Add Task to Today") if self.context.kind == "today"
             else _("Add Task to {list}").format(list=title))
         self.strip.refresh()
+        self.pinned.refresh(self.context.kind == "today")
         open_tasks, done_tasks = ds.list_tasks(self.context, today)
         # Rebuilding the rows must not move the list under the finger.
         adjustment = self.scroller.get_vadjustment()

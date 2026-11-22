@@ -43,15 +43,17 @@ def test_manifest_has_no_file_access_and_network_only_for_webdav():
     args = [line.strip()[2:] for line in manifest.splitlines()
             if line.strip().startswith("- --")]
     assert not [a for a in args if a.startswith("--filesystem")]
-    # The network is for reading a sync folder on WebDAV (#28): only that
-    # module opens connections, and it sends nothing but GET.
+    # The network is for a sync folder on WebDAV (#28): only that module
+    # opens connections; it reads with GET and replaces a file only with a
+    # conditional PUT when Day Planner sends changes (#30).
     assert "--share=network" in args
     network = re.compile(r"^\s*(import|from)\s+(urllib|http|socket|ssl|requests)\b", re.M)
     users = {p.relative_to(ROOT).as_posix() for p in (ROOT / "pensum").rglob("*.py")
              if network.search(p.read_text())}
     assert users == {"pensum/sync/webdav.py"}
     webdav = (ROOT / "pensum/sync/webdav.py").read_text()
-    assert re.findall(r'method="(\w+)"', webdav) == ["GET"]
+    assert re.findall(r'method="(\w+)"', webdav) == ["GET", "PUT"]
+    assert '"If-Match"' in webdav
     commit = re.search(r"- name: phosh-toolkit.*?commit: (\w+)", manifest, re.S)
     assert commit and len(commit.group(1)) == 40
 

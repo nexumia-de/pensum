@@ -123,6 +123,14 @@ without login on 2026-11-12.
 
 # Sync test
 
+On the cloud image Playwright's Chromium is preinstalled for another
+Playwright version; a folder of links under the version
+`tests/real_app` asks for makes it run (2026-11-22, 2 min against the
+live web app): link every entry of `/opt/pw-browsers` into a folder,
+add `chromium_headless_shell-<wanted>` pointing to the installed one,
+and set `PLAYWRIGHT_BROWSERS_PATH` to that folder. `WSGIDAV` points to a
+virtualenv with `requirements-webdav.txt`.
+
 `tests/real_app/run_sync.sh` checks reading a sync folder against a real
 Super Productivity ([what it checks](super-productivity-sync.md#checked-against-a-real-super-productivity)):
 it starts the WebDAV test server (`wsgidav.yaml`: `127.0.0.1:2345`, user

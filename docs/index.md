@@ -23,6 +23,17 @@ Change history is in [log.md](log.md).
 
 * [Markdown in notes](markdown-notes.md) - What Super Productivity renders in a task's notes, the subset Day Planner shows with Pango markup, checkboxes that can be ticked, links only on a tap, and that the stored note stays as typed.
 
+# Focus and reports (M3)
+
+* [Focus mode](focus-mode.md) - Pomodoro, Flowtime and countdown for the running task, breaks that pause tracking, sessions in `metric.focusSessions`.
+* [Break reminder](breaks.md) - The calm reminder after an hour of tracked work, snooze, breaks counted in `timeTracking` `b`/`bt`.
+* [Worklog](worklog.md) - Time per day of a list for a week or a month, the CSV time sheet with the list's export settings.
+* [Daily summary](daily-summary.md) - The day's work, breaks and focus sessions and the evaluation in `metric`.
+* [Project notes](project-notes.md) - A project's notes in `note`, pinned to Today, the reducers' order rules.
+* [Task attachments](attachments.md) - `task.attachments` on the task page; links and files open through the portal, commands never run.
+* [Planner](planner.md) - Today and the next six days, the estimate left per day, moving a task to another day.
+* [Menu folders](menu-folders.md) - Folders of `menuTree` in the sidebar: open and close, create, rename, delete, move lists into them.
+
 # Reminders
 
 * [Own journeys](own-journeys.md) - the quick form for a habit of the user's own, the journey QuestArc's engine writes and checks, the `journey:<id>` record, importing, exporting and removing a journey file.

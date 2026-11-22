@@ -25,7 +25,14 @@ class SyncPage(Adw.NavigationPage):
         self.snapshot = None
         self.source_key = ""
         toolbar = Adw.ToolbarView()
-        toolbar.add_top_bar(Adw.HeaderBar())
+        header = Adw.HeaderBar()
+        # Day Planner's task edits to the folder (#30, sync_send.py).
+        self.send_button = Gtk.Button(icon_name="mail-send-symbolic",
+                                      tooltip_text=_("Send Changes"))
+        self.send_button.update_property([Gtk.AccessibleProperty.LABEL], [_("Send Changes")])
+        self.send_button.connect("clicked", lambda *_: self.send())
+        header.pack_end(self.send_button)
+        toolbar.add_top_bar(header)
         self.banner = Adw.Banner()
         toolbar.add_top_bar(self.banner)
         page = Adw.PreferencesPage()
@@ -102,6 +109,10 @@ class SyncPage(Adw.NavigationPage):
         bar.append(self.spinner)
         bar.append(self.import_button)
         return bar
+
+    def send(self, wait=False):
+        from pensum.ui import sync_send
+        sync_send.send(self, wait)
 
     def _kind(self):
         return KINDS[self.kind_row.get_selected()]
@@ -224,7 +235,7 @@ class SyncPage(Adw.NavigationPage):
         stamp = GLib.DateTime.new_from_unix_local(when).format("%x %H:%M") if when else ""
         self.result.set_description(
             (_("Last synced {stamp}.").format(stamp=stamp) + " " if stamp else "") +
-            _("Read only: the folder is not changed."))
+            _("Reading does not change the folder."))
         self.result.set_visible(True)
         self.import_button.set_sensitive(True)
         log.info("sync page: %d tasks shown, %d changes since last read",
@@ -246,7 +257,10 @@ class SyncPage(Adw.NavigationPage):
         window = self.window
         window.flush()
         ds = window.files.import_data(self.snapshot.data, window.ds)
+        version = self.snapshot.sync_version
         self.snapshot = None
         window.replace_dataset(ds)
+        from pensum.ui.sync_send import keep_base
+        keep_base(window, self.source_key, version)
         window.toast(_("Sync folder imported"))
         log.info("imported sync folder: %d tasks", len(ds.data["task"]["ids"]))
