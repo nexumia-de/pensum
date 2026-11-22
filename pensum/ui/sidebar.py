@@ -10,22 +10,30 @@ from pensum.i18n import _
 def main_menu():
     menu = Gio.Menu()
     backup = Gio.Menu()
-    backup.append("Import Backup…", "app.import-backup")
-    backup.append("Export Backup…", "app.export-backup")
-    backup.append("Read Sync Folder…", "app.show-sync")
+    backup.append(_("Import Backup…"), "app.import-backup")
+    backup.append(_("Export Backup…"), "app.export-backup")
+    backup.append(_("Read Sync Folder…"), "app.show-sync")
     menu.append_section(None, backup)
+    plan = Gio.Menu()
+    plan.append(_("Planner"), "app.show-planner")
+    plan.append(_("Daily Summary"), "app.show-summary")
+    menu.append_section(None, plan)
     rest = Gio.Menu()
-    rest.append("Archived Projects", "app.show-archived")
-    rest.append("Preferences", "app.preferences")
-    rest.append(f"About {NAME}", "app.about")
+    rest.append(_("Archived Projects"), "app.show-archived")
+    rest.append(_("Preferences"), "app.preferences")
+    rest.append(_("About {name}").format(name=NAME), "app.about")
     menu.append_section(None, rest)
     return menu
 
 
 def add_menu():
     menu = Gio.Menu()
-    menu.append("New Project…", "win.new-project")
-    menu.append("New Tag…", "win.new-tag")
+    menu.append(_("New Project…"), "win.new-project")
+    menu.append(_("New Tag…"), "win.new-tag")
+    folders = Gio.Menu()
+    folders.append(_("New Project Folder…"), "win.new-project-folder")
+    folders.append(_("New Tag Folder…"), "win.new-tag-folder")
+    menu.append_section(None, folders)
     return menu
 
 
@@ -37,19 +45,19 @@ class Sidebar(Adw.Bin):
         self.set_child(toolbar)
         header = Adw.HeaderBar(title_widget=Adw.WindowTitle(title=NAME))
         menu = Gtk.MenuButton(icon_name="open-menu-symbolic", primary=True,
-                              menu_model=main_menu(), tooltip_text="Main Menu")
-        menu.update_property([Gtk.AccessibleProperty.LABEL], ["Main Menu"])
+                              menu_model=main_menu(), tooltip_text=_("Main Menu"))
+        menu.update_property([Gtk.AccessibleProperty.LABEL], [_("Main Menu")])
         header.pack_end(menu)
         toolbar.add_top_bar(header)
         # Frequent actions within thumb reach (phosh-toolkit adaptive rule 10).
         bar = Gtk.ActionBar()
-        find = Gtk.Button(icon_name="system-search-symbolic", tooltip_text="Search",
+        find = Gtk.Button(icon_name="system-search-symbolic", tooltip_text=_("Search"),
                           action_name="app.search")
-        find.update_property([Gtk.AccessibleProperty.LABEL], ["Search"])
+        find.update_property([Gtk.AccessibleProperty.LABEL], [_("Search")])
         bar.pack_start(find)
         add = Gtk.MenuButton(icon_name="list-add-symbolic", menu_model=add_menu(),
-                             tooltip_text="Add List", direction=Gtk.ArrowType.UP)
-        add.update_property([Gtk.AccessibleProperty.LABEL], ["Add List"])
+                             tooltip_text=_("Add List"), direction=Gtk.ArrowType.UP)
+        add.update_property([Gtk.AccessibleProperty.LABEL], [_("Add List")])
         bar.pack_end(add)
         toolbar.add_bottom_bar(bar)
         for name, kind in (("new-project", "project"), ("new-tag", "tag")):
@@ -64,11 +72,13 @@ class Sidebar(Adw.Bin):
         toolbar.set_content(Gtk.ScrolledWindow(
             child=self.listbox, hscrollbar_policy=Gtk.PolicyType.NEVER))
         self._contexts = []
+        from pensum.ui import sidebar_folders
+        sidebar_folders.install(window)
 
     def _on_new(self, action, param, kind):
         from pensum.ui.dialogs import name_dialog
         from pensum.store import contexts
-        title = "New Project" if kind == "project" else "New Tag"
+        title = _("New Project") if kind == "project" else _("New Tag")
 
         def create(name):
             add = contexts.add_project if kind == "project" else contexts.add_tag
@@ -76,7 +86,7 @@ class Sidebar(Adw.Bin):
             self.window.changed()
             self.window.show_list(Context(kind, entity["id"]))
 
-        name_dialog(self.window, title, "", "Create", create)
+        name_dialog(self.window, title, "", _("Create"), create)
 
     def _row(self, context, title, icon, count):
         box = Gtk.Box(spacing=12)
@@ -92,7 +102,8 @@ class Sidebar(Adw.Bin):
         row = Gtk.ListBoxRow(child=box)
         row.context = context
         row.update_property([Gtk.AccessibleProperty.LABEL],
-                            [f"{title}, {count} open" if count else title])
+                            [_("{title}, {count} open").format(title=title, count=count)
+                             if count else title])
         return row
 
     def _header(self, row, before):
@@ -103,7 +114,7 @@ class Sidebar(Adw.Bin):
         if kind in ("today", "journey"):
             row.set_header(None)
             return
-        label = Gtk.Label(label="Projects" if kind == "project" else "Tags",
+        label = Gtk.Label(label=_("Projects") if kind == "project" else _("Tags"),
                           xalign=0, margin_start=12, margin_top=12, margin_bottom=6)
         label.add_css_class("heading")
         label.add_css_class("dimmed")
@@ -116,20 +127,33 @@ class Sidebar(Adw.Bin):
             selected = Context("journey", "questarc")
         self.listbox.remove_all()
         today = ds.today()
-        entries = [(Context.today(), "Today", "weather-clear-symbolic")]
+        entries = [(Context.today(), _("Today"), "weather-clear-symbolic")]
         if self.window.journeys.available:
             # First once the user has journeys: they are what Day Planner
             # opens on (#78).
             entries.insert(0 if self.window.journeys.in_use() else 1,
                            (Context("journey", "questarc"), _("Journeys"),
                             "mark-location-symbolic"))
-        entries += [(Context("project", p["id"]), p.get("title") or "Untitled",
-                     "folder-symbolic") for p in ds.projects()]
-        entries += [(Context("tag", t["id"]), t.get("title") or "Untitled",
-                     "pensum-tag-symbolic") for t in ds.tags()]
-        for context, title, icon in entries:
+        from pensum.store import menu_tree
+        from pensum.ui.sidebar_folders import INDENT, folder_row
+        for kind, items, icon in (("project", ds.projects(), "folder-symbolic"),
+                                  ("tag", ds.tags(), "pensum-tag-symbolic")):
+            by_id = {e["id"]: e for e in items}
+            for what, value, depth in menu_tree.entries(ds, kind, list(by_id)):
+                if what == "folder":
+                    entries.append((folder_row(self.window, kind, value, depth), None, None))
+                else:
+                    entries.append((Context(kind, value), by_id[value].get("title")
+                                    or _("Untitled"), icon, depth))
+        for entry in entries:
+            if entry[1] is None:  # a folder row
+                self.listbox.append(entry[0])
+                continue
+            context, title, icon = entry[:3]
             count = 0 if context.kind == "journey" else len(ds.list_tasks(context, today)[0])
             row = self._row(context, title, icon, count)
+            if len(entry) > 3 and entry[3]:
+                row.get_child().set_margin_start(entry[3] * INDENT)
             self.listbox.append(row)
             if context == selected:
                 self.listbox.select_row(row)
@@ -143,6 +167,10 @@ class Sidebar(Adw.Bin):
             row = row.get_next_sibling()
 
     def _on_activated(self, listbox, row):
+        if getattr(row, "folder", None):
+            from pensum.ui.sidebar_folders import toggle
+            toggle(self.window, row)
+            return
         if row.context.kind == "journey":
             self.window.show_journey()
             return

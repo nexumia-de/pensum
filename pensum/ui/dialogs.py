@@ -1,14 +1,15 @@
 """Small dialogs: ask for a name, confirm a deletion."""
 from gi.repository import Adw, Gtk
+from pensum.i18n import _
 
 
 def name_dialog(window, heading, current, confirm, done):
     """Ask for a name; done(name) gets the non-empty, stripped text."""
     dialog = Adw.AlertDialog(heading=heading)
     entry = Gtk.Entry(text=current, activates_default=True)
-    entry.update_property([Gtk.AccessibleProperty.LABEL], ["Name"])
+    entry.update_property([Gtk.AccessibleProperty.LABEL], [_("Name")])
     dialog.set_extra_child(entry)
-    dialog.add_response("cancel", "Cancel")
+    dialog.add_response("cancel", _("Cancel"))
     dialog.add_response("ok", confirm)
     dialog.set_response_appearance("ok", Adw.ResponseAppearance.SUGGESTED)
     dialog.set_default_response("ok")
@@ -31,7 +32,7 @@ def name_dialog(window, heading, current, confirm, done):
 def confirm_dialog(window, heading, body, confirm, done):
     """A destructive confirmation; done() runs when confirmed."""
     dialog = Adw.AlertDialog(heading=heading, body=body)
-    dialog.add_response("cancel", "Cancel")
+    dialog.add_response("cancel", _("Cancel"))
     dialog.add_response("delete", confirm)
     dialog.set_response_appearance("delete", Adw.ResponseAppearance.DESTRUCTIVE)
     dialog.set_close_response("cancel")

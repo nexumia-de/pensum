@@ -4,6 +4,7 @@ note is loaded or run: no web view, no pictures."""
 from gi.repository import Gtk, Pango
 
 from pensum import markdown
+from pensum.i18n import _
 
 HEADING_CLASSES = {1: "title-2", 2: "title-3", 3: "title-4"}
 INDENT = 18
@@ -54,7 +55,7 @@ class NotesView(Gtk.Box):
         for block in blocks:
             self.append(self._widget(block))
         if not blocks:
-            self.append(_label("No notes", "dim-label"))
+            self.append(_label(_("No notes"), "dim-label"))
 
     def _widget(self, block):
         if block.kind == "rule":

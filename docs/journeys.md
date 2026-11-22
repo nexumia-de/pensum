@@ -259,6 +259,8 @@ its second station with one gap (two on a weekend, so it is still on its way),
 at the moment "sitting down at my desk", with other places around it
 (`PENSUM_DEMO_VALLEY=1|3|6|6-stacked`, default 3: [Valley](valley.md)).
 
+Journeys of the user's own (the quick form, a journey file): [own journeys](own-journeys.md).
+
 ## Open
 
 - German texts follow with QuestArc's (QuestArc#39).

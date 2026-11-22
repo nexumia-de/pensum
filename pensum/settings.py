@@ -29,6 +29,8 @@ class Settings:
     sync_local_path: str = ""
     sync_seen_source: str = ""
     sync_seen_version: int = 0
+    # Day Planner's client id in the sync folder's vector clocks (#30).
+    sync_client_id: str = ""
 
 
 def config_dir():

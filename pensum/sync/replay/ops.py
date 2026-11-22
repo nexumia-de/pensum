@@ -5,6 +5,7 @@
 (operation.types.ts)."""
 import json
 
+from pensum.i18n import _
 from pensum.sync import SyncError
 
 # Short codes of the supported actions (op-log/persistence/compact/
@@ -30,8 +31,8 @@ def unpack(op):
         try:
             payload = json.loads(payload)
         except ValueError as error:
-            raise SyncError("A change in the sync data is damaged.") from error
+            raise SyncError(_("A change in the sync data is damaged.")) from error
     if not isinstance(payload, dict):
-        raise SyncError("A change in the sync data is damaged.")
+        raise SyncError(_("A change in the sync data is damaged."))
     fields = payload.get("actionPayload", payload)
     return action, fields if isinstance(fields, dict) else {}

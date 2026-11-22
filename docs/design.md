@@ -17,7 +17,11 @@ Indigo `#5b4fc7` with white text (contrast 6.2:1), set only through
 `@define-color` for libadwaita 1.5 hosts)
 ([one accent per app](../../phosh-toolkit/docs/decisions/app-accent-colours.md)).
 Light and dark follow the system; Preferences → Appearance → Style
-offers Follow System / Light / Dark. Metainfo branding colours:
+offers Follow System / Light / Dark. Drawings (the journey's day marks,
+QuestArc's pictures) take the accent from a widget with the style class
+`.accent` (`drawing.accent()`), never from
+`Adw.StyleManager.get_accent_color_rgba()`, which since libadwaita 1.6
+is the system's accent, not the app's (#52). Metainfo branding colours:
 `#cdc8f2` (light), `#2e2666` (dark).
 
 # Screens

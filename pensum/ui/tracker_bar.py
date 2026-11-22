@@ -3,6 +3,7 @@ spent today and a button that stops it. Tapping the title opens the task."""
 from gi.repository import Gtk, Pango
 
 from pensum import duration
+from pensum.i18n import _
 
 
 class TrackerBar(Gtk.ActionBar):
@@ -21,14 +22,14 @@ class TrackerBar(Gtk.ActionBar):
         box.append(self.time)
         button.set_child(box)
         button.set_action_name("app.show-current-task")
-        button.set_tooltip_text("Open Running Task")
+        button.set_tooltip_text(_("Open Running Task"))
         self.set_center_widget(None)
         self.pack_start(button)
         stop = Gtk.Button(icon_name="media-playback-stop-symbolic",
-                          tooltip_text="Stop Timer", valign=Gtk.Align.CENTER)
+                          tooltip_text=_("Stop Timer"), valign=Gtk.Align.CENTER)
         stop.add_css_class("circular")
         stop.add_css_class("suggested-action")
-        stop.update_property([Gtk.AccessibleProperty.LABEL], ["Stop Timer"])
+        stop.update_property([Gtk.AccessibleProperty.LABEL], [_("Stop Timer")])
         stop.connect("clicked", lambda *_: window.timer.stop())
         self.pack_end(stop)
 
@@ -45,7 +46,7 @@ class TrackerBar(Gtk.ActionBar):
         self.set_revealed(task is not None)
         if task is None:
             return
-        self.title.set_label(task.get("title") or "Untitled")
+        self.title.set_label(task.get("title") or _("Untitled"))
         today = (task.get("timeSpentOnDay") or {}).get(ds.today(), 0)
-        self.time.set_label(duration.format_clock(today + self.window.timer.unbooked_ms())
-                            + " today")
+        self.time.set_label(_("{time} today").format(
+            time=duration.format_clock(today + self.window.timer.unbooked_ms())))

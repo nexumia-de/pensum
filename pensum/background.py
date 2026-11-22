@@ -7,9 +7,10 @@ import logging
 import os
 
 from gi.repository import Gio, GLib
+from pensum.i18n import N_, _
 
 log = logging.getLogger(__name__)
-REASON = "Show reminders for your tasks"
+REASON = N_("Show reminders for your tasks")
 
 
 def in_flatpak():
@@ -21,7 +22,7 @@ def request(autostart):
     with the session (as a service, without a window)."""
     if not in_flatpak():
         return False
-    options = {"reason": GLib.Variant("s", REASON),
+    options = {"reason": GLib.Variant("s", _(REASON)),
                "autostart": GLib.Variant("b", bool(autostart)),
                "commandline": GLib.Variant("as", ["pensum", "--gapplication-service"]),
                "dbus-activatable": GLib.Variant("b", False)}

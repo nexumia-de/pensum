@@ -5,13 +5,14 @@ character, and the editor saves only what the user changed."""
 from gi.repository import Adw, GLib, Gtk
 
 from pensum import markdown
+from pensum.i18n import _
 from pensum.store import tasks
 from pensum.ui.notes_view import NotesView
 
 
 class NotesBox(Adw.PreferencesGroup):
     def __init__(self, window, task_id):
-        super().__init__(title="Notes")
+        super().__init__(title=_("Notes"))
         self.window = window
         self.task_id = task_id
         self.editing = False
@@ -30,7 +31,7 @@ class NotesBox(Adw.PreferencesGroup):
         view_frame.add_css_class("view")
         self.text = Gtk.TextView(wrap_mode=Gtk.WrapMode.WORD_CHAR, top_margin=12,
                                  bottom_margin=12, left_margin=12, right_margin=12)
-        self.text.update_property([Gtk.AccessibleProperty.LABEL], ["Notes"])
+        self.text.update_property([Gtk.AccessibleProperty.LABEL], [_("Notes")])
         self.text.set_size_request(-1, 120)
         self.text.add_css_class("pensum-notes")
         text_frame = Gtk.Frame(child=self.text)
@@ -85,8 +86,8 @@ class NotesBox(Adw.PreferencesGroup):
         self.editing = editing
         self._render(self._source())
         self.stack.set_visible_child_name("edit" if editing else "view")
-        label = "Done" if editing else "Edit"
-        tip = "Show the Notes Formatted" if editing else "Edit the Notes"
+        label = _("Done") if editing else _("Edit")
+        tip = _("Show the Notes Formatted") if editing else _("Edit the Notes")
         self.switch.set_label(label)
         self.switch.set_tooltip_text(tip)
         self.switch.update_property([Gtk.AccessibleProperty.LABEL], [tip])

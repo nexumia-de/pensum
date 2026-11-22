@@ -91,7 +91,8 @@ there.
 ## Not checked yet (on the phone)
 
 The cloud container has no notification daemon, no portal and no
-Phosh. Open on the device:
+Phosh. Open on the device (checklist in
+[owner checks](owner-checks.md#reminders-on-the-phone-13)):
 
 - **A sleeping phone is not woken.** Nothing in the sandbox can set a
   wake alarm; the reminder comes when the phone wakes for another

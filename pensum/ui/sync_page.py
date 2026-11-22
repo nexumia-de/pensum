@@ -7,6 +7,7 @@ import threading
 
 from gi.repository import Adw, GLib, Gtk
 
+from pensum.i18n import _
 from pensum.sync import SyncError, changes, keyring, reader, summary
 from pensum.sync.local import LocalFolder
 from pensum.sync.webdav import WebDav
@@ -18,28 +19,36 @@ KINDS = ("webdav", "local")
 
 class SyncPage(Adw.NavigationPage):
     def __init__(self, window):
-        super().__init__(title="Sync Folder", tag="sync")
+        super().__init__(title=_("Sync Folder"), tag="sync")
         self.window = window
         self.settings = window.settings
         self.snapshot = None
         self.source_key = ""
         toolbar = Adw.ToolbarView()
-        toolbar.add_top_bar(Adw.HeaderBar())
+        header = Adw.HeaderBar()
+        # Day Planner's task edits to the folder (#30, sync_send.py).
+        self.send_button = Gtk.Button(icon_name="mail-send-symbolic",
+                                      tooltip_text=_("Send Changes"))
+        self.send_button.update_property([Gtk.AccessibleProperty.LABEL], [_("Send Changes")])
+        self.send_button.connect("clicked", lambda *_: self.send())
+        header.pack_end(self.send_button)
+        toolbar.add_top_bar(header)
         self.banner = Adw.Banner()
         toolbar.add_top_bar(self.banner)
         page = Adw.PreferencesPage()
         page.add(self._folder_group())
         encryption = Adw.PreferencesGroup(
-            description="Only when encryption is switched on in Super "
-                        "Productivity's sync settings.")
-        self.encryption_row = Adw.PasswordEntryRow(title="Encryption Password")
+            description=_("Only when encryption is switched on in Super "
+                          "Productivity's sync settings."))
+        self.encryption_row = Adw.PasswordEntryRow(title=_("Encryption Password"))
         encryption.add(self.encryption_row)
         page.add(encryption)
-        self.result = Adw.PreferencesGroup(title="In the Sync Folder", visible=False)
+        self.result = Adw.PreferencesGroup(title=_("In the Sync Folder"), visible=False)
         self.rows = {}
-        for key, title in (("open", "Open Tasks"), ("done", "Done Tasks"),
-                           ("archived", "Archived Tasks"), ("projects", "Projects"),
-                           ("tags", "Tags"), ("changes", "Changes Since Last Read")):
+        for key, title in (("open", _("Open Tasks")), ("done", _("Done Tasks")),
+                           ("archived", _("Archived Tasks")), ("projects", _("Projects")),
+                           ("tags", _("Tags")),
+                           ("changes", _("Changes Since Last Read"))):
             row = Adw.ActionRow(title=title)
             label = Gtk.Label(css_classes=["dim-label", "numeric"])
             row.add_suffix(label)
@@ -56,26 +65,26 @@ class SyncPage(Adw.NavigationPage):
 
     def _folder_group(self):
         group = Adw.PreferencesGroup(
-            description="Read the tasks Super Productivity keeps in its sync "
-                        "folder. Day Planner only reads the folder and never "
-                        "changes it.")
+            description=_("Read the tasks Super Productivity keeps in its sync "
+                          "folder. Day Planner only reads the folder and never "
+                          "changes it."))
         s = self.settings
-        self.kind_row = Adw.ComboRow(title="Kind", model=Gtk.StringList.new(
-            ["WebDAV or Nextcloud", "Folder on This Device"]))
+        self.kind_row = Adw.ComboRow(title=_("Kind"), model=Gtk.StringList.new(
+            [_("WebDAV or Nextcloud"), _("Folder on This Device")]))
         self.kind_row.set_selected(KINDS.index(s.sync_kind) if s.sync_kind in KINDS else 0)
         self.kind_row.connect("notify::selected", self._on_kind_changed)
         group.add(self.kind_row)
-        self.url_row = Adw.EntryRow(title="Server Address", text=s.sync_url,
+        self.url_row = Adw.EntryRow(title=_("Server Address"), text=s.sync_url,
                                     input_purpose=Gtk.InputPurpose.URL)
-        self.user_row = Adw.EntryRow(title="User Name", text=s.sync_user)
-        self.password_row = Adw.PasswordEntryRow(title="Password")
-        self.folder_row = Adw.EntryRow(title="Folder on the Server", text=s.sync_folder)
+        self.user_row = Adw.EntryRow(title=_("User Name"), text=s.sync_user)
+        self.password_row = Adw.PasswordEntryRow(title=_("Password"))
+        self.folder_row = Adw.EntryRow(title=_("Folder on the Server"), text=s.sync_folder)
         self.webdav_rows = (self.url_row, self.user_row, self.password_row, self.folder_row)
         for row in self.webdav_rows:
             group.add(row)
-        self.local_row = Adw.ActionRow(title="Folder",
-                                       subtitle=s.sync_local_path or "None chosen")
-        choose = Gtk.Button(label="Choose…", valign=Gtk.Align.CENTER)
+        self.local_row = Adw.ActionRow(title=_("Folder"),
+                                       subtitle=s.sync_local_path or _("None chosen"))
+        choose = Gtk.Button(label=_("Choose…"), valign=Gtk.Align.CENTER)
         choose.connect("clicked", self._on_choose)
         self.local_row.add_suffix(choose)
         group.add(self.local_row)
@@ -88,18 +97,22 @@ class SyncPage(Adw.NavigationPage):
     def _bottom_bar(self):
         bar = Gtk.Box(spacing=12, halign=Gtk.Align.CENTER,
                       margin_top=8, margin_bottom=8, margin_start=12, margin_end=12)
-        self.read_button = Gtk.Button(label="Read Folder", css_classes=["pill"])
+        self.read_button = Gtk.Button(label=_("Read Folder"), css_classes=["pill"])
         self.read_button.connect("clicked", lambda *_: self.read())
         # Adw.Spinner needs libadwaita 1.6; Ubuntu 24.04 (CI) has 1.5.
         self.spinner = (Adw.Spinner(visible=False) if hasattr(Adw, "Spinner")
                         else Gtk.Spinner(spinning=True, visible=False))
-        self.import_button = Gtk.Button(label="Import…", sensitive=False,
+        self.import_button = Gtk.Button(label=_("Import…"), sensitive=False,
                                         css_classes=["pill", "suggested-action"])
         self.import_button.connect("clicked", self._on_import)
         bar.append(self.read_button)
         bar.append(self.spinner)
         bar.append(self.import_button)
         return bar
+
+    def send(self, wait=False):
+        from pensum.ui import sync_send
+        sync_send.send(self, wait)
 
     def _kind(self):
         return KINDS[self.kind_row.get_selected()]
@@ -110,8 +123,8 @@ class SyncPage(Adw.NavigationPage):
             row.set_visible(webdav)
         self.local_row.set_visible(not webdav)
 
-    def _on_choose(self, *_):
-        dialog = Gtk.FileDialog(title="Choose the Sync Folder", modal=True)
+    def _on_choose(self, *args):
+        dialog = Gtk.FileDialog(title=_("Choose the Sync Folder"), modal=True)
 
         def chosen(dialog, result):
             try:
@@ -119,7 +132,7 @@ class SyncPage(Adw.NavigationPage):
             except GLib.Error:
                 return  # cancelled
             self.settings.sync_local_path = folder.get_path() or ""
-            self.local_row.set_subtitle(self.settings.sync_local_path or "None chosen")
+            self.local_row.set_subtitle(self.settings.sync_local_path or _("None chosen"))
             self.window.save_settings()
 
         dialog.select_folder(self.window, None, chosen)
@@ -133,7 +146,7 @@ class SyncPage(Adw.NavigationPage):
         s.sync_kind = self._kind()
         if s.sync_kind == "local":
             if not s.sync_local_path:
-                raise SyncError("Choose the folder first.")
+                raise SyncError(_("Choose the folder first."))
             self.window.save_settings()
             return LocalFolder(s.sync_local_path), f"local:{s.sync_local_path}"
         s.sync_url = self.url_row.get_text().strip()
@@ -141,7 +154,7 @@ class SyncPage(Adw.NavigationPage):
         s.sync_folder = self.folder_row.get_text().strip()
         password = self.password_row.get_text()
         if not s.sync_url:
-            raise SyncError("Enter the server address.")
+            raise SyncError(_("Enter the server address."))
         self.window.save_settings()
         if s.sync_user and password:
             keyring.store(s.sync_url, s.sync_user, password)
@@ -214,15 +227,15 @@ class SyncPage(Adw.NavigationPage):
             self.rows[key].set_label(str(value))
         found = self.changes
         if not found.complete:
-            text = "More than the folder keeps"
+            text = _("More than the folder keeps")
         else:
             text = str(found.count)
         self.rows["changes"].set_label(text)
         when = snapshot.last_modified // 1000
         stamp = GLib.DateTime.new_from_unix_local(when).format("%x %H:%M") if when else ""
         self.result.set_description(
-            (f"Last synced {stamp}. " if stamp else "") +
-            "Read only: the folder is not changed.")
+            (_("Last synced {stamp}.").format(stamp=stamp) + " " if stamp else "") +
+            _("Reading does not change the folder."))
         self.result.set_visible(True)
         self.import_button.set_sensitive(True)
         log.info("sync page: %d tasks shown, %d changes since last read",
@@ -230,13 +243,13 @@ class SyncPage(Adw.NavigationPage):
 
     # --- import ---------------------------------------------------------
 
-    def _on_import(self, *_):
+    def _on_import(self, *args):
         from pensum.ui.dialogs import confirm_dialog
-        confirm_dialog(self.window, "Replace All Tasks?",
-                       "Your tasks, projects and tracked time are replaced by "
-                       "the ones in the sync folder. A copy of the current data "
-                       "is kept in the backups folder. The sync folder is not "
-                       "changed.", "Replace", self.import_now)
+        confirm_dialog(self.window, _("Replace All Tasks?"),
+                       _("Your tasks, projects and tracked time are replaced by "
+                         "the ones in the sync folder. A copy of the current data "
+                         "is kept in the backups folder. The sync folder is not "
+                         "changed."), _("Replace"), self.import_now)
 
     def import_now(self):
         if self.snapshot is None:
@@ -244,7 +257,10 @@ class SyncPage(Adw.NavigationPage):
         window = self.window
         window.flush()
         ds = window.files.import_data(self.snapshot.data, window.ds)
+        version = self.snapshot.sync_version
         self.snapshot = None
         window.replace_dataset(ds)
-        window.toast("Sync folder imported")
+        from pensum.ui.sync_send import keep_base
+        keep_base(window, self.source_key, version)
+        window.toast(_("Sync folder imported"))
         log.info("imported sync folder: %d tasks", len(ds.data["task"]["ids"]))

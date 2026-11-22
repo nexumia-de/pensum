@@ -242,6 +242,53 @@ clock's value in its state while the op carries a value a few ms later,
 which every other device applies (and Super Productivity itself after a
 reload).
 
+## What Pensum writes (#30)
+
+**Send Changes** on the sync page ([decision](decisions/sync-writing.md),
+`pensum/sync/writer.py`, `base.py`, `pensum/ui/sync_send.py`):
+
+- **Base**: the dataset as it was imported from (or last sent to) the
+  folder, kept as `sync-base.json` next to the data file with the
+  folder's key and `syncVersion`. Sending needs one import first.
+- **Sendable**: per task, a new `title`, `notes`, `isDone` (with
+  `doneOn`) and `timeEstimate`; `modified` follows. Each changed task is
+  one op as Super Productivity 20.0.0 writes it for the same edit (seen
+  in its own sync files): `{id: <UUID v7>, a: "HU", o: "UPD", e: "TASK",
+  d, ds: [d], p: {actionPayload: {task: {id, changes}}, entityChanges:
+  []}, c, v, t, s}`. Any other difference to the base (tasks added or
+  deleted, tracked time, other task fields, other slices; the timer's
+  `currentTaskId` aside) blocks the send and names it; nothing is
+  written.
+- **Clock**: Day Planner has its own 8-character client id (settings);
+  each op's vector clock is the folder's clock with Day Planner's counter
+  raised (at most 20 entries), so it follows everything the folder had.
+- **File**: the ops go to the end of `recentOps` with `sv` = the new
+  `syncVersion` (old + 1); at more than 2000 ops whole batches are
+  dropped from the front (`oldestOpSyncVersion`, `oldestBatchComplete`);
+  `vectorClock`, `lastModified`, `clientId` updated. In v2 `state`
+  becomes the old state with the ops applied by `pensum.sync.replay`,
+  as `_buildMergedSyncData` keeps `state` current. In split folders
+  (v3, #31) only `sync-ops.json` changes, the commit point: the
+  snapshot it names stays as it is, and readers replay the ops after it
+  (as Super Productivity 20 rewrites the snapshot only on compaction).
+  Compression and
+  encryption stay as found (a new random salt and IV, Argon2id key).
+- **Safety**: written only if the file is still the version read
+  (WebDAV `PUT` with `If-Match` on its ETag; without an ETag, and in a
+  local folder, the content is compared first). When the folder moved
+  on since the base, its ops since are in `recentOps`; if one names a
+  task Day Planner changed, or `recentOps` no longer reaches the base,
+  nothing is written ("import first").
+- Afterwards Day Planner reads the folder and takes its data, so both
+  show the same; that data is the new base.
+
+Checked against a real Super Productivity (`run_sync.sh`, round 3,
+plain, compressed and encrypted, and split files): Pensum renames a
+task, sets its estimate and marks another done; Super Productivity
+adds a task without having synced (so its upload is concurrent), syncs
+with no sync error, and its export and Today show Pensum's three edits
+and its own task. Unit tests: `tests/test_sync_write.py`.
+
 ## SuperSync
 
 Super Productivity 20 offers SuperSync first in its sync dialog; WebDAV,
@@ -277,6 +324,9 @@ Probed on 2026-11-12 with a test account on `sync.super-productivity.com`
   it is only a push trigger and not needed for reading.
 
 # Not yet checked
+
+- Sending to the owner's own server and folder
+  ([owner checks](owner-checks.md#sending-changes-to-the-sync-folder-30)).
 
 - WebDAV from the Flatpak on the phone (`--share=network` is set), and
   the Secret portal on Phosh.

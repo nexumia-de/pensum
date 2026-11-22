@@ -1,12 +1,13 @@
 """Choose a task's tags: a switch per tag, and a field that creates one."""
 from gi.repository import Adw, GLib
 
+from pensum.i18n import _
 from pensum.store import contexts, tasks
 
 
 class TagsDialog(Adw.Dialog):
     def __init__(self, window, task_id):
-        super().__init__(title="Tags", content_width=360, content_height=480)
+        super().__init__(title=_("Tags"), content_width=360, content_height=480)
         self.window = window
         self.task_id = task_id
         toolbar = Adw.ToolbarView()
@@ -24,11 +25,11 @@ class TagsDialog(Adw.Dialog):
         task = ds.task(self.task_id)
         self.group = Adw.PreferencesGroup()
         for tag in ds.tags():
-            row = Adw.SwitchRow(title=GLib.markup_escape_text(tag.get("title") or "Untitled"),
+            row = Adw.SwitchRow(title=GLib.markup_escape_text(tag.get("title") or _("Untitled")),
                                 active=tag["id"] in task.get("tagIds", ()))
             row.connect("notify::active", self._on_toggled, tag["id"])
             self.group.add(row)
-        entry = Adw.EntryRow(title="New Tag", show_apply_button=True)
+        entry = Adw.EntryRow(title=_("New Tag"), show_apply_button=True)
         entry.connect("entry-activated", self._on_new)
         entry.connect("apply", self._on_new)
         self.group.add(entry)
