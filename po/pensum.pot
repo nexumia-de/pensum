@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pensum\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-22 05:56+0000\n"
+"POT-Creation-Date: 2026-11-22 05:57+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,6 +19,27 @@ msgstr ""
 
 #: pensum/background.py:13
 msgid "Show reminders for your tasks"
+msgstr ""
+
+#: pensum/break_watch.py:65 pensum/ui/focus_page.py:147
+msgid "Time for a break"
+msgstr ""
+
+#: pensum/break_watch.py:66
+#, python-brace-format
+msgid "You have worked for {hours} h {minutes} min without a break."
+msgstr ""
+
+#: pensum/break_watch.py:68
+msgid "Take a Break"
+msgstr ""
+
+#: pensum/break_watch.py:69
+msgid "Snooze"
+msgstr ""
+
+#: pensum/break_watch.py:89
+msgid "Enjoy your break"
 msgstr ""
 
 #: pensum/game/sentences.py:13 pensum/ui/repeat_page.py:12
@@ -562,10 +583,6 @@ msgstr ""
 
 #: pensum/ui/focus_page.py:111
 msgid "Skip Break"
-msgstr ""
-
-#: pensum/ui/focus_page.py:147
-msgid "Time for a break"
 msgstr ""
 
 #: pensum/ui/focus_page.py:147
@@ -1142,7 +1159,7 @@ msgstr ""
 msgid "Stopped repeating"
 msgstr ""
 
-#: pensum/ui/repeat_page.py:277 pensum/window.py:209
+#: pensum/ui/repeat_page.py:277 pensum/window.py:212
 msgid "Undo"
 msgstr ""
 
@@ -1692,6 +1709,6 @@ msgstr ""
 msgid "{time} today"
 msgstr ""
 
-#: pensum/window.py:108
+#: pensum/window.py:110
 msgid "Can't save the tasks"
 msgstr ""

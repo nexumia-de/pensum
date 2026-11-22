@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pensum\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-22 05:56+0000\n"
+"POT-Creation-Date: 2026-11-22 05:57+0000\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -14,6 +14,27 @@ msgstr ""
 #: pensum/background.py:13
 msgid "Show reminders for your tasks"
 msgstr "Erinnerungen für deine Aufgaben anzeigen"
+
+#: pensum/break_watch.py:65 pensum/ui/focus_page.py:147
+msgid "Time for a break"
+msgstr "Zeit für eine Pause"
+
+#: pensum/break_watch.py:66
+#, python-brace-format
+msgid "You have worked for {hours} h {minutes} min without a break."
+msgstr "Du arbeitest seit {hours} h {minutes} min ohne Pause."
+
+#: pensum/break_watch.py:68
+msgid "Take a Break"
+msgstr "Pause machen"
+
+#: pensum/break_watch.py:69
+msgid "Snooze"
+msgstr "Später erinnern"
+
+#: pensum/break_watch.py:89
+msgid "Enjoy your break"
+msgstr "Genieß deine Pause"
 
 #: pensum/game/sentences.py:13 pensum/ui/repeat_page.py:12
 msgid "Monday"
@@ -589,10 +610,6 @@ msgstr "Pause"
 #: pensum/ui/focus_page.py:111
 msgid "Skip Break"
 msgstr "Pause überspringen"
-
-#: pensum/ui/focus_page.py:147
-msgid "Time for a break"
-msgstr "Zeit für eine Pause"
 
 #: pensum/ui/focus_page.py:147
 msgid "The focus session is over."
@@ -1196,7 +1213,7 @@ msgstr "Schreibe die Uhrzeit so: 14:30"
 msgid "Stopped repeating"
 msgstr "Wiederholung beendet"
 
-#: pensum/ui/repeat_page.py:277 pensum/window.py:209
+#: pensum/ui/repeat_page.py:277 pensum/window.py:212
 msgid "Undo"
 msgstr "Rückgängig"
 
@@ -1754,6 +1771,6 @@ msgstr "Laufende Aufgabe öffnen"
 msgid "{time} today"
 msgstr "{time} heute"
 
-#: pensum/window.py:108
+#: pensum/window.py:110
 msgid "Can't save the tasks"
 msgstr "Die Aufgaben können nicht gespeichert werden"

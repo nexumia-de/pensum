@@ -49,6 +49,8 @@ class Window(Adw.ApplicationWindow):
         self.day_watch = DayWatch(lambda: self.ds, self.changed)
         from pensum.ui.journey.model import JourneyModel
         self.journeys = JourneyModel(self)
+        from pensum.break_watch import BreakWatch
+        self.break_watch = BreakWatch(self)
 
         from pensum.ui.sidebar import Sidebar
         from pensum.ui.task_list import TaskListPage
@@ -190,6 +192,7 @@ class Window(Adw.ApplicationWindow):
         self.flush()
         self.timer.halt()
         self.day_watch.stop()
+        self.break_watch.stop()
         self.closed = True
         GLib.idle_add(self._after_close)
         return False

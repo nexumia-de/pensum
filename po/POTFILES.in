@@ -1,9 +1,11 @@
 pensum/background.py
+pensum/break_watch.py
 pensum/game/sentences.py
 pensum/main.py
 pensum/preferences.py
 pensum/reminder_watch.py
 pensum/store/backup.py
+pensum/store/breaks.py
 pensum/store/dataset.py
 pensum/store/focus.py
 pensum/store/metric.py

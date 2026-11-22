@@ -57,3 +57,29 @@ def test_pomodoro_break_pauses_tracking(window):
     page._on_button(None)  # end the session early
     window.timer.stop()
     valid(window)
+
+
+def test_break_reminder_and_the_break_counted(window, monkeypatch):
+    sent = []
+    app = window.get_application()
+    monkeypatch.setattr(type(app), "send_notification",
+                        lambda self, name, note: sent.append(name), raising=False)
+    monkeypatch.setattr(type(app), "withdraw_notification", lambda self, name: None,
+                        raising=False)
+    watch = window.break_watch
+    task = tasks.add_task(window.ds, "Write", Context.today())
+    window.timer.toggle(task["id"])
+    now = dates.now_ms()
+    watch._last = now - 61 * MIN
+    watch.check(now)
+    assert sent == ["take-a-break"]
+    watch.check(now + 1000)
+    assert sent == ["take-a-break"]  # once
+    watch.take_break(now + 2000)
+    assert window.timer.task_id is None
+    window.timer.toggle(task["id"])
+    watch.check(now + 2000 + 5 * MIN)
+    entry = window.ds.data["timeTracking"]["tag"]["TODAY"][window.ds.today(now)]
+    assert entry["b"] == 1 and entry["bt"] == 5 * MIN
+    window.timer.stop()
+    valid(window)
