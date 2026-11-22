@@ -9,6 +9,7 @@ from pensum.sync import SyncError, keyring
 from pensum.sync.github import GitHub, parse_repository
 from pensum.sync.local import LocalFolder
 from pensum.sync.webdav import WebDav
+from pensum.ui import sync_github_setup
 
 KINDS = ("webdav", "local", "github")
 GITHUB_HELP = "https://github.com/nexumia-de/tabularium#readme"
@@ -46,14 +47,15 @@ def build_group(page):
                                         text=s.sync_github_folder)
     page.github_help_row = Adw.ActionRow(
         title=_("How to Set Up Git Sync"),
-        subtitle=_("The Git Sync plugin keeps Super Productivity's folder in "
-                   "the repository"), activatable=True)
+        subtitle=_("On the desktop the Git Sync plugin keeps Super "
+                   "Productivity's folder in the repository"), activatable=True)
     page.github_help_row.add_suffix(Gtk.Image(icon_name="adw-external-link-symbolic",
                                               accessible_role=Gtk.AccessibleRole.PRESENTATION))
     page.github_help_row.connect(
         "activated", lambda *_: Gtk.UriLauncher.new(GITHUB_HELP).launch(page.window, None, None))
-    page.github_rows = (page.repo_row, page.token_row, page.repo_folder_row,
-                        page.github_help_row)
+    create_repo, create_token = sync_github_setup.build_rows(page)
+    page.github_rows = (create_repo, create_token, page.token_row, page.repo_row,
+                        page.repo_folder_row, page.github_help_row)
 
     for row in (*page.webdav_rows, page.local_row, *page.github_rows):
         group.add(row)

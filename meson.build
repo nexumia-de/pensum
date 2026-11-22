@@ -178,6 +178,7 @@ python.install_sources(
   'pensum/ui/sidebar.py',
   'pensum/ui/sidebar_folders.py',
   'pensum/ui/summary_page.py',
+  'pensum/ui/sync_github_setup.py',
   'pensum/ui/sync_send.py',
   'pensum/ui/sync_source.py',
   'pensum/ui/tags_dialog.py',

@@ -7,6 +7,9 @@ sources:
   - id: protocol
     title: tabularium, docs/protocol.md
     url: https://github.com/nexumia-de/tabularium/blob/main/docs/protocol.md
+  - id: prefill
+    title: GitHub Docs (new repository query parameters) and Changelog 2025-08-26 (fine-grained token template URLs)
+    url: https://github.blog/changelog/2025-08-26-template-urls-for-fine-grained-pats-and-updated-permissions-ui/
   - id: api
     title: GitHub REST API, Git database (refs, commits, trees, blobs) and compare
     url: https://docs.github.com/en/rest/git
@@ -33,6 +36,26 @@ the shared protocol is in its `docs/protocol.md`[^protocol].
 - Reading and Send Changes work as for WebDAV
   ([sync files](super-productivity-sync.md)); the files are the same,
   compression and encryption included.
+
+# Guided setup
+
+At the owner's request (2026-11-22, like domus and Git Sync's own page,
+tabularium `docs/setup.md`), the GitHub rows of the sync page
+(`pensum/ui/sync_github_setup.py`):
+
+- **Create Repository** opens `github.com/new?name=sp-sync&visibility=private&description=…`;
+  **Create Token** opens the fine-grained token form with name "Day
+  Planner", one year (`expires_in=366`) and `contents=write`. Both are
+  GitHub's documented query parameters[^prefill]; the repository
+  selection has none, so the row says to choose "Only select
+  repositories" and the sync repository.
+- The search button on the repository row asks
+  `GET /user/repos?per_page=100&affiliation=owner,collaborator&sort=pushed`
+  with the token typed (`github.list_repositories`; up to three pages, a
+  next page only on the API host) and fills in the one repository the
+  token may write to, or offers a list, `…/sp-sync` first. A public
+  repository is marked and warned about.
+- Day Planner gets its own token; the desktop's stays on the desktop.
 
 # Branches as Day Planner sees them
 
@@ -70,7 +93,9 @@ alone. Day Planner then:
   endpoints above on a real bare repository, git plumbing): read, send,
   chained sends, delivery, a send after delivery, a stale send sent
   again, concurrent writes, wrong token, a folder in the repository, an
-  empty repository, and the sync page.
+  empty repository, the sync page, the repository list (pages, a next
+  page on another host not followed), the setup links, and finding and
+  choosing the repository on the page.
 - `tests/real_app/run_sync.sh`, scenario git (with `TABULARIUM` set to a
   tabularium checkout; CI pins one): the WebDAV folder is the clone, each
   Super Productivity sync runs between the plugin's prepare and finish
@@ -82,4 +107,5 @@ alone. Day Planner then:
   documented ones.
 
 [^protocol]: https://github.com/nexumia-de/tabularium/blob/main/docs/protocol.md
+[^prefill]: https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-new-repository and https://github.blog/changelog/2025-08-26-template-urls-for-fine-grained-pats-and-updated-permissions-ui/
 [^api]: https://docs.github.com/en/rest/git and https://docs.github.com/en/rest/commits/commits#compare-two-commits

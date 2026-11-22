@@ -36,6 +36,15 @@ MAIN = "main"
 HANDOFF = "day-planner"
 TIMEOUT = 30
 AUTHOR = {"name": "Day Planner", "email": "day-planner@localhost"}
+# The guided setup's links (pensum.ui.sync_github_setup): GitHub's forms
+# filled in by their documented query parameters (docs/git-sync.md).
+REPOSITORY_NAME = "sp-sync"
+REPOSITORY_URL = "https://github.com/new?" + urllib.parse.urlencode({
+    "name": REPOSITORY_NAME, "visibility": "private",
+    "description": "Super Productivity sync folder (Git Sync)"})
+TOKEN_URL = "https://github.com/settings/personal-access-tokens/new?" + urllib.parse.urlencode({
+    "name": "Day Planner", "description": "Super Productivity sync folder",
+    "expires_in": "366", "contents": "write"})
 
 
 def parse_repository(text):
@@ -201,3 +210,42 @@ class GitHub:
         if merge_base is None:
             return None
         return GitHub(self.repository, self._token, self.folder, self.api, at=merge_base)
+
+
+def list_repositories(token, api=None):
+    """The repositories the token reaches, as (owner/name, private, may
+    write), for the guided setup (pensum.ui.sync_github_setup): GET
+    /user/repos, up to three pages, a next page only on the same host."""
+    base = (api or API).rstrip("/")
+    url = f"{base}/user/repos?per_page=100&affiliation=owner,collaborator&sort=pushed"
+    found = []
+    for _page in range(3):
+        request = urllib.request.Request(url)
+        request.add_header("Accept", "application/vnd.github+json")
+        request.add_header("X-GitHub-Api-Version", "2022-11-28")
+        request.add_header("User-Agent", "DayPlanner")
+        request.add_header("Authorization", f"Bearer {token}")
+        try:
+            with urllib.request.urlopen(request, timeout=TIMEOUT) as response:
+                items = json.loads(response.read().decode("utf-8"))
+                link = response.headers.get("Link") or ""
+        except urllib.error.HTTPError as error:
+            if error.code == 401:
+                raise SyncError(_("GitHub refused the token.")) from error
+            raise SyncError(_("GitHub answered {code}.").format(code=error.code)) from error
+        except (urllib.error.URLError, socket.timeout, OSError) as error:
+            raise SyncError(_("Can't reach GitHub.")) from error
+        except (UnicodeDecodeError, ValueError) as error:
+            raise SyncError(_("GitHub sent an answer Day Planner can't read.")) from error
+        if not isinstance(items, list):
+            raise SyncError(_("GitHub sent an answer Day Planner can't read."))
+        for item in items:
+            if isinstance(item, dict) and isinstance(item.get("full_name"), str):
+                found.append((item["full_name"], item.get("private") is True,
+                              bool((item.get("permissions") or {}).get("push"))))
+        following = [part.split(";")[0].strip().strip("<>") for part in link.split(",")
+                     if 'rel="next"' in part]
+        if not following or not following[0].startswith(base + "/"):
+            break
+        url = following[0]
+    return found

@@ -237,3 +237,102 @@ def test_sync_page_reads_and_sends_through_github(app, tmp_path, env, monkeypatc
     assert data["task"]["entities"][task["id"]]["title"] == "Sent through GitHub"
     window.close()
     iterate()
+
+
+def test_list_repositories_follows_pages_on_the_same_host_only(env):
+    import json
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+    import threading
+    from pensum.sync.github import list_repositories
+    _desktop, _github, api = env
+    assert list_repositories(TOKEN, api) == [(REPO, True, True)]
+    with pytest.raises(SyncError, match="refused the token"):
+        list_repositories("wrong", api)
+
+    class Pages(BaseHTTPRequestHandler):
+        def log_message(self, *args):
+            pass
+
+        def do_GET(self):
+            page = 2 if "page=2" in self.path else 1
+            port = self.server.server_address[1]
+            body = json.dumps([{"full_name": f"me/repo{page}", "private": page == 1,
+                                "permissions": {"push": page == 1}}]).encode()
+            self.send_response(200)
+            nxt = (f"http://127.0.0.1:{port}/user/repos?page=2" if page == 1
+                   else "http://evil.example/user/repos?page=3")
+            self.send_header("Link", f'<{nxt}>; rel="next"')
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Pages)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        found = list_repositories(TOKEN, f"http://127.0.0.1:{server.server_address[1]}")
+        assert found == [("me/repo1", True, True), ("me/repo2", False, False)]
+    finally:
+        server.shutdown()
+
+
+def test_setup_links_are_githubs_documented_prefills():
+    from urllib.parse import parse_qs, urlsplit
+    from pensum.ui import sync_github_setup as setup
+    repo = urlsplit(setup.REPOSITORY_URL)
+    assert (repo.netloc, repo.path) == ("github.com", "/new")
+    assert parse_qs(repo.query)["visibility"] == ["private"]
+    assert parse_qs(repo.query)["name"] == ["sp-sync"]
+    token = urlsplit(setup.TOKEN_URL)
+    assert token.path == "/settings/personal-access-tokens/new"
+    query = parse_qs(token.query)
+    assert query["contents"] == ["write"] and query["expires_in"] == ["366"]
+    assert set(query) == {"name", "description", "expires_in", "contents"}
+
+
+def test_sync_page_finds_the_repository_with_the_token(app, tmp_path, env, monkeypatch):
+    import os
+    if not (os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY")):
+        pytest.skip("needs a display")
+    from journey_support import fresh, iterate, window_with
+    from pensum.sync import github as github_module
+    from gi.repository import Adw
+    from pensum.ui import sync_github_setup
+    _desktop, _github, api = env
+    monkeypatch.setattr(github_module, "API", api)
+    window = window_with(app, tmp_path, fresh())
+    window.show_sync()
+    iterate()
+    page = window.nav.get_visible_page()
+    page.kind_row.set_selected(2)
+    assert page.create_repo_row.get_visible() and page.create_token_row.get_visible()
+    sync_github_setup.find_repositories(page, wait=True)
+    assert page.banner.get_revealed() and "access token" in page.banner.get_title()
+    page.token_row.set_text(TOKEN)
+    sync_github_setup.find_repositories(page, wait=True)
+    assert page.repo_row.get_text() == REPO
+    page.read(wait=True)
+    iterate()
+    assert page.snapshot is not None
+    # Several repositories: a dialog lists them, sp-sync first; public ones are marked.
+    sync_github_setup._found(page, [("me/notes", True, True), ("me/sp-sync", False, True),
+                                    ("me/read-only", True, False)])
+    iterate()
+    rows = []
+    child = page.repo_dialog.get_child().get_content()
+    stack = [child]
+    while stack:
+        widget = stack.pop()
+        if isinstance(widget, Adw.ActionRow):
+            rows.append(widget)
+        w = widget.get_first_child()
+        while w is not None:
+            stack.append(w)
+            w = w.get_next_sibling()
+    titles = sorted(r.get_title() for r in rows)
+    assert titles == ["me/notes", "me/sp-sync"]
+    next(r for r in rows if r.get_title() == "me/sp-sync").emit("activated")
+    iterate()
+    assert page.repo_row.get_text() == "me/sp-sync"
+    assert page.banner.get_revealed() and "public" in page.banner.get_title()
+    window.close()
+    iterate()
