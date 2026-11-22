@@ -41,3 +41,15 @@ installed Flatpak:
       when the phone wakes? (Nothing in the sandbox sets a wake alarm.)
 - [ ] The notification's buttons on the lock screen.
 - [ ] Memory of the windowless process over a day.
+
+## A journey walked in Super Productivity's plugin (#64)
+
+Day Planner covers QuestArc 4.3.1 ([coverage](questarc-coverage.md));
+its flow tests use datasets written by the engine's actions, and CI
+imports the demo dataset with QuestArc's records into Super
+Productivity 20.0.0. Left, with QuestArc's plugin installed there:
+
+- [ ] Start a journey in the plugin, tick a few days, export, import in
+      Day Planner: the journey continues there and is not read-only.
+- [ ] Tick a day in Day Planner, export, import in Super Productivity:
+      the plugin shows the same day.

@@ -1,6 +1,7 @@
 # Directory Update Log
 
 ## 2026-11-22
+* **Update** (#64): the [coverage](questarc-coverage.md) matrix has no open line since the reminders (#13); the one part of #64 an agent cannot run, a journey walked in Super Productivity's QuestArc plugin and continued in Day Planner, is in [owner checks](owner-checks.md).
 * **Fix** (#52): the journey card's day marks were drawn in the system accent on libadwaita 1.6+ (`Adw.StyleManager.get_accent_color_rgba()`); `drawing.accent()` now reads the `.accent` class colour, Day Planner's indigo, as the pictures already did (`art.py` uses the same function). The journey path named in the issue was replaced by the Valley in #68 ([design](design.md)).
 * **Update** (#13): the reminders' phone checks are a checklist in [owner checks](owner-checks.md); the feature itself is on main since `0e77110`.
 * **New** [owner checks](owner-checks.md) (#2): the round trip with the owner's own data and a 19.3.x app are the only parts of #2 that CI's `real-app` job (Super Productivity 20.0.0) does not cover; they are a checklist now.

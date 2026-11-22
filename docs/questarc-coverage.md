@@ -123,5 +123,6 @@ its issue). Files are under `pensum/ui/journey/` unless a path says otherwise.
 
 ## Still open
 
-Nothing of QuestArc 4.3.1. On the phone, Day Planner's own reminders
-are still to be checked ([reminders](reminders.md), #13).
+Nothing of QuestArc 4.3.1. Left for the owner: Day Planner's own
+reminders on the phone and a journey walked in Super Productivity's
+plugin and continued here ([owner checks](owner-checks.md), #13, #64).
