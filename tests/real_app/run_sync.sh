@@ -37,10 +37,7 @@ scenario() {
   export PENSUM_DAV_FOLDER="$1" PENSUM_SYNC_SPLIT="$2" PENSUM_SYNC_COMPRESS="$3" \
     PENSUM_SYNC_PASSWORD="$4"
   mkdir -p "$out/$1"
-  # Round 3 (Pensum sending, #30) only for v2 folders until #31.
-  rounds="1 2 3"
-  [ -z "$2" ] || rounds="1 2"
-  for round in $rounds; do
+  for round in 1 2 3; do
     # Before round 3 Pensum sends its edits (#30).
     [ $round != 3 ] || "$python" "$here/pensum_send.py" "$out/$1"
     node "$here/sp_sync.mjs" "$out/$1" $round

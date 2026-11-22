@@ -267,7 +267,11 @@ reload).
   dropped from the front (`oldestOpSyncVersion`, `oldestBatchComplete`);
   `vectorClock`, `lastModified`, `clientId` updated. In v2 `state`
   becomes the old state with the ops applied by `pensum.sync.replay`,
-  as `_buildMergedSyncData` keeps `state` current. Compression and
+  as `_buildMergedSyncData` keeps `state` current. In split folders
+  (v3, #31) only `sync-ops.json` changes, the commit point: the
+  snapshot it names stays as it is, and readers replay the ops after it
+  (as Super Productivity 20 rewrites the snapshot only on compaction).
+  Compression and
   encryption stay as found (a new random salt and IV, Argon2id key).
 - **Safety**: written only if the file is still the version read
   (WebDAV `PUT` with `If-Match` on its ETag; without an ETag, and in a
@@ -278,9 +282,8 @@ reload).
 - Afterwards Day Planner reads the folder and takes its data, so both
   show the same; that data is the new base.
 
-Split (v3) folders are refused for now (#31). Checked against a real
-Super Productivity (`run_sync.sh`, round 3, plain, compressed and
-encrypted files): Pensum renames a
+Checked against a real Super Productivity (`run_sync.sh`, round 3,
+plain, compressed and encrypted, and split files): Pensum renames a
 task, sets its estimate and marks another done; Super Productivity
 adds a task without having synced (so its upload is concurrent), syncs
 with no sync error, and its export and Today show Pensum's three edits

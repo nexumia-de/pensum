@@ -237,3 +237,33 @@ def test_sync_page_sends_changes(app, tmp_path):
     assert validate.problems(window.ds.data) == []
     window.close()
     iterate()
+
+
+def test_split_folder_gets_its_ops_file_only(tmp_path):
+    """v3 (#31): the ops go to sync-ops.json, the snapshot stays."""
+    import json
+    snapshot_payload = envelope.decode((FIXTURES / "sync" / "sync-data.json").read_text())[0]
+    ref = {"syncVersion": snapshot_payload["syncVersion"],
+           "vectorClock": snapshot_payload["vectorClock"], "file": "sync-state__3__abc.json"}
+    ops_file = {key: value for key, value in snapshot_payload.items() if key != "state"}
+    ops_file.update(version=3, snapshotRef=ref)
+    state_file = {**{k: v for k, v in snapshot_payload.items() if k != "recentOps"},
+                  "version": 3}
+    (tmp_path / "sync-ops.json").write_text("pf_3__" + json.dumps(ops_file))
+    (tmp_path / ref["file"]).write_text("pf_3__" + json.dumps(state_file))
+    (tmp_path / "sync-data.json").write_text('pf_2__{"version": 3, "format": "split"}')
+    folder = LocalFolder(tmp_path)
+    snapshot = reader.read(folder)
+    assert snapshot.format == "v3"
+    base, ds, first, _second = edited(snapshot)
+    before = {p.name: p.read_bytes() for p in tmp_path.iterdir() if p.name != "sync-ops.json"}
+    sent = writer.send(folder, None, ds.data, base, snapshot.sync_version, CLIENT)
+    assert {p.name: p.read_bytes() for p in tmp_path.iterdir()
+            if p.name != "sync-ops.json"} == before
+    after = envelope.decode(folder.read("sync-ops.json"))[0]
+    assert after["snapshotRef"] == ref and "state" not in after
+    assert after["syncVersion"] == sent.sync_version == snapshot.sync_version + 1
+    read = reader.read(folder)
+    assert read.format == "v3"
+    assert read.data["task"]["entities"][first]["title"] == "Renamed in Pensum"
+    assert validate.problems(read.data) == []

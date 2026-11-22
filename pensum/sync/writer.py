@@ -16,7 +16,7 @@ Planner and one Super Productivity on a v2 or v3 folder.
   everything the folder had. In a v2 file `state` becomes the old state
   with the ops applied by `pensum.sync.replay`, the same rules Super
   Productivity's reducers apply; in v3 only `sync-ops.json` changes
-  (the snapshot stays; split folders are refused until #31). Compression and encryption stay as they were.
+  (the snapshot stays). Compression and encryption stay as they were.
   The file is replaced only if it is still the version read (WebDAV
   If-Match, else the content compared).
 - When the folder changed since the base, the changes since are in
@@ -151,9 +151,6 @@ def send(source, password, local, base, base_version, client_id, now_ms=None):
         text, version = source.read_versioned(name)
     if text is None:
         raise SyncError(_("No Super Productivity sync files in this folder."))
-    if name == reader.OPS_FILE:
-        raise Blocked(_("Sending to split sync files (Surgical sync) is not "
-                        "possible yet."))
     compressed, encrypted, model = envelope.flags(text)
     payload, _version = envelope.decode(text, password)
     if payload.get("version") == 3 and payload.get("format") == "split":
