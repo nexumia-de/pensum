@@ -7,7 +7,7 @@ version-files = ["meson.build", "pensum/__init__.py"]
 # dark, with the made-up dataset of pensum/demo.py (PENSUM_DEMO=1),
 # never real tasks. No network is used.
 [screenshots]
-env = { PENSUM_DEMO = "1", TZ = "Europe/Berlin" }
+env = { PENSUM_DEMO = "1", PHOSH_TOOLKIT_TEST_KEYRING = "memory", TZ = "Europe/Berlin" }
 delay = 6
 
 [[screenshots.shot]]

@@ -1,0 +1,14 @@
+# Checks before every commit (phosh-toolkit docs/toolkit-usage.md,
+# "Pre-commit hooks"). Copy to the root of a new app repository;
+# phosh-toolkit's setup.sh installs the hooks.
+repos:
+  - repo: https://github.com/nexumia-de/phosh-toolkit
+    # The commit of the toolkit tag the app's workflows pin.
+    rev: 3ec15b8fb1ec01e9db75bb0952b89b101ea42d69  # frozen: v0.8.0
+    hooks:
+      - id: phosh-metadata
+      - id: phosh-changelog
+  - repo: https://github.com/fsfe/reuse-tool
+    rev: ea739bff9c6daa1c4c8a5c5dfd069f3fb0374728  # frozen: v6.3.0
+    hooks:
+      - id: reuse

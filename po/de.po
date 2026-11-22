@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pensum\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-22 18:38+0000\n"
+"POT-Creation-Date: 2026-11-22 21:49+0000\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -76,7 +76,7 @@ msgstr "Sonntag"
 msgid "Monday to Friday"
 msgstr "Montag bis Freitag"
 
-#: pensum/main.py:198
+#: pensum/main.py:205
 msgid ""
 "Tasks and time tracking for the phone. Reads and writes Super Productivity's "
 "backup files. Not affiliated with the Super Productivity project."
@@ -85,7 +85,7 @@ msgstr ""
 "Sicherungsdateien von Super Productivity. Steht in keiner Verbindung zum "
 "Projekt Super Productivity."
 
-#: pensum/main.py:202
+#: pensum/main.py:209
 msgid "Support Development"
 msgstr "Entwicklung unterstützen"
 
@@ -153,7 +153,7 @@ msgid "Automatic Backups"
 msgstr "Automatische Sicherungen"
 
 #: pensum/preferences.py:55 pensum/ui/journey/page.py:23
-#: pensum/ui/journey/page.py:103 pensum/ui/sidebar.py:135
+#: pensum/ui/journey/page.py:103 pensum/ui/sidebar.py:136
 msgid "Journeys"
 msgstr "Reisen"
 
@@ -236,7 +236,7 @@ msgid "The file can't be read: {reason}"
 msgstr "Die Datei kann nicht gelesen werden: {reason}"
 
 #: pensum/store/dataset.py:80 pensum/ui/planner_page.py:15
-#: pensum/ui/sidebar.py:130 pensum/ui/task_list.py:21 pensum/ui/task_page.py:67
+#: pensum/ui/sidebar.py:131 pensum/ui/task_list.py:21 pensum/ui/task_page.py:67
 #: pensum/ui/task_page.py:288 pensum/ui/time_dialog.py:45
 msgid "Today"
 msgstr "Heute"
@@ -285,7 +285,7 @@ msgstr "Das Verschlüsselungspasswort ist falsch."
 msgid "A sync file is damaged (too short to be encrypted)."
 msgstr "Eine Sync-Datei ist beschädigt (zu kurz für eine Verschlüsselung)."
 
-#: pensum/sync/crypto.py:110 pensum/sync/github.py:162 pensum/sync/webdav.py:67
+#: pensum/sync/crypto.py:110 pensum/sync/github.py:171 pensum/sync/webdav.py:67
 msgid "A sync file is damaged (not text)."
 msgstr "Eine Sync-Datei ist beschädigt (kein Text)."
 
@@ -331,15 +331,15 @@ msgid "A sync file is damaged."
 msgstr "Eine Sync-Datei ist beschädigt."
 
 #
-#: pensum/sync/github.py:49
+#: pensum/sync/github.py:58
 msgid "Enter the repository as owner/name."
 msgstr "Gib das Repository als Besitzer/Name ein."
 
-#: pensum/sync/github.py:87 pensum/sync/github.py:225
+#: pensum/sync/github.py:96 pensum/sync/github.py:234
 msgid "GitHub refused the token."
 msgstr "GitHub hat das Token abgelehnt."
 
-#: pensum/sync/github.py:89
+#: pensum/sync/github.py:98
 msgid ""
 "The token may not do this in the repository (contents: read and write "
 "needed)."
@@ -347,31 +347,32 @@ msgstr ""
 "Das Token darf das in diesem Repository nicht (nötig: Inhalte lesen und "
 "schreiben)."
 
-#: pensum/sync/github.py:92 pensum/sync/github.py:173 pensum/sync/github.py:190
-#: pensum/sync/local.py:27 pensum/sync/webdav.py:74 pensum/sync/webdav.py:86
+#: pensum/sync/github.py:101 pensum/sync/github.py:182
+#: pensum/sync/github.py:199 pensum/sync/local.py:27 pensum/sync/webdav.py:74
+#: pensum/sync/webdav.py:86
 msgid "The sync folder changed while sending. Try again."
 msgstr "Der Sync-Ordner hat sich beim Senden geändert. Versuch es noch einmal."
 
-#: pensum/sync/github.py:94 pensum/sync/github.py:226
+#: pensum/sync/github.py:103 pensum/sync/github.py:235
 #, python-brace-format
 msgid "GitHub answered {code}."
 msgstr "GitHub hat mit {code} geantwortet."
 
-#: pensum/sync/github.py:96 pensum/sync/webdav.py:63
+#: pensum/sync/github.py:105 pensum/sync/webdav.py:63
 msgid "The server's certificate is not trusted."
 msgstr "Dem Zertifikat des Servers wird nicht vertraut."
 
 #
-#: pensum/sync/github.py:98 pensum/sync/github.py:228
+#: pensum/sync/github.py:107 pensum/sync/github.py:237
 msgid "Can't reach GitHub."
 msgstr "GitHub ist nicht erreichbar."
 
-#: pensum/sync/github.py:100 pensum/sync/github.py:230
-#: pensum/sync/github.py:232
+#: pensum/sync/github.py:109 pensum/sync/github.py:239
+#: pensum/sync/github.py:241
 msgid "GitHub sent an answer Day Planner can't read."
 msgstr "GitHub hat eine Antwort geschickt, die Day Planner nicht lesen kann."
 
-#: pensum/sync/github.py:139
+#: pensum/sync/github.py:148
 msgid "The repository holds too many files; keep only the sync folder in it."
 msgstr ""
 "Das Repository enthält zu viele Dateien; lege nur den Sync-Ordner darin ab."
@@ -514,7 +515,7 @@ msgstr "Archiviere ein Projekt über das Menü seiner Liste."
 
 #: pensum/ui/archived_page.py:37 pensum/ui/search_page.py:52
 #: pensum/ui/section_group.py:17 pensum/ui/section_group.py:93
-#: pensum/ui/sidebar.py:147 pensum/ui/tags_dialog.py:28
+#: pensum/ui/sidebar.py:148 pensum/ui/tags_dialog.py:28
 #: pensum/ui/task_page.py:232 pensum/ui/task_page.py:242
 #: pensum/ui/task_page.py:441 pensum/ui/task_row.py:144
 #: pensum/ui/task_row.py:211 pensum/ui/task_row.py:225
@@ -1435,7 +1436,7 @@ msgstr "Wiederholung beendet"
 msgid "Undo"
 msgstr "Rückgängig"
 
-#: pensum/ui/search_page.py:12 pensum/ui/sidebar.py:54 pensum/ui/sidebar.py:56
+#: pensum/ui/search_page.py:12 pensum/ui/sidebar.py:55 pensum/ui/sidebar.py:57
 msgid "Search"
 msgstr "Suche"
 
@@ -1510,58 +1511,62 @@ msgid "Daily Summary"
 msgstr "Tagesrückblick"
 
 #: pensum/ui/sidebar.py:24
+msgid "Report a Problem…"
+msgstr "Ein Problem melden…"
+
+#: pensum/ui/sidebar.py:25
 #, python-brace-format
 msgid "About {name}"
 msgstr "Über {name}"
 
-#: pensum/ui/sidebar.py:31
+#: pensum/ui/sidebar.py:32
 msgid "New Project…"
 msgstr "Neues Projekt…"
 
-#: pensum/ui/sidebar.py:32
+#: pensum/ui/sidebar.py:33
 msgid "New Tag…"
 msgstr "Neues Schlagwort…"
 
 #
-#: pensum/ui/sidebar.py:34
+#: pensum/ui/sidebar.py:35
 msgid "New Project Folder…"
 msgstr "Neuer Projektordner…"
 
 #
-#: pensum/ui/sidebar.py:35
+#: pensum/ui/sidebar.py:36
 msgid "New Tag Folder…"
 msgstr "Neuer Schlagwortordner…"
 
-#: pensum/ui/sidebar.py:48 pensum/ui/sidebar.py:49
+#: pensum/ui/sidebar.py:49 pensum/ui/sidebar.py:50
 msgid "Main Menu"
 msgstr "Hauptmenü"
 
-#: pensum/ui/sidebar.py:59 pensum/ui/sidebar.py:60
+#: pensum/ui/sidebar.py:60 pensum/ui/sidebar.py:61
 msgid "Add List"
 msgstr "Liste hinzufügen"
 
-#: pensum/ui/sidebar.py:81
+#: pensum/ui/sidebar.py:82
 msgid "New Project"
 msgstr "Neues Projekt"
 
-#: pensum/ui/sidebar.py:81 pensum/ui/tags_dialog.py:32
+#: pensum/ui/sidebar.py:82 pensum/ui/tags_dialog.py:32
 msgid "New Tag"
 msgstr "Neues Schlagwort"
 
-#: pensum/ui/sidebar.py:89 pensum/ui/sidebar_folders.py:71
+#: pensum/ui/sidebar.py:90 pensum/ui/sidebar_folders.py:71
 msgid "Create"
 msgstr "Anlegen"
 
-#: pensum/ui/sidebar.py:105
+#: pensum/ui/sidebar.py:106
 #, python-brace-format
 msgid "{title}, {count} open"
 msgstr "{title}, {count} offen"
 
-#: pensum/ui/sidebar.py:117 pensum/ui/sync_page.py:46
+#: pensum/ui/sidebar.py:118 pensum/ui/sync_page.py:46
 msgid "Projects"
 msgstr "Projekte"
 
-#: pensum/ui/sidebar.py:117 pensum/ui/sync_page.py:47
+#: pensum/ui/sidebar.py:118 pensum/ui/sync_page.py:47
 #: pensum/ui/tags_dialog.py:10 pensum/ui/task_page.py:132
 msgid "Tags"
 msgstr "Schlagwörter"
@@ -1746,55 +1751,61 @@ msgstr ""
 msgid "Sync folder imported"
 msgstr "Sync-Ordner importiert"
 
-#: pensum/ui/sync_github_setup.py:35
 #
+#: pensum/ui/sync_github_setup.py:28
 msgid "Create Repository"
 msgstr "Repository anlegen"
 
-#: pensum/ui/sync_github_setup.py:36
+#: pensum/ui/sync_github_setup.py:29
 msgid "Opens GitHub's form filled in: a private repository named sp-sync"
-msgstr "Öffnet das ausgefüllte Formular auf GitHub: ein privates Repository namens sp-sync"
+msgstr ""
+"Öffnet das ausgefüllte Formular auf GitHub: ein privates Repository namens "
+"sp-sync"
 
-#: pensum/ui/sync_github_setup.py:39
 #
+#: pensum/ui/sync_github_setup.py:32
 msgid "Create Token"
 msgstr "Token anlegen"
 
-#: pensum/ui/sync_github_setup.py:40
+#: pensum/ui/sync_github_setup.py:33
 msgid ""
 "Opens GitHub's form filled in; under Repository access choose Only select "
 "repositories and the sync repository"
-msgstr "Öffnet das ausgefüllte Formular auf GitHub; wähle unter „Repository access“ „Only select repositories“ und das Sync-Repository"
+msgstr ""
+"Öffnet das ausgefüllte Formular auf GitHub; wähle unter „Repository "
+"access“ „Only select repositories“ und das Sync-Repository"
 
-#: pensum/ui/sync_github_setup.py:44 pensum/ui/sync_github_setup.py:45
 #
+#: pensum/ui/sync_github_setup.py:37 pensum/ui/sync_github_setup.py:38
 msgid "Find Repositories"
 msgstr "Repositorys suchen"
 
 #
-#: pensum/ui/sync_github_setup.py:56 pensum/ui/sync_source.py:120
+#: pensum/ui/sync_github_setup.py:49 pensum/ui/sync_source.py:120
 msgid "Enter the access token."
 msgstr "Gib das Zugriffstoken ein."
 
-#: pensum/ui/sync_github_setup.py:84
 #
+#: pensum/ui/sync_github_setup.py:77
 msgid "The token reaches no repository it may write to."
 msgstr "Mit diesem Token kann Day Planner in kein Repository schreiben."
 
 #
-#: pensum/ui/sync_github_setup.py:90
 #
+#: pensum/ui/sync_github_setup.py:83
 msgid "Choose the Repository"
 msgstr "Repository wählen"
 
-#: pensum/ui/sync_github_setup.py:97
+#: pensum/ui/sync_github_setup.py:90
 msgid "Public: everyone can read it"
 msgstr "Öffentlich: alle können es lesen"
 
-#: pensum/ui/sync_github_setup.py:113
+#: pensum/ui/sync_github_setup.py:106
 msgid ""
 "This repository is public: everyone can read your tasks. Use a private one."
-msgstr "Dieses Repository ist öffentlich: alle können deine Aufgaben lesen. Nimm ein privates."
+msgstr ""
+"Dieses Repository ist öffentlich: alle können deine Aufgaben lesen. Nimm ein "
+"privates."
 
 #: pensum/ui/sync_send.py:38
 msgid "Read the folder and import it once before sending changes."
@@ -1884,12 +1895,14 @@ msgstr "Ordner im Repository"
 msgid "How to Set Up Git Sync"
 msgstr "So richtest du Git Sync ein"
 
-#: pensum/ui/sync_source.py:50
 #
+#: pensum/ui/sync_source.py:50
 msgid ""
 "On the desktop the Git Sync plugin keeps Super Productivity's folder in the "
 "repository"
-msgstr "Auf dem Computer legt das Plugin Git Sync den Ordner von Super Productivity im Repository ab"
+msgstr ""
+"Auf dem Computer legt das Plugin Git Sync den Ordner von Super Productivity "
+"im Repository ab"
 
 #: pensum/ui/sync_source.py:91
 msgid "Choose the Sync Folder"

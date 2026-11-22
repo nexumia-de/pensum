@@ -21,6 +21,7 @@ def main_menu():
     rest = Gio.Menu()
     rest.append(_("Archived Projects"), "app.show-archived")
     rest.append(_("Preferences"), "app.preferences")
+    rest.append(_("Report a Problem…"), "app.report-problem")
     rest.append(_("About {name}").format(name=NAME), "app.about")
     menu.append_section(None, rest)
     return menu

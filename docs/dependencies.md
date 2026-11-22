@@ -17,7 +17,7 @@ installs no licence files.
 
 | Module | Version | Licence | Licence files |
 |---|---|---|---|
-| `phosh-toolkit` | tag `v0.3.0` (commit `c29a2a1`) | GPL-3.0-or-later (own code, same author) | `LICENSE` → `/app/share/licenses/<app id>/phosh-toolkit/` |
+| `phosh-toolkit` | tag `v0.8.0` (commit `3ec15b8`) | GPL-3.0-or-later (own code, same author) | `LICENSE` → `/app/share/licenses/<app id>/phosh-toolkit/` |
 | `questarc-engine` | release archive `v4.3.1` (sha256 `899d73f0…`) | engine AGPL-3.0-or-later (same author); journeys in `content/journeys/` CC BY-SA 4.0 | `LICENSE` → `…/questarc-engine/`, `content/LICENSE` → `…/questarc-journeys/` |
 
 | `python3-build-tools` | wheels: setuptools 84.2.1, setuptools-scm 10.3.4, vcs-versioning 2.6.0, packaging 26.3, scikit-build-core 1.1.2, pathspec 1.1.1 | MIT; packaging Apache-2.0 OR BSD-2-Clause; scikit-build-core Apache-2.0; pathspec MPL-2.0 | each wheel's `dist-info/licenses/` → `…/python3-build-tools/<wheel>/`; the modules themselves are removed after the build (pure-Python build tools, not shipped) |
@@ -32,7 +32,8 @@ requires; Pensum calls `argon2_hash` of the bindings directly, so
 wheels' files on 2026-11-12. `x-checker-data` asks PyPI's JSON API.
 
 Only `lib/phosh_toolkit/` is installed; Pensum uses `settings`
-(`JsonStore`, `app_dir`) and `style` (light/dark)
+(`JsonStore`, `app_dir`), `style` (light/dark) and `feedback` ("Report a
+Problem…", [below](#report-a-problem))
 ([shared code](../../phosh-toolkit/docs/shared-connection.md#used-by)).
 
 QuestArc's engine ([journeys](journeys.md)): Only `engine.mjs`, `engine-cli.mjs` and `content/` are installed, to
@@ -73,3 +74,19 @@ through ctypes). Reading WebDAV uses Python's `urllib`
 The tests need `argon2-cffi-bindings` too: CI installs the version
 pinned in `tests/requirements.txt` from PyPI (Ubuntu 24.04 has no
 package), with `python3-cffi` from Ubuntu.
+
+# Report a problem
+
+Main menu **Report a Problem…** (`app.report-problem`) comes from
+phosh-toolkit's `feedback` module
+([feedback](../../phosh-toolkit/docs/feedback.md)), installed at startup
+in `pensum/main.py` with `repo="nexumia-de/pensum"`. The About dialog's
+issue link is the filled-in bug form (`feedback.issue_url`). Day Planner
+has no keyring or HTTP client of its own for it, so the module makes
+both. The Flatpak manifest needs no new permission: `--share=network`
+is already set (the dialog calls GitHub's API only after the user taps
+Send, and sends only what they typed, the version and the kind of
+device), and the token is kept through the Secret portal, as the sync
+password is. Tests and screenshots set `PHOSH_TOOLKIT_TEST_KEYRING=memory`
+(`tests/conftest.py`, `release.toml`); a run from the source tree with
+`PENSUM_DEMO=1` should too.

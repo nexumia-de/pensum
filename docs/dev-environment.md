@@ -76,9 +76,9 @@ Read it, never copy code from it; values are transcribed as data
 
 ```sh
 export PYTHONPATH=$PWD/../phosh-toolkit/lib
-PENSUM_DEMO=1 /usr/bin/python3.12 -m pensum
+PENSUM_DEMO=1 PHOSH_TOOLKIT_TEST_KEYRING=memory /usr/bin/python3.12 -m pensum
 dbus-run-session -- xvfb-run -a /usr/bin/python3.12 -m pytest
-../phosh-toolkit/scripts/screenshot.sh -i de.nexumia.Pensum -d 4 -e PENSUM_DEMO=1 -e PYTHONPATH=$PWD:$PYTHONPATH -o shot.png -- /usr/bin/python3.12 -m pensum
+../phosh-toolkit/scripts/screenshot.sh -i de.nexumia.Pensum -d 4 -e PENSUM_DEMO=1 -e PHOSH_TOOLKIT_TEST_KEYRING=memory -e PYTHONPATH=$PWD:$PYTHONPATH -o shot.png -- /usr/bin/python3.12 -m pensum
 ```
 
 Other states: `-a app.show-lists`, `-a app.show-current-task`,

@@ -9,8 +9,8 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, Gio, GLib, Gtk  # noqa: E402
 
-from pensum import (APP_ID, NAME, NIGHTLY, REPO_URL, SUPPORT_URL,  # noqa: E402
-                    VERSION_LABEL)
+from pensum import (APP_ID, NAME, NIGHTLY, REPO_SLUG, REPO_URL,  # noqa: E402
+                    SUPPORT_URL, VERSION_LABEL)
 from pensum.i18n import _
 
 log = logging.getLogger("pensum")
@@ -67,6 +67,12 @@ class Application(Adw.Application):
             action = Gio.SimpleAction.new(name, GLib.VariantType("s"))
             action.connect("activate", callback)
             self.add_action(action)
+        # "Report a Problem…" (app.report-problem): phosh-toolkit's
+        # docs/feedback.md. The token goes to the
+        # keyring through the Secret portal; the dialog makes its own
+        # keyring and HTTP client (Day Planner has neither for it).
+        from phosh_toolkit import feedback
+        feedback.install(self, repo=REPO_SLUG, app_name=NAME, version=VERSION_LABEL)
         self.set_accels_for_action("app.quit", ["<Control>q"])
         self.set_accels_for_action("app.preferences", ["<Control>comma"])
         self.set_accels_for_action("win.add-task", ["<Control>n"])
@@ -187,13 +193,14 @@ class Application(Adw.Application):
             PreferencesDialog(window).present(window)
 
     def _on_about(self, *args):
+        from phosh_toolkit import feedback
         dialog = Adw.AboutDialog(
             application_name=NAME,
             application_icon=APP_ID,
             version=VERSION_LABEL,
             developer_name="suitably",
             website=REPO_URL,
-            issue_url=f"{REPO_URL}/issues",
+            issue_url=feedback.issue_url(REPO_SLUG, VERSION_LABEL),
             license_type=Gtk.License.AGPL_3_0,
             comments=_("Tasks and time tracking for the phone. Reads and writes "
                        "Super Productivity's backup files. Not affiliated with "
