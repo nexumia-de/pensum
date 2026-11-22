@@ -29,6 +29,7 @@ gi.require_version("Rsvg", "2.0")
 from gi.repository import Adw, GLib, Gtk, Rsvg  # noqa: E402
 
 from pensum.game import content  # noqa: E402
+from pensum.ui.journey import drawing  # noqa: E402
 
 ROLES = ("fg", "accent", "dim", "bg", "tint", "tint-strong")
 DIM = 0.3  # share of the text colour in dim
@@ -94,7 +95,7 @@ def colours(widget, card=False, hue=None):
 def _host_colours(widget, card):
     below = surface(widget, card)
     fg = widget.get_color()
-    acc = Gtk.Label(css_classes=["accent"]).get_color()
+    acc = drawing.accent()
     text = _over((fg.red, fg.green, fg.blue, fg.alpha), below)
     accent = _over((acc.red, acc.green, acc.blue, acc.alpha), below)
     return {
