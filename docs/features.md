@@ -88,7 +88,7 @@ was done ([decision](decisions/habits-first.md)); they were built on
 | Light and dark style | – (Pensum's own setting) | **M1, done** |
 | Day boundary ("start of next day") | `globalConfig.misc.startOfNextDay*` | **M1, done** |
 | Read a WebDAV/local-folder sync file | `sync-data.json` | **M4, done** (#28): WebDAV/Nextcloud (password in the keyring) or a local folder, v2 and current v3 snapshots, shown and offered as an import, tested against a real Super Productivity ([sync files](super-productivity-sync.md#what-pensum-reads-28)). v3 with ops after the snapshot replayed (#30); a folder with a change Pensum can't apply yet is refused |
-| Sync as a client (WebDAV, Nextcloud) | ops in `recentOps` | M4: replaying ops read-only started (#30: add, change, delete tasks, add subtasks); writing open |
+| Sync as a client (WebDAV, Nextcloud) | ops in `recentOps` | **M4, first step done** (#30, [decision](decisions/sync-writing.md)): replaying add, change, delete tasks and subtasks; **Send Changes** writes a task's title, notes, done state and estimate as Super Productivity's own `updateTask` ops, tested end to end against a real Super Productivity with a concurrent edit; adding and deleting tasks and tracked time come one kind at a time, each with its own end-to-end round |
 | Encrypted and compressed sync files | `pf_CE…` envelope | **M4, done** (#29): gzip, Argon2id + AES-GCM and the older PBKDF2 layout, password in the keyring, tested with files Super Productivity wrote itself |
 | SuperSync server | – | backlog (after file sync) |
 | Dropbox, OneDrive | OAuth | backlog |

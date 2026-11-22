@@ -8,7 +8,8 @@
 //
 // ROUND 1 starts a fresh profile in DIR/profile, sets up sync and adds
 // tasks; ROUND 2 reopens the profile and changes, completes, deletes and
-// adds tasks. Each round syncs and writes DIR/roundN.sp.json (Super
+// adds tasks; ROUND 3 (after Pensum sent its edits, pensum_send.py) adds a
+// task before it syncs, so its upload is concurrent with Pensum's (#30). Each round syncs and writes DIR/roundN.sp.json (Super
 // Productivity's "Export Data") and DIR/roundN.ui.json (titles of the open
 // and done tasks it shows in Today). PENSUM_SP_URL picks the app (default:
 // the live web app), PENSUM_DAV_URL the WebDAV server (default
@@ -32,8 +33,8 @@ const PASSWORD = process.env.PENSUM_SYNC_PASSWORD ?? '';
 const SPLIT = process.env.PENSUM_SYNC_SPLIT === '1';
 const local = /^http:\/\/(localhost|127\.0\.0\.1)[:/]/.test(BASE);
 const [dir, round] = process.argv.slice(2);
-if (!dir || !['1', '2'].includes(round)) {
-  console.error('usage: node sp_sync.mjs DIR 1|2');
+if (!dir || !['1', '2', '3'].includes(round)) {
+  console.error('usage: node sp_sync.mjs DIR 1|2|3');
   process.exit(2);
 }
 
@@ -46,6 +47,8 @@ const T = {
   bread: 'Sync test: bake bread',
   call: 'Sync test: call the plumber',
   sub: 'Sync test: buy flour',
+  callRenamed: 'Sync test: call the plumber at nine',
+  concurrent: 'Sync test: oil the door',
 };
 
 mkdirSync(dir, { recursive: true });
@@ -254,6 +257,8 @@ try {
     for (const title of [T.plants, T.letter, T.bike, T.bread]) await addTask(title);
     await markDone(T.letter);
     await addSubTask(T.bread, T.sub);
+  } else if (round === '3') {
+    await addTask(T.concurrent);
   } else {
     await rename(T.bike, T.bikeRenamed);
     await markDone(T.plants);

@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pensum\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-22 06:03+0000\n"
+"POT-Creation-Date: 2026-11-22 06:17+0000\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -269,51 +269,52 @@ msgstr "30 Minuten vorher"
 msgid "1 hour before"
 msgstr "1 Stunde vorher"
 
-#: pensum/sync/crypto.py:54
+#: pensum/sync/crypto.py:57
 msgid "A sync file is damaged (base64)."
 msgstr "Eine Sync-Datei ist beschädigt (Base64)."
 
-#: pensum/sync/crypto.py:61
+#: pensum/sync/crypto.py:64
 msgid "A sync file is damaged (gzip)."
 msgstr "Eine Sync-Datei ist beschädigt (gzip)."
 
-#: pensum/sync/crypto.py:85
+#: pensum/sync/crypto.py:102
 msgid "The encryption password is wrong."
 msgstr "Das Verschlüsselungspasswort ist falsch."
 
-#: pensum/sync/crypto.py:86
+#: pensum/sync/crypto.py:103
 msgid "A sync file is damaged (too short to be encrypted)."
 msgstr "Eine Sync-Datei ist beschädigt (zu kurz für eine Verschlüsselung)."
 
-#: pensum/sync/crypto.py:93 pensum/sync/webdav.py:58
+#: pensum/sync/crypto.py:110 pensum/sync/webdav.py:67
 msgid "A sync file is damaged (not text)."
 msgstr "Eine Sync-Datei ist beschädigt (kein Text)."
 
-#: pensum/sync/crypto.py:102
+#: pensum/sync/crypto.py:119
 msgid "Encrypted sync files need the Argon2 module, which is missing."
 msgstr "Verschlüsselte Sync-Dateien brauchen das Argon2-Modul, das fehlt."
 
-#: pensum/sync/crypto.py:109
+#: pensum/sync/crypto.py:126
 #, python-brace-format
 msgid "The encryption key can't be derived (Argon2 error {code})."
 msgstr ""
 "Der Verschlüsselungsschlüssel lässt sich nicht ableiten (Argon2-Fehler "
 "{code})."
 
-#: pensum/sync/crypto.py:142
+#: pensum/sync/crypto.py:163
 msgid "Encrypted sync files need OpenSSL, which is missing."
 msgstr "Verschlüsselte Sync-Dateien brauchen OpenSSL, das fehlt."
 
-#: pensum/sync/crypto.py:153 pensum/sync/crypto.py:163
-#: pensum/sync/crypto.py:166
+#: pensum/sync/crypto.py:174 pensum/sync/crypto.py:184
+#: pensum/sync/crypto.py:187 pensum/sync/crypto.py:202
+#: pensum/sync/crypto.py:215
 msgid "OpenSSL failed."
 msgstr "OpenSSL ist fehlgeschlagen."
 
-#: pensum/sync/envelope.py:23
+#: pensum/sync/envelope.py:22 pensum/sync/envelope.py:46
 msgid "A sync file is not in Super Productivity's format."
 msgstr "Eine Sync-Datei hat nicht das Format von Super Productivity."
 
-#: pensum/sync/envelope.py:28
+#: pensum/sync/envelope.py:35 pensum/sync/envelope.py:51
 msgid ""
 "The sync files are encrypted. Enter the encryption password set in Super "
 "Productivity."
@@ -321,19 +322,28 @@ msgstr ""
 "Die Sync-Dateien sind verschlüsselt. Gib das Verschlüsselungspasswort ein, "
 "das du in Super Productivity festgelegt hast."
 
-#: pensum/sync/envelope.py:36
+#: pensum/sync/envelope.py:59
 msgid "A sync file is damaged (no JSON)."
 msgstr "Eine Sync-Datei ist beschädigt (kein JSON)."
 
-#: pensum/sync/envelope.py:38
+#: pensum/sync/envelope.py:61
 msgid "A sync file is damaged."
 msgstr "Eine Sync-Datei ist beschädigt."
 
-#: pensum/sync/local.py:20
+#: pensum/sync/local.py:27 pensum/sync/webdav.py:74 pensum/sync/webdav.py:86
+msgid "The sync folder changed while sending. Try again."
+msgstr "Der Sync-Ordner hat sich beim Senden geändert. Versuch es noch einmal."
+
+#: pensum/sync/local.py:34
+#, python-brace-format
+msgid "A sync file can't be written: {reason}"
+msgstr "Eine Sync-Datei kann nicht geschrieben werden: {reason}"
+
+#: pensum/sync/local.py:40
 msgid "The folder does not exist."
 msgstr "Der Ordner existiert nicht."
 
-#: pensum/sync/local.py:26
+#: pensum/sync/local.py:46
 #, python-brace-format
 msgid "A sync file can't be read: {reason}"
 msgstr "Eine Sync-Datei kann nicht gelesen werden: {reason}"
@@ -346,7 +356,7 @@ msgstr ""
 "Der Ordner wurde von Super Productivity 16 oder älter geschrieben. "
 "Synchronisiere ihn zuerst mit einem aktuellen Super Productivity."
 
-#: pensum/sync/reader.py:57
+#: pensum/sync/reader.py:57 pensum/sync/writer.py:153
 msgid "No Super Productivity sync files in this folder."
 msgstr "In diesem Ordner liegen keine Sync-Dateien von Super Productivity."
 
@@ -387,26 +397,63 @@ msgstr ""
 msgid "A change in the sync data is damaged."
 msgstr "Eine Änderung in den Sync-Daten ist beschädigt."
 
-#: pensum/sync/webdav.py:20
+#: pensum/sync/webdav.py:22
 msgid "The server address must start with https://."
 msgstr "Die Serveradresse muss mit https:// beginnen."
 
-#: pensum/sync/webdav.py:49
+#: pensum/sync/webdav.py:58 pensum/sync/webdav.py:89
 msgid "The server refused the user name or password."
 msgstr "Der Server hat Benutzername oder Passwort abgelehnt."
 
-#: pensum/sync/webdav.py:51
+#: pensum/sync/webdav.py:60 pensum/sync/webdav.py:91
 #, python-brace-format
 msgid "The server answered {code}."
 msgstr "Der Server hat mit {code} geantwortet."
 
-#: pensum/sync/webdav.py:54
+#: pensum/sync/webdav.py:63
 msgid "The server's certificate is not trusted."
 msgstr "Dem Zertifikat des Servers wird nicht vertraut."
 
-#: pensum/sync/webdav.py:56
+#: pensum/sync/webdav.py:65 pensum/sync/webdav.py:94
 msgid "Can't reach the server."
 msgstr "Der Server ist nicht erreichbar."
+
+#: pensum/sync/writer.py:80
+#, python-brace-format
+msgid "changes in {part}"
+msgstr "Änderungen in {part}"
+
+#: pensum/sync/writer.py:83
+msgid "tasks added or deleted"
+msgstr "hinzugefügte oder gelöschte Aufgaben"
+
+#: pensum/sync/writer.py:90
+#, python-brace-format
+msgid "a task's {fields}"
+msgstr "{fields} einer Aufgabe"
+
+#: pensum/sync/writer.py:142
+#, python-brace-format
+msgid ""
+"Day Planner can send only changed titles, notes, done states and estimates "
+"so far. Not sendable: {reasons}. Export a backup to keep them."
+msgstr "Day Planner kann bisher nur geänderte Titel, Notizen, Erledigt-Zustände und Schätzungen senden. Nicht sendbar: {reasons}. Exportiere eine Sicherung, um sie zu behalten."
+
+#: pensum/sync/writer.py:157
+msgid "The folder was moved to split sync files; read it again."
+msgstr "Der Ordner nutzt jetzt geteilte Sync-Dateien; lies ihn noch einmal."
+
+#: pensum/sync/writer.py:162
+msgid ""
+"The sync folder changed more than it keeps track of. Read it and import it "
+"first."
+msgstr "Der Sync-Ordner hat sich stärker geändert, als er festhält. Lies und importiere ihn zuerst."
+
+#: pensum/sync/writer.py:166
+msgid ""
+"Super Productivity changed the same tasks. Read the folder and import it "
+"first."
+msgstr "Super Productivity hat dieselben Aufgaben geändert. Lies und importiere den Ordner zuerst."
 
 #: pensum/ui/archived_page.py:12 pensum/ui/sidebar.py:22
 msgid "Archived Projects"
@@ -501,7 +548,7 @@ msgstr "noch {count} Tage"
 msgid "A copy of the current data is kept in the backups folder."
 msgstr "Eine Kopie der aktuellen Daten bleibt im Sicherungsordner erhalten."
 
-#: pensum/ui/backup_actions.py:63 pensum/ui/sync_page.py:237
+#: pensum/ui/backup_actions.py:63 pensum/ui/sync_page.py:248
 msgid "Replace All Tasks?"
 msgstr "Alle Aufgaben ersetzen?"
 
@@ -563,7 +610,7 @@ msgstr "Sicherung importiert"
 msgid "Import Anyway"
 msgstr "Trotzdem importieren"
 
-#: pensum/ui/backup_actions.py:112 pensum/ui/sync_page.py:241
+#: pensum/ui/backup_actions.py:112 pensum/ui/sync_page.py:252
 msgid "Replace"
 msgstr "Ersetzen"
 
@@ -1465,11 +1512,11 @@ msgstr "Anlegen"
 msgid "{title}, {count} open"
 msgstr "{title}, {count} offen"
 
-#: pensum/ui/sidebar.py:117 pensum/ui/sync_page.py:42
+#: pensum/ui/sidebar.py:117 pensum/ui/sync_page.py:49
 msgid "Projects"
 msgstr "Projekte"
 
-#: pensum/ui/sidebar.py:117 pensum/ui/sync_page.py:43
+#: pensum/ui/sidebar.py:117 pensum/ui/sync_page.py:50
 #: pensum/ui/tags_dialog.py:10 pensum/ui/task_page.py:132
 msgid "Tags"
 msgstr "Schlagwörter"
@@ -1576,38 +1623,42 @@ msgstr ""
 msgid "Sync Folder"
 msgstr "Sync-Ordner"
 
-#: pensum/ui/sync_page.py:34
+#: pensum/ui/sync_page.py:31 pensum/ui/sync_page.py:32
+msgid "Send Changes"
+msgstr "Änderungen senden"
+
+#: pensum/ui/sync_page.py:41
 msgid ""
 "Only when encryption is switched on in Super Productivity's sync settings."
 msgstr ""
 "Nur nötig, wenn die Verschlüsselung in den Sync-Einstellungen von Super "
 "Productivity eingeschaltet ist."
 
-#: pensum/ui/sync_page.py:36
+#: pensum/ui/sync_page.py:43
 msgid "Encryption Password"
 msgstr "Verschlüsselungspasswort"
 
-#: pensum/ui/sync_page.py:39
+#: pensum/ui/sync_page.py:46
 msgid "In the Sync Folder"
 msgstr "Im Sync-Ordner"
 
-#: pensum/ui/sync_page.py:41
+#: pensum/ui/sync_page.py:48
 msgid "Open Tasks"
 msgstr "Offene Aufgaben"
 
-#: pensum/ui/sync_page.py:41
+#: pensum/ui/sync_page.py:48
 msgid "Done Tasks"
 msgstr "Erledigte Aufgaben"
 
-#: pensum/ui/sync_page.py:42
+#: pensum/ui/sync_page.py:49
 msgid "Archived Tasks"
 msgstr "Archivierte Aufgaben"
 
-#: pensum/ui/sync_page.py:44
+#: pensum/ui/sync_page.py:51
 msgid "Changes Since Last Read"
 msgstr "Änderungen seit dem letzten Lesen"
 
-#: pensum/ui/sync_page.py:61
+#: pensum/ui/sync_page.py:68
 msgid ""
 "Read the tasks Super Productivity keeps in its sync folder. Day Planner only "
 "reads the folder and never changes it."
@@ -1615,80 +1666,80 @@ msgstr ""
 "Liest die Aufgaben, die Super Productivity in seinem Sync-Ordner ablegt. Day "
 "Planner liest den Ordner nur und ändert ihn nie."
 
-#: pensum/ui/sync_page.py:65
+#: pensum/ui/sync_page.py:72
 msgid "Kind"
 msgstr "Art"
 
-#: pensum/ui/sync_page.py:66
+#: pensum/ui/sync_page.py:73
 msgid "WebDAV or Nextcloud"
 msgstr "WebDAV oder Nextcloud"
 
-#: pensum/ui/sync_page.py:66
+#: pensum/ui/sync_page.py:73
 msgid "Folder on This Device"
 msgstr "Ordner auf diesem Gerät"
 
-#: pensum/ui/sync_page.py:70
+#: pensum/ui/sync_page.py:77
 msgid "Server Address"
 msgstr "Serveradresse"
 
-#: pensum/ui/sync_page.py:72
+#: pensum/ui/sync_page.py:79
 msgid "User Name"
 msgstr "Benutzername"
 
-#: pensum/ui/sync_page.py:73
+#: pensum/ui/sync_page.py:80
 msgid "Password"
 msgstr "Passwort"
 
-#: pensum/ui/sync_page.py:74
+#: pensum/ui/sync_page.py:81
 msgid "Folder on the Server"
 msgstr "Ordner auf dem Server"
 
-#: pensum/ui/sync_page.py:78
+#: pensum/ui/sync_page.py:85
 msgid "Folder"
 msgstr "Ordner"
 
-#: pensum/ui/sync_page.py:79 pensum/ui/sync_page.py:124
+#: pensum/ui/sync_page.py:86 pensum/ui/sync_page.py:135
 msgid "None chosen"
 msgstr "Nichts gewählt"
 
-#: pensum/ui/sync_page.py:80
+#: pensum/ui/sync_page.py:87
 msgid "Choose…"
 msgstr "Wählen…"
 
-#: pensum/ui/sync_page.py:93
+#: pensum/ui/sync_page.py:100
 msgid "Read Folder"
 msgstr "Ordner lesen"
 
-#: pensum/ui/sync_page.py:98
+#: pensum/ui/sync_page.py:105
 msgid "Import…"
 msgstr "Importieren…"
 
-#: pensum/ui/sync_page.py:116
+#: pensum/ui/sync_page.py:127
 msgid "Choose the Sync Folder"
 msgstr "Sync-Ordner wählen"
 
-#: pensum/ui/sync_page.py:138
+#: pensum/ui/sync_page.py:149
 msgid "Choose the folder first."
 msgstr "Wähle zuerst den Ordner."
 
-#: pensum/ui/sync_page.py:146
+#: pensum/ui/sync_page.py:157
 msgid "Enter the server address."
 msgstr "Gib die Serveradresse ein."
 
-#: pensum/ui/sync_page.py:219
+#: pensum/ui/sync_page.py:230
 msgid "More than the folder keeps"
 msgstr "Mehr, als der Ordner aufbewahrt"
 
-#: pensum/ui/sync_page.py:226
+#: pensum/ui/sync_page.py:237
 #, python-brace-format
 msgid "Last synced {stamp}."
 msgstr "Zuletzt synchronisiert: {stamp}."
 
-#: pensum/ui/sync_page.py:227
-msgid "Read only: the folder is not changed."
-msgstr "Nur gelesen: Der Ordner wird nicht verändert."
-
 #: pensum/ui/sync_page.py:238
+msgid "Reading does not change the folder."
+msgstr "Das Lesen ändert den Ordner nicht."
+
+#: pensum/ui/sync_page.py:249
 msgid ""
 "Your tasks, projects and tracked time are replaced by the ones in the sync "
 "folder. A copy of the current data is kept in the backups folder. The sync "
@@ -1698,9 +1749,26 @@ msgstr ""
 "Ordner ersetzt. Eine Kopie der aktuellen Daten bleibt im Sicherungsordner "
 "erhalten. Der Sync-Ordner wird nicht verändert."
 
-#: pensum/ui/sync_page.py:251
+#: pensum/ui/sync_page.py:265
 msgid "Sync folder imported"
 msgstr "Sync-Ordner importiert"
+
+#: pensum/ui/sync_send.py:36
+msgid "Read the folder and import it once before sending changes."
+msgstr "Lies und importiere den Ordner einmal, bevor du Änderungen sendest."
+
+#: pensum/ui/sync_send.py:78
+msgid "No changes to send"
+msgstr "Keine Änderungen zu senden"
+
+#: pensum/ui/sync_send.py:79
+msgid "1 change sent"
+msgstr "1 Änderung gesendet"
+
+#: pensum/ui/sync_send.py:80
+#, python-brace-format
+msgid "{count} changes sent"
+msgstr "{count} Änderungen gesendet"
 
 #: pensum/ui/task_list.py:30 pensum/ui/task_list.py:31
 msgid "List Menu"
