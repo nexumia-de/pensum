@@ -155,7 +155,9 @@ def test_subtask_time_and_estimate_reach_parent():
 def test_delete_parent_with_subtasks_everywhere():
     data = run(dataset(), add("p", tagIds=["t1"]), sub("s", "p"), add("b"))
     data["section"]["ids"].append("x")
-    data["section"]["entities"]["x"] = {"id": "x", "taskIds": ["p", "s", "b"]}
+    data["section"]["entities"]["x"] = {"id": "x", "contextId": "p1",
+                                        "contextType": "PROJECT", "title": "X",
+                                        "taskIds": ["p", "s", "b"]}
     out = run(data, delete(data, "p"))
     assert set(out["task"]["ids"]) == {"b"}
     assert out["project"]["entities"]["p1"]["taskIds"] == ["b"]

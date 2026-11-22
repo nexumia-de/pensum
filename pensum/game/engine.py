@@ -9,7 +9,7 @@ import subprocess
 import time
 from pathlib import Path
 
-from pensum.game import content, records
+from pensum.game import content, own, records
 from pensum.store import dates
 
 log = logging.getLogger(__name__)
@@ -56,6 +56,8 @@ def host_input(ds, now=None):
     """The engine's host input (QuestArc data model §1) from the dataset."""
     now = now or dates.now_ms()
     cfgs = ds.data.get("taskRepeatCfg") or {}
+    found = records.load(ds)
+    content.set_own(own.journeys(found))
     return {
         "day": {"todayStr": ds.today(now),
                 "startOfNextDayDiffMs": dates.day_offset_ms(ds.config),
@@ -64,8 +66,8 @@ def host_input(ds, now=None):
         "archived": _archived(ds),
         "repeatCfgs": [cfgs.get("entities", {})[i] for i in cfgs.get("ids", [])
                        if i in cfgs.get("entities", {})],
-        "records": records.load(ds),
-        "journeys": content.journeys(),
+        "records": found,
+        "journeys": content.builtin(),
     }
 
 

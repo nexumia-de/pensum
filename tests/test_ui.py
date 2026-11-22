@@ -1,6 +1,7 @@
 """The pages through the real widgets: lists, adding and finishing tasks,
 the task page with subtasks and timer, list menus and preferences. Needs
 a display (CI runs pytest under xvfb-run)."""
+import json
 import os
 import re
 
@@ -143,11 +144,365 @@ def test_reorder_menu_and_archived_projects(app, tmp_path):
     window.close()
 
 
+def test_drag_rows_to_reorder(app, tmp_path):
+    """A row dropped on another row of its list takes its place, in the
+    list's own id list; rows of other lists refuse it."""
+    from pensum.ui import row_drag
+    window = new_window(app, tmp_path, demo.create())
+    ds = window.ds
+    window.show_list(Context("project", "demo-garden"))
+    iterate()
+    page = window.list_page
+    project = ds.project_entities["demo-garden"]
+    rows = [r for r in page.rows if r.get_parent() is page.open_list]
+    ids = [r.task_id for r in rows]
+    assert len(ids) >= 3 and project["taskIds"][:len(ids)] == ids
+    for row in rows:
+        kinds = {type(c) for c in row.observe_controllers()}
+        assert {Gtk.DragSource, Gtk.DropTarget} <= kinds
+    tasks_before = json.dumps(ds.data["task"], sort_keys=True)
+    today_before = list(ds.tag_entities["TODAY"]["taskIds"])
+    assert row_drag.can_drop(rows[0], rows[2]) and not row_drag.can_drop(rows[0], rows[0])
+    assert row_drag.drop(rows[0], rows[2])
+    iterate()
+    moved = [ids[1], ids[2], ids[0]] + ids[3:]
+    assert project["taskIds"][:len(ids)] == moved
+    assert [r.task_id for r in page.rows if r.get_parent() is page.open_list] == moved
+    assert json.dumps(ds.data["task"], sort_keys=True) == tasks_before
+    assert ds.tag_entities["TODAY"]["taskIds"] == today_before
+    assert validate.problems(ds.data) == []
+
+    # Subtasks reorder on the task page, in the parent's subTaskIds.
+    parent = next(t for t in ds.tasks.values() if len(t.get("subTaskIds", ())) >= 2)
+    subs = list(parent["subTaskIds"])
+    window.show_task(parent["id"])
+    iterate()
+    sub_rows = window.nav.get_visible_page().sub_rows
+    assert row_drag.drop(sub_rows[-1], sub_rows[0])
+    iterate()
+    assert parent["subTaskIds"] == [subs[-1]] + subs[:-1]
+    # A subtask is not dropped into the list behind the page.
+    assert not row_drag.can_drop(window.nav.get_visible_page().sub_rows[0],
+                                 page.rows[0])
+    assert validate.problems(ds.data) == []
+    window.close()
+
+
+def test_reordering_keeps_a_long_list_where_it_is(app, tmp_path):
+    from pensum.store import tasks
+    from pensum.ui import row_drag
+    window = new_window(app, tmp_path, demo.create())
+    context = Context("project", "demo-garden")
+    for number in range(30):
+        tasks.add_task(window.ds, f"Bed {number}", context, top=False)
+    window.show_list(context)
+    window.changed()
+    iterate()
+    page = window.list_page
+    adjustment = page.scroller.get_vadjustment()
+    adjustment.set_value(adjustment.get_upper())
+    iterate()
+    scrolled = adjustment.get_value()
+    assert scrolled > 0
+    last = page.rows[-1].task_id
+    assert row_drag.drop(page.rows[-1], page.rows[-3])
+    iterate()
+    assert adjustment.get_value() == scrolled
+    assert window.get_focus().task_id == last
+    window.get_focus().move(1)
+    iterate()
+    assert adjustment.get_value() == scrolled
+    assert window.get_focus().task_id == last
+    window.close()
+
+
+def test_long_press_opens_the_row_menu_on_release(app, tmp_path):
+    """Holding a row makes it ready to drag; the menu with Move Up and
+    Move Down opens when it is let go, and from the keyboard."""
+    window = new_window(app, tmp_path, demo.create())
+    window.show_list(Context("project", "demo-garden"))
+    iterate()
+    row = window.list_page.rows[0]
+    row._on_held(None, 10, 10)
+    assert row.held and row.has_css_class("pensum-held")
+    assert not row.popover.get_visible()
+    release = next(c for c in row.observe_controllers()
+                   if isinstance(c, Gtk.GestureClick) and c.get_button() == 1)
+    row._on_release(release, 1, 10, 10)
+    iterate()
+    assert row.popover.get_visible() and not row.held
+    row.popover.popdown()
+    row.show_menu()
+    iterate()
+    assert row.popover.get_visible()
+    row.popover.popdown()
+    first, second = (r.task_id for r in window.list_page.rows[:2])
+    row.activate_action("row.down", None)
+    iterate()
+    assert [r.task_id for r in window.list_page.rows[:2]] == [second, first]
+    window.close()
+
+
+def test_time_picker_plans_a_task_at_a_time(app, tmp_path):
+    """The Time row opens a picker that needs no keyboard; Today then lists
+    the task by its time and the row says it."""
+    from datetime import datetime
+    from pensum.ui.time_picker import TimePicker
+    from pensum.store import tasks
+    window = new_window(app, tmp_path, demo.create())
+    ds = window.ds
+    tasks.add_task(ds, "Water the plants", Context.today(), top=False)
+    window.show_list(Context.today())
+    window.changed()
+    iterate()
+    shown = [r.task_id for r in window.list_page.rows
+             if r.get_parent() is window.list_page.open_list]
+    task_id = next(i for i in reversed(shown) if not ds.tasks[i].get("dueWithTime"))
+    window.show_task(task_id)
+    iterate()
+    page = window.nav.get_visible_page()
+    assert page.time_row.get_subtitle() == "No time"
+    assert not page.clear_time.get_visible()
+    page.time_row.emit("activated")
+    iterate()
+    picker = window.get_visible_dialog()
+    assert isinstance(picker, TimePicker)
+    # No number field is focused, so no on-screen keyboard comes up.
+    assert picker.get_focus() is picker.apply
+    for spin in (picker.hours, picker.minutes):
+        assert spin.has_css_class("pensum-time-spin")
+    assert picker.minutes.get_value_as_int() == 0
+    picker.hours.set_value(0)
+    picker.minutes.set_value(5)
+    assert picker.minutes.get_text() == "05"
+    picker.apply.emit("clicked")
+    iterate()
+    task = ds.tasks[task_id]
+    moment = datetime.fromtimestamp(task["dueWithTime"] / 1000)
+    assert (moment.hour, moment.minute) == (0, 5) and "dueDay" not in task
+    assert ds.today(task["dueWithTime"]) == ds.today()
+    assert page.time_row.get_subtitle() == "00:05" and page.clear_time.get_visible()
+    assert validate.problems(ds.data) == []
+    # Five past midnight is the day's first appointment.
+    rows = [r for r in window.list_page.rows
+            if r.get_parent() is window.list_page.open_list]
+    assert rows[0].task_id == task_id and "At 00:05" in rows[0].get_subtitle()
+    # It follows the clock: nothing to move it among.
+    assert not rows[0].move_actions[0].get_enabled()
+    assert rows[-1].move_actions[0].get_enabled()
+    # The picker opens at the task's time; Remove Time keeps the day.
+    page.time_row.emit("activated")
+    iterate()
+    picker = window.get_visible_dialog()
+    assert (picker.hours.get_value_as_int(), picker.minutes.get_value_as_int()) == (0, 5)
+    picker.close()
+    page.clear_time.emit("clicked")
+    iterate()
+    assert "dueWithTime" not in task and task["dueDay"] == ds.today()
+    assert page.time_row.get_subtitle() == "No time"
+    assert validate.problems(ds.data) == []
+    window.close()
+
+
+def test_sections_in_a_list(app, tmp_path):
+    """A project's list shows its sections below the tasks in no section;
+    they collapse, are added, renamed and deleted with Undo, and tasks move
+    into and out of them by the row menu and by dropping."""
+    from pensum.store import sections
+    from pensum.ui import row_drag
+    window = new_window(app, tmp_path, demo.create())
+    ds = window.ds
+    context = Context("project", "demo-website")
+    project = ds.project_entities["demo-website"]
+    window.show_list(context)
+    iterate()
+    page = window.list_page
+    assert [g.section_id for g in page.section_groups] == ["demo-launch"]
+    launch = page.section_groups[0]
+    loose = [r for r in page.rows if r.get_parent() is page.open_list]
+    inside = [r for r in page.rows if r.get_parent() is launch.list]
+    assert len(loose) == 1 and len(inside) == 1 and launch.list.get_visible()
+    planned, review = inside[0].task_id, loose[0].task_id
+    assert ds.data["section"]["entities"]["demo-launch"]["taskIds"] == [planned]
+    order_before = list(project["taskIds"])
+
+    # Collapse: stored in the section, the tasks hide.
+    page.section_groups[0].toggle.emit("clicked")
+    iterate()
+    assert ds.data["section"]["entities"]["demo-launch"]["isExpanded"] is False
+    assert not page.section_groups[0].list.get_visible()
+    page.section_groups[0].toggle.emit("clicked")
+    iterate()
+    assert page.section_groups[0].list.get_visible()
+
+    # Add a section from the list's menu; an empty one shows its header.
+    page.activate_action("list.add-section", None)
+    iterate()
+    dialog = window.get_visible_dialog()
+    dialog.get_extra_child().set_text("Later")
+    dialog.emit("response", "ok")
+    dialog.close()
+    iterate()
+    later_id = page.section_groups[1].section_id
+    assert ds.data["section"]["entities"][later_id] == {
+        "id": later_id, "contextId": "demo-website", "contextType": "PROJECT",
+        "title": "Later", "isExpanded": True, "taskIds": []}
+    assert validate.problems(ds.data) == []
+
+    # The row menu moves a task into a section and out of it again.
+    row = next(r for r in page.rows if r.task_id == review)
+    assert row.in_main_list
+    row.activate_action("row.section", GLib.Variant("s", later_id))
+    iterate()
+    assert ds.data["section"]["entities"][later_id]["taskIds"] == [review]
+    assert project["taskIds"] == order_before
+    assert not [r for r in page.rows if r.get_parent() is page.open_list]
+    row = next(r for r in page.rows if r.task_id == review)
+    row.activate_action("row.section", GLib.Variant("s", ""))
+    iterate()
+    assert ds.data["section"]["entities"][later_id]["taskIds"] == []
+    assert project["taskIds"] == order_before
+
+    # Dropping: on a section's header, on a row of another section, and
+    # back on a row in no section.
+    row = next(r for r in page.rows if r.task_id == review)
+    assert row_drag.drop_on_section(row, page.section_groups[1])
+    iterate()
+    assert ds.data["section"]["entities"][later_id]["taskIds"] == [review]
+    row = next(r for r in page.rows if r.task_id == review)
+    target = next(r for r in page.rows if r.task_id == planned)
+    assert row_drag.can_drop(row, target) and row_drag.drop(row, target)
+    iterate()
+    assert ds.data["section"]["entities"]["demo-launch"]["taskIds"] == [review, planned]
+    assert ds.data["section"]["entities"][later_id]["taskIds"] == []
+    row = next(r for r in page.rows if r.task_id == review)
+    row.activate_action("row.section", GLib.Variant("s", ""))
+    iterate()
+    row = next(r for r in page.rows if r.task_id == planned)
+    target = next(r for r in page.rows if r.task_id == review)
+    assert row_drag.drop(row, target)
+    iterate()
+    assert ds.data["section"]["entities"]["demo-launch"]["taskIds"] == []
+    assert project["taskIds"] == [planned, review]
+    assert validate.problems(ds.data) == []
+
+    # Delete with Undo: the tasks stay in the list.
+    row = next(r for r in page.rows if r.task_id == planned)
+    row.activate_action("row.section", GLib.Variant("s", "demo-launch"))
+    iterate()
+    page.section_groups[0].activate_action("section.delete", None)
+    iterate()
+    assert "demo-launch" not in ds.data["section"]["entities"]
+    assert [g.section_id for g in page.section_groups] == [later_id]
+    assert {r.task_id for r in page.rows if r.get_parent() is page.open_list} == {
+        planned, review}
+    assert validate.problems(ds.data) == []
+    # A tag's list has no sections and no entry to add one.
+    window.show_list(Context("tag", "demo-errands"))
+    iterate()
+    assert not sections.can_have(window.list_page.context)
+    assert not window.list_page.section_groups
+    window.close()
+
+
+def _review(ds):
+    return next(t for t in ds.tasks.values() if t.get("title") == "Review the new start page")
+
+
+def test_note_is_shown_formatted_and_stays_as_typed(app, tmp_path):
+    """Opening a task shows its note formatted; viewing, switching to the
+    text field and back, and leaving the page write nothing: the stored
+    note is the same string, byte for byte."""
+    from pensum import markdown
+    from pensum.ui.notes_view import NotesView
+    ds = demo.create()
+    odd = ("Line one  \r\n\r\n\t- [ ] tab item\r\n* [X] big x\n\n\n"
+           "<b>html</b> &amp; trailing spaces   \n# Heading #\n```\ncode  \n```\n\n")
+    _review(ds)["notes"] = odd
+    window = new_window(app, tmp_path, ds)
+    ds = window.ds
+    task = _review(ds)
+    assert task["notes"] == odd
+    modified = task["modified"]
+    window.show_task(task["id"])
+    iterate()
+    page = window.nav.get_visible_page()
+    box = page.notes
+    # Formatted, and no field has the focus when the page opens.
+    assert not box.editing and box.stack.get_visible_child_name() == "view"
+    assert isinstance(box.view, NotesView) and len(box.view.checks) == 2
+    assert not isinstance(window.get_focus(), (Gtk.Text, Gtk.TextView))
+    assert box.switch.get_label() == "Edit"
+    # One tap to the text field, one back.
+    box.switch.emit("clicked")
+    iterate()
+    assert box.editing and box.stack.get_visible_child_name() == "edit"
+    assert window.get_focus() is box.text and box.switch.get_label() == "Done"
+    box.switch.emit("clicked")
+    iterate()
+    assert not box.editing
+    window.nav.pop()
+    iterate(40)
+    window.flush()
+    assert task["notes"] == odd and task["modified"] == modified
+    saved = backup.read(window.files.path)
+    assert saved["task"]["entities"][task["id"]]["notes"] == odd
+    assert [b.kind for b in markdown.parse(odd)] == [
+        "paragraph", "task", "task", "paragraph", "heading", "code"]
+    window.close()
+
+
+def test_note_checkbox_and_editing(app, tmp_path):
+    window = new_window(app, tmp_path, demo.create())
+    ds = window.ds
+    task = _review(ds)
+    before = task["notes"]
+    window.show_task(task["id"])
+    iterate()
+    box = window.nav.get_visible_page().notes
+    assert [c.get_active() for c in box.view.checks] == [True, False, False]
+    # Ticking changes that one character of the source.
+    box.view.checks[1].set_active(True)
+    iterate()
+    assert task["notes"] == before.replace("- [ ] Menu", "- [x] Menu")
+    assert [c.get_active() for c in box.view.checks] == [True, True, False]
+    box.view.checks[0].set_active(False)
+    iterate()
+    assert task["notes"] == before.replace("- [ ] Menu", "- [x] Menu").replace(
+        "- [x] Start page", "- [ ] Start page")
+    # Links are labels' own links; only safe schemes are ever opened.
+    labels = [w for w in _widgets(box.view) if isinstance(w, Gtk.Label)]
+    assert any('href="https://example.org/style"' in label.get_label() for label in labels)
+    assert not [w for w in _widgets(box) if type(w).__name__ in ("WebView", "Picture")]
+    # Editing saves what was typed, as typed.
+    box.switch.emit("clicked")
+    iterate()
+    typed = task["notes"] + "\n\n<i>raw</i>  \n"
+    box.text.get_buffer().set_text(typed)
+    box.switch.emit("clicked")
+    iterate()
+    assert task["notes"] == typed and not box.editing
+    assert validate.problems(ds.data) == []
+    # Without Markdown in Super Productivity's settings: the text field only.
+    ds.config.setdefault("tasks", {})["isMarkdownFormattingInNotesEnabled"] = False
+    box.load()
+    assert box.editing and not box.switch.get_visible()
+    # An empty note opens as the empty text field, without the focus.
+    ds.config["tasks"]["isMarkdownFormattingInNotesEnabled"] = True
+    empty = next(t for t in ds.tasks.values() if not t.get("notes") and not t.get("parentId"))
+    window.show_task(empty["id"])
+    iterate()
+    box = window.nav.get_visible_page().notes
+    assert box.editing and box.switch.get_visible()
+    assert window.get_focus() is not box.text
+    window.close()
+
+
 def test_overdue_section(app, tmp_path):
-    from pensum.store import dates, tasks
+    from pensum.store import dates, planning, tasks
     window = new_window(app, tmp_path)
     task = tasks.add_task(window.ds, "Late", Context.today())
-    tasks.schedule_day(window.ds, task["id"], dates.shift_day(window.ds.today(), -3))
+    planning.schedule_day(window.ds, task["id"], dates.shift_day(window.ds.today(), -3))
     window.changed()
     iterate()
     page = window.list_page
@@ -291,7 +646,7 @@ def test_delete_with_undo(app, tmp_path):
     iterate()
     assert task_id not in window.ds.tasks
     window.show_list(Context("project", "demo-garden"))
-    window.list_page._on_delete()
+    window.list_page.activate_action("list.delete", None)
     assert "demo-garden" not in window.ds.project_entities
     from pensum.store import contexts
     toast = window.undoable("deleted", lambda: contexts.delete_project(

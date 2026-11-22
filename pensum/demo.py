@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 from pensum import demo_journey, demo_valley
 from pensum.game import records
-from pensum.store import contexts, dates, defaults, tasks, tracking
+from pensum.store import contexts, dates, defaults, order, planning, sections, tasks, tracking
 from pensum.store.dataset import Context, Dataset
 from pensum.store.repeat import instances
 from pensum.store.repeat.instances import noon_ms
@@ -40,6 +40,7 @@ def create(now=None):
     tasks.set_done(ds, first["id"], True, now - ms(10))
 
     call = tasks.add_task(ds, "Call the plumber about the boiler", today, now, top=False)
+    planning.schedule_time(ds, call["id"], ds.today(now), 14, 0, now)
     tasks.set_tags(ds, call["id"], [calls["id"]], now)
     tasks.set_estimate(ds, call["id"], ms(10), now)
     tasks.set_priority(ds, call["id"], 3, now)
@@ -56,19 +57,25 @@ def create(now=None):
     tasks.set_deadline(ds, review["id"], (datetime.fromtimestamp(now / 1000)
                                           + timedelta(days=3)).strftime("%Y-%m-%d"), now)
     tasks.update(ds, review["id"], now,
-                 notes="Focus on the phone layout first; the desktop "
-                       "version was reviewed last week.")
+                 notes="Focus on the **phone layout** first; the desktop "
+                       "version was reviewed last week.\n\n"
+                       "- [x] Start page\n- [ ] Menu\n- [ ] Contact form\n\n"
+                       "Checklist: [style guide](https://example.org/style)")
     tasks.set_estimate(ds, call["id"], ms(10), now)
 
     for title in ("Prune the apple tree", "Order compost"):
         tasks.add_task(ds, title, Context("project", garden["id"]), now, top=False)
     plan = tasks.add_task(ds, "Plan the launch date", Context("project", work["id"]), now,
                           top=False)
-    tasks.schedule_day(ds, plan["id"], (datetime.fromtimestamp(now / 1000)
+    planning.schedule_day(ds, plan["id"], (datetime.fromtimestamp(now / 1000)
                                         + timedelta(days=2)).strftime("%Y-%m-%d"), now)
+    # A section in the project's list (Super Productivity's sections).
+    launch = sections.add(ds, Context("project", work["id"]), "Launch",
+                          entity_id="demo-launch")
+    order.to_section(ds, plan["id"], Context("project", work["id"]), launch["id"])
     books = tasks.add_task(ds, "Return the library books", today, now, top=False)
     tasks.set_tags(ds, books["id"], [errands["id"]], now)
-    tasks.schedule_day(ds, books["id"], (datetime.fromtimestamp(now / 1000)
+    planning.schedule_day(ds, books["id"], (datetime.fromtimestamp(now / 1000)
                                          - timedelta(days=1)).strftime("%Y-%m-%d"), now)
     tracking.set_current(ds, review["subTaskIds"][1])
     _journey(ds, now)

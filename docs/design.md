@@ -17,7 +17,11 @@ Indigo `#5b4fc7` with white text (contrast 6.2:1), set only through
 `@define-color` for libadwaita 1.5 hosts)
 ([one accent per app](../../phosh-toolkit/docs/decisions/app-accent-colours.md)).
 Light and dark follow the system; Preferences → Appearance → Style
-offers Follow System / Light / Dark. Metainfo branding colours:
+offers Follow System / Light / Dark. Drawings (the journey's day marks,
+QuestArc's pictures) take the accent from a widget with the style class
+`.accent` (`drawing.accent()`), never from
+`Adw.StyleManager.get_accent_color_rgba()`, which since libadwaita 1.6
+is the system's accent, not the app's (#52). Metainfo branding colours:
 `#cdc8f2` (light), `#2e2666` (dark).
 
 # Screens
@@ -38,8 +42,52 @@ keep the title, back and the menu ([adaptive rule 10](../../phosh-toolkit/docs/a
   editor), estimate, Today, planned day and time, deadline, priority,
   project, tags, notes, subtasks, and Delete at the end (out of easy
   reach on purpose). Mark as Done and Start/Stop Timer in a bottom bar, as normal buttons at least 44 px high (`.pensum-bar-button`); `pill` buttons there made gtk4-broadwayd crash in about half of the CI screenshots (checked locally with the GNOME 51 Flatpak, 2026-11-05).
-- **Row menu**: long press or right click on a task row opens Move to
-  Top / Up / Down / to Bottom; Alt+↑/↓ does the same from the keyboard.
+- **Notes** (`pensum/ui/notes_box.py`): a task's note is shown formatted
+  on the view's ground (headings, lists, checkboxes at 44 px, a bar for
+  quotes, a tinted block for code; colours only from the text colour).
+  Edit / Done in the group's header switches to the text field and back
+  with one tap ([Markdown in notes](markdown-notes.md)).
+- **Time of day** (`pensum/ui/time_picker.py`): the task page's Time row
+  opens a dialog (a bottom sheet on the phone) with hours and minutes as
+  vertical spin buttons, plus and minus at least 44 px
+  (`.pensum-time-spin`), minutes in steps of five, and Set Time below.
+  Set Time has the focus when it opens, so the on-screen keyboard only
+  comes when a number is tapped to type it; the content scrolls then.
+  It starts at the task's time, else at the next full hour. Remove Time
+  on the row keeps the day. 24-hour clock, as in the rows ("At 14:30").
+- **Today's order**: open tasks with a time come first, in the order of
+  their times; the tasks without a time follow in the stored order and
+  only they are moved (menu, dragging). Super Productivity's own Today
+  list does not sort by time, so the stored order (`TODAY.taskIds`) is
+  never changed for it.
+- **Sections** (`pensum/ui/section_group.py`): a project's list and
+  Today show the tasks in no section first, then each section: a header
+  (arrow, title, number of open tasks; a tap collapses or expands it,
+  44 px high) with a menu button (Rename…, Delete) and the section's
+  open tasks as a boxed list. Add Section… is in the list's menu
+  (`pensum/ui/list_menu.py`). Deleting acts at once with Undo; the tasks
+  stay in the list. A task moves by the row menu's Move to Section (the
+  sections and No Section; the accessible way) or by dragging it onto a
+  row of another section, onto a row in no section, or onto a section's
+  header, which also works for an empty or collapsed section. Done tasks
+  stay in one Done list. Tag lists have no sections, as in Super
+  Productivity.
+- **Reorder by dragging** (`pensum/ui/row_drag.py`): a task row dropped
+  on another row of the same list takes its place; a line in the accent
+  colour shows where it lands (above the row when moving up, below when
+  moving down), the dragged row is dimmed. A pointer drags at once. A
+  finger drags after a long press (the row is tinted when it is ready),
+  because until then a drag scrolls the list. Near the upper or lower
+  edge the list scrolls. Open tasks, done tasks, the backlog and a
+  task's subtasks each reorder among themselves; overdue tasks have no
+  order. Checked with a real pointer (Xvfb) and with real touch events
+  in a headless Mutter on 2026-11-21; the feel on the phone is still to
+  be checked there.
+- **Row menu**: a long press let go without moving, a right click or the
+  Menu key (Shift+F10) on a task row opens Move to Top / Up / Down / to
+  Bottom, the accessible way to reorder; Alt+↑/↓ moves the focused row.
+  The list stays where it is scrolled and the moved row keeps the focus
+  (`pensum/ui/scroll.py`).
 - **Timer bar** at the very bottom while a task runs: title, time today,
   stop button; tapping it opens the task. Hidden on that task's own page, without the reveal animation (animating it while the page slid in crashed gtk4-broadwayd).
 - **Undo**: deleting a task or a list and Finish Day act at once and
@@ -95,5 +143,4 @@ nothing scrolls sideways at 360 px.
 
 # Not yet done
 
-Drag to reorder, swipe actions on rows,
-Markdown rendering of notes.
+Swipe actions on rows.

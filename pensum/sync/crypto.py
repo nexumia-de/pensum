@@ -11,6 +11,8 @@ encryption/web-crypto.ts):
   Productivity tries the older layout when the newer one fails;
 - compression is applied before encryption, so decryption comes first.
 
+Writing (#30) does the same backwards with a new random salt and IV.
+
 Argon2id comes from argon2-cffi-bindings (bundled), AES-GCM from the
 runtime's OpenSSL (libcrypto) through ctypes; PBKDF2 from hashlib."""
 import base64
@@ -19,9 +21,11 @@ import ctypes
 import ctypes.util
 import gzip
 import hashlib
+import os
 import re
 from functools import lru_cache
 
+from pensum.i18n import _
 from pensum.sync import SyncError
 
 SALT_LENGTH = 16
@@ -50,14 +54,28 @@ def b64decode(text):
     try:
         return base64.b64decode(cleaned)
     except binascii.Error as error:
-        raise SyncError("A sync file is damaged (base64).") from error
+        raise SyncError(_("A sync file is damaged (base64).")) from error
 
 
 def decompress(text):
     try:
         return gzip.decompress(b64decode(text)).decode("utf-8")
     except (OSError, EOFError, UnicodeDecodeError) as error:
-        raise SyncError("A sync file is damaged (gzip).") from error
+        raise SyncError(_("A sync file is damaged (gzip).")) from error
+
+
+def compress(text):
+    """base64 of gzip of the UTF-8 text, as compression.ts writes it."""
+    return base64.b64encode(gzip.compress(text.encode("utf-8"))).decode("ascii")
+
+
+def encrypt(text, password):
+    """base64 of `[salt 16][iv 12][ciphertext + tag]` with an Argon2id key,
+    the layout Super Productivity 20 writes (encryption.ts)."""
+    salt, iv = os.urandom(SALT_LENGTH), os.urandom(IV_LENGTH)
+    key = argon2id(password.encode("utf-8"), salt)
+    sealed = aes_gcm_encrypt(key, iv, text.encode("utf-8"))
+    return base64.b64encode(salt + iv + sealed).decode("ascii")
 
 
 def decrypt(text, password, cache=None):
@@ -81,15 +99,15 @@ def decrypt(text, password, cache=None):
         plain = aes_gcm_decrypt(key, data[:IV_LENGTH], data[IV_LENGTH:])
         if plain is not None:
             return _text(plain)
-        raise WrongPassword("The encryption password is wrong.")
-    raise SyncError("A sync file is damaged (too short to be encrypted).")
+        raise WrongPassword(_("The encryption password is wrong."))
+    raise SyncError(_("A sync file is damaged (too short to be encrypted)."))
 
 
 def _text(plain):
     try:
         return plain.decode("utf-8")
     except UnicodeDecodeError as error:
-        raise SyncError("A sync file is damaged (not text).") from error
+        raise SyncError(_("A sync file is damaged (not text).")) from error
 
 
 # --- Argon2id ---------------------------------------------------------------
@@ -98,15 +116,15 @@ def argon2id(secret, salt):
     try:
         from _argon2_cffi_bindings import ffi, lib
     except ImportError as error:
-        raise SyncError("Encrypted sync files need the Argon2 module, which "
-                        "is missing.") from error
+        raise SyncError(_("Encrypted sync files need the Argon2 module, which "
+                          "is missing.")) from error
     out = ffi.new("uint8_t[]", KEY_LENGTH)
     result = lib.argon2_hash(ARGON2_PASSES, ARGON2_MEMORY_KIB, ARGON2_LANES,
                              secret, len(secret), salt, len(salt), out, KEY_LENGTH,
                              ffi.NULL, 0, lib.Argon2_id, lib.ARGON2_VERSION_13)
     if result != lib.ARGON2_OK:
-        raise SyncError("The encryption key can't be derived "
-                        f"(Argon2 error {result}).")
+        raise SyncError(_("The encryption key can't be derived "
+                          "(Argon2 error {code}).").format(code=result))
     return bytes(ffi.buffer(out, KEY_LENGTH))
 
 
@@ -114,6 +132,7 @@ def argon2id(secret, salt):
 
 EVP_CTRL_GCM_SET_IVLEN = 0x9
 EVP_CTRL_GCM_SET_TAG = 0x11
+EVP_CTRL_GCM_GET_TAG = 0x10
 
 
 @lru_cache(maxsize=1)
@@ -137,8 +156,11 @@ def _libcrypto():
                                           ctypes.c_int]
         lib.EVP_DecryptFinal_ex.argtypes = [ctypes.c_void_p, ctypes.c_void_p,
                                             ctypes.POINTER(ctypes.c_int)]
+        lib.EVP_EncryptInit_ex.argtypes = lib.EVP_DecryptInit_ex.argtypes
+        lib.EVP_EncryptUpdate.argtypes = lib.EVP_DecryptUpdate.argtypes
+        lib.EVP_EncryptFinal_ex.argtypes = lib.EVP_DecryptFinal_ex.argtypes
         return lib
-    raise SyncError("Encrypted sync files need OpenSSL, which is missing.")
+    raise SyncError(_("Encrypted sync files need OpenSSL, which is missing."))
 
 
 def aes_gcm_decrypt(key, iv, sealed):
@@ -149,7 +171,7 @@ def aes_gcm_decrypt(key, iv, sealed):
     body, tag = sealed[:-TAG_LENGTH], sealed[-TAG_LENGTH:]
     ctx = lib.EVP_CIPHER_CTX_new()
     if not ctx:
-        raise SyncError("OpenSSL failed.")
+        raise SyncError(_("OpenSSL failed."))
     try:
         out = ctypes.create_string_buffer(len(body) + 16)
         length = ctypes.c_int(0)
@@ -159,14 +181,38 @@ def aes_gcm_decrypt(key, iv, sealed):
               and lib.EVP_DecryptInit_ex(ctx, None, None, key, iv) == 1
               and lib.EVP_DecryptUpdate(ctx, out, ctypes.byref(length), body, len(body)) == 1)
         if not ok:
-            raise SyncError("OpenSSL failed.")
+            raise SyncError(_("OpenSSL failed."))
         written = length.value
         if lib.EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_TAG, TAG_LENGTH, tag_buffer) != 1:
-            raise SyncError("OpenSSL failed.")
+            raise SyncError(_("OpenSSL failed."))
         rest = ctypes.c_int(0)
         if lib.EVP_DecryptFinal_ex(ctx, ctypes.addressof(out) + written,
                                    ctypes.byref(rest)) != 1:
             return None
         return out.raw[:written + rest.value]
+    finally:
+        lib.EVP_CIPHER_CTX_free(ctx)
+
+
+def aes_gcm_encrypt(key, iv, plain):
+    """The ciphertext with its 16-byte tag appended (Web Crypto's layout)."""
+    lib = _libcrypto()
+    ctx = lib.EVP_CIPHER_CTX_new()
+    if not ctx:
+        raise SyncError(_("OpenSSL failed."))
+    try:
+        out = ctypes.create_string_buffer(len(plain) + 16)
+        length, rest = ctypes.c_int(0), ctypes.c_int(0)
+        tag = ctypes.create_string_buffer(TAG_LENGTH)
+        ok = (lib.EVP_EncryptInit_ex(ctx, lib.EVP_aes_256_gcm(), None, None, None) == 1
+              and lib.EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, len(iv), None) == 1
+              and lib.EVP_EncryptInit_ex(ctx, None, None, key, iv) == 1
+              and lib.EVP_EncryptUpdate(ctx, out, ctypes.byref(length), plain, len(plain)) == 1
+              and lib.EVP_EncryptFinal_ex(ctx, ctypes.addressof(out) + length.value,
+                                          ctypes.byref(rest)) == 1
+              and lib.EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, TAG_LENGTH, tag) == 1)
+        if not ok:
+            raise SyncError(_("OpenSSL failed."))
+        return out.raw[:length.value + rest.value] + tag.raw
     finally:
         lib.EVP_CIPHER_CTX_free(ctx)

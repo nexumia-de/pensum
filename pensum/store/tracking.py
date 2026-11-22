@@ -1,6 +1,6 @@
 """Time tracking: the current task, time spent per day, and the work
 start and end of a project per day. No GTK."""
-from pensum.store import dates, tasks
+from pensum.store import dates, planning, tasks
 
 
 def set_current(ds, task_id):
@@ -37,7 +37,7 @@ def add_time(ds, task_id, ms, now=None):
     if (ds.config.get("tasks") or {}).get("isAutoAddWorkedOnToToday", True):
         top = ds.tasks.get(task.get("parentId")) or task
         if not ds.is_due_today(top, day):
-            tasks.schedule_day(ds, top["id"], day, now)
+            planning.schedule_day(ds, top["id"], day, now)
 
 
 def set_time_on_day(ds, task_id, day, ms, now=None):

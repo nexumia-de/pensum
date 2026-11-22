@@ -5,27 +5,43 @@ from datetime import datetime
 
 from gi.repository import Adw, GLib, Gtk
 
+from pensum.i18n import N_, _
 from pensum.store import dates, reminders
 from pensum.store.repeat import instances, rules, schedule
 
-DAY_NAMES = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
-UNITS = (("DAILY", "days"), ("WEEKLY", "weeks"), ("MONTHLY", "months"), ("YEARLY", "years"))
+DAY_NAMES = (N_("Monday"), N_("Tuesday"), N_("Wednesday"), N_("Thursday"), N_("Friday"),
+             N_("Saturday"), N_("Sunday"))
+SHORT_DAY_NAMES = (N_("Mon"), N_("Tue"), N_("Wed"), N_("Thu"), N_("Fri"), N_("Sat"),
+                   N_("Sun"))
+EVERY_WEEKDAY = (N_("Every Monday"), N_("Every Tuesday"), N_("Every Wednesday"),
+                 N_("Every Thursday"), N_("Every Friday"), N_("Every Saturday"),
+                 N_("Every Sunday"))
+UNITS = (("DAILY", N_("days")), ("WEEKLY", N_("weeks")), ("MONTHLY", N_("months")),
+         ("YEARLY", N_("years")))
+EVERY_ONE = {"DAILY": N_("Every day"), "WEEKLY": N_("Every week"),
+             "MONTHLY": N_("Every month"), "YEARLY": N_("Every year")}
+EVERY_MANY = {"DAILY": N_("Every {n} days"), "WEEKLY": N_("Every {n} weeks"),
+              "MONTHLY": N_("Every {n} months"), "YEARLY": N_("Every {n} years")}
 
 
 def _ordinal(n):
-    suffix = "th" if 10 <= n % 100 <= 20 else {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
-    return f"{n}{suffix}"
+    """3 → "3rd" (German "3.")."""
+    if 10 <= n % 100 <= 20:
+        return _("{n}th").format(n=n)
+    return {1: _("{n}st"), 2: _("{n}nd"), 3: _("{n}rd")}.get(n % 10, _("{n}th")).format(n=n)
 
 
 def preset_labels(start):
     """(preset, label) pairs for a series that starts on `start`."""
     day = dates.parse_day(start)
-    return [("DAILY", "Every day"),
-            ("MONDAY_TO_FRIDAY", "Monday to Friday"),
-            ("WEEKLY_CURRENT_WEEKDAY", f"Every {DAY_NAMES[day.weekday()]}"),
-            ("MONTHLY_CURRENT_DATE", f"Every month on the {_ordinal(day.day)}"),
-            ("YEARLY_CURRENT_DATE", f"Every year on {day.strftime('%-d %B')}"),
-            ("CUSTOM", "Custom")]
+    return [("DAILY", _("Every day")),
+            ("MONDAY_TO_FRIDAY", _("Monday to Friday")),
+            ("WEEKLY_CURRENT_WEEKDAY", _(EVERY_WEEKDAY[day.weekday()])),
+            ("MONTHLY_CURRENT_DATE",
+             _("Every month on the {day}").format(day=_ordinal(day.day))),
+            ("YEARLY_CURRENT_DATE",
+             _("Every year on {date}").format(date=day.strftime("%-d %B"))),
+            ("CUSTOM", _("Custom"))]
 
 
 def describe(cfg):
@@ -33,21 +49,22 @@ def describe(cfg):
     every = cfg.get("repeatEvery") or 1
     cycle = cfg.get("repeatCycle")
     if cycle == "WEEKLY":
-        days = [DAY_NAMES[i] for i, key in enumerate(schedule.WEEKDAYS) if cfg.get(key)]
-        names = "Monday to Friday" if days == list(DAY_NAMES[:5]) else ", ".join(
-            d[:3] for d in days) or "no day"
-        text = names if every == 1 else f"Every {every} weeks: {names}"
+        days = [i for i, key in enumerate(schedule.WEEKDAYS) if cfg.get(key)]
+        names = _("Monday to Friday") if days == [0, 1, 2, 3, 4] else ", ".join(
+            _(SHORT_DAY_NAMES[i]) for i in days) or _("no day")
+        text = names if every == 1 else _("Every {n} weeks: {days}").format(
+            n=every, days=names)
     else:
-        unit = dict(UNITS).get(cycle, "days")
-        text = f"Every {unit[:-1]}" if every == 1 else f"Every {every} {unit}"
+        cycle = cycle if cycle in EVERY_ONE else "DAILY"
+        text = _(EVERY_ONE[cycle]) if every == 1 else _(EVERY_MANY[cycle]).format(n=every)
         if cycle == "MONTHLY" and cfg.get("monthlyLastDay"):
-            text += " on the last day"
-    return text + (" (paused)" if cfg.get("isPaused") else "")
+            text = _("{rule} on the last day").format(rule=text)
+    return _("{rule} (paused)").format(rule=text) if cfg.get("isPaused") else text
 
 
 class RepeatPage(Adw.NavigationPage):
     def __init__(self, window, task_id):
-        super().__init__(title="Repeat", tag=f"repeat-{task_id}")
+        super().__init__(title=_("Repeat"), tag=f"repeat-{task_id}")
         self.window = window
         self.task_id = task_id
         self._updating = False
@@ -58,28 +75,29 @@ class RepeatPage(Adw.NavigationPage):
         self.set_child(toolbar)
 
         group = Adw.PreferencesGroup(
-            description="A repeating task comes back on its days, the way "
-                        "Super Productivity creates it.")
-        self.schedule_row = Adw.ComboRow(title="Repeat")
+            description=_("A repeating task comes back on its days, the way "
+                          "Super Productivity creates it."))
+        self.schedule_row = Adw.ComboRow(title=_("Repeat"))
         self.schedule_row.connect("notify::selected", self._on_schedule)
         group.add(self.schedule_row)
         page.add(group)
 
-        self.custom = Adw.PreferencesGroup(title="Custom")
+        self.custom = Adw.PreferencesGroup(title=_("Custom"))
         self.every_row = Adw.SpinRow.new_with_range(1, 99, 1)
-        self.every_row.set_title("Every")
+        self.every_row.set_title(_("Every"))
         self.every_row.connect("notify::value", self._on_custom)
         self.custom.add(self.every_row)
-        self.unit_row = Adw.ComboRow(title="Unit", model=Gtk.StringList.new(
-            [label for _, label in UNITS]))
+        self.unit_row = Adw.ComboRow(title=_("Unit"), model=Gtk.StringList.new(
+            [_(label) for _key, label in UNITS]))
         self.unit_row.connect("notify::selected", self._on_custom)
         self.custom.add(self.unit_row)
         self.day_buttons = []
         days = Gtk.FlowBox(selection_mode=Gtk.SelectionMode.NONE, max_children_per_line=7,
                            min_children_per_line=4, column_spacing=6, row_spacing=6,
                            margin_top=12, homogeneous=True)
-        for name in DAY_NAMES:
-            button = Gtk.ToggleButton(label=name[:2], tooltip_text=name)
+        for name, short in zip(DAY_NAMES, SHORT_DAY_NAMES):
+            name, short = _(name), _(short)
+            button = Gtk.ToggleButton(label=short[:2], tooltip_text=name)
             button.set_size_request(44, 44)
             button.update_property([Gtk.AccessibleProperty.LABEL], [name])
             button.connect("toggled", self._on_custom)
@@ -90,22 +108,22 @@ class RepeatPage(Adw.NavigationPage):
         page.add(self.custom)
 
         self.rule_group = Adw.PreferencesGroup()
-        self.pause_row = Adw.SwitchRow(title="Paused",
-                                       subtitle="No new tasks while paused")
+        self.pause_row = Adw.SwitchRow(title=_("Paused"),
+                                       subtitle=_("No new tasks while paused"))
         self.pause_row.connect("notify::active", self._on_pause)
         self.rule_group.add(self.pause_row)
         # The time of day and the reminder every new task of the rule gets.
-        self.time_row = Adw.EntryRow(title="Time (like 14:30)", show_apply_button=True)
+        self.time_row = Adw.EntryRow(title=_("Time (like 14:30)"), show_apply_button=True)
         self.time_row.connect("apply", self._on_time)
         self.rule_group.add(self.time_row)
-        self.remind_row = Adw.ComboRow(title="Reminder", model=Gtk.StringList.new(
-            [label for _, label in reminders.OPTIONS]))
+        self.remind_row = Adw.ComboRow(title=_("Reminder"), model=Gtk.StringList.new(
+            reminders.option_labels()))
         self.remind_row.connect("notify::selected", self._on_remind)
         self.rule_group.add(self.remind_row)
         page.add(self.rule_group)
 
         stop = Adw.PreferencesGroup()
-        self.stop_button = Gtk.Button(label="Stop Repeating", halign=Gtk.Align.CENTER)
+        self.stop_button = Gtk.Button(label=_("Stop Repeating"), halign=Gtk.Align.CENTER)
         self.stop_button.add_css_class("destructive-action")
         self.stop_button.add_css_class("pill")
         self.stop_button.connect("clicked", self._on_stop)
@@ -135,7 +153,7 @@ class RepeatPage(Adw.NavigationPage):
         self._updating = True
         cfg = self._rule()
         self.presets = preset_labels(self._start())
-        labels = ["Never"] + [label for _, label in self.presets]
+        labels = [_("Never")] + [label for _, label in self.presets]
         if labels != getattr(self, "_labels", None):
             self._labels = labels
             self.schedule_row.set_model(Gtk.StringList.new(labels))
@@ -161,7 +179,7 @@ class RepeatPage(Adw.NavigationPage):
             keys = [key for key, _ in reminders.OPTIONS]
             self.remind_row.set_selected(keys.index(option) if option in keys else 0)
             self.remind_row.set_sensitive(bool(start))
-            self.remind_row.set_subtitle("" if start else "Set a time first")
+            self.remind_row.set_subtitle("" if start else _("Set a time first"))
         self.days_box.set_visible(self.unit_row.get_selected() == 1)
         self.rule_group.set_visible(bool(cfg))
         self.stop_group.set_visible(bool(cfg))
@@ -223,7 +241,7 @@ class RepeatPage(Adw.NavigationPage):
             try:
                 text = datetime.strptime(text, "%H:%M").strftime("%H:%M")
             except ValueError:
-                self.window.toast("Write the time like 14:30")
+                self.window.toast(_("Write the time like 14:30"))
                 return
         self._set_time(text, reminders.rule_time(cfg)[1])
 
@@ -243,7 +261,7 @@ class RepeatPage(Adw.NavigationPage):
         rules.set_paused(self.window.ds, cfg["id"], row.get_active())
         self._changed()
 
-    def _on_stop(self, *_):
+    def _on_stop(self, *args):
         cfg = self._rule()
         if not cfg:
             return
@@ -256,6 +274,6 @@ class RepeatPage(Adw.NavigationPage):
             rules.restore(self.window.ds, undo)
             self.window.changed()
 
-        toast = Adw.Toast(title="Stopped repeating", button_label="Undo")
+        toast = Adw.Toast(title=_("Stopped repeating"), button_label=_("Undo"))
         toast.connect("button-clicked", restore)
         self.window.toasts.add_toast(toast)

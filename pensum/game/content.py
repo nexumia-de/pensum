@@ -39,9 +39,40 @@ def _journeys(base):
                  for p in sorted(folder.glob("*.json")))
 
 
-def journeys():
+def builtin():
     """The built-in journeys in file-name order."""
     return list(_journeys(str(directory())))
+
+
+_own = {"journeys": (), "texts": {}}
+
+
+def set_own(found):
+    """The user's own journeys (`journey:<id>` records, pensum.game.own),
+    told on every evaluation: they are listed after the built-in ones,
+    never in place of one, and their texts are read like QuestArc's:
+    the user's language with English behind every missing key."""
+    taken = {j.get("id") for j in builtin()}
+    kept = tuple(j for j in found if isinstance(j, dict) and j.get("id") not in taken
+                 and isinstance(j.get("stages"), list))
+    if kept == _own["journeys"]:
+        return
+    texts = {}
+    for item in kept:
+        blocks = item.get("texts") if isinstance(item.get("texts"), dict) else {}
+        for name in ("en", language()):
+            if isinstance(blocks.get(name), dict):
+                texts.update(blocks[name])
+    _own["journeys"], _own["texts"] = kept, texts
+
+
+def own():
+    return list(_own["journeys"])
+
+
+def journeys():
+    """The built-in journeys, then the user's own."""
+    return builtin() + own()
 
 
 def journey(journey_id):
@@ -55,6 +86,14 @@ def locale():
         if value:
             return value
     return ""
+
+
+def language():
+    """The language QuestArc's texts are shown in: the locale's, if
+    QuestArc has it, else English."""
+    name = locale().split(".")[0].split("_")[0].split("@")[0].lower()
+    return name if name and (directory() / "content" / "i18n" / f"{name}.json").is_file() \
+        else "en"
 
 
 def _english(base):
@@ -89,13 +128,21 @@ def _texts(base, wanted):
 
 
 def has_text(key):
-    return key in _texts(str(directory()), locale())
+    return key in _own["texts"] or key in _texts(str(directory()), locale())
+
+
+def ui_texts():
+    """QuestArc's app and journey texts in the user's language, as the
+    engine's quick journey needs them."""
+    return _texts(str(directory()), locale())
 
 
 def t(key, **params):
     """QuestArc's text for a key in the user's language (English behind a
     missing one), {name} filled in; the key itself if unknown."""
-    text = _texts(str(directory()), locale()).get(key, key)
+    text = _own["texts"].get(key)
+    if text is None:
+        text = _texts(str(directory()), locale()).get(key, key)
     return _PLACEHOLDER.sub(lambda m: str(params[m.group(1)])
                             if m.group(1) in params else m.group(0), text)
 

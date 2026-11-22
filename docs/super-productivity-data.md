@@ -53,7 +53,7 @@ moments are epoch milliseconds, durations milliseconds.
 | `archiveYoung`, `archiveOld` | finished-day tasks (`task`), their `timeTracking`, `lastTimeTrackingFlush` | read for totals, kept |
 | `globalConfig` | all settings, 21 sections | `misc.startOfNextDay*` and `tasks.defaultProjectId` used; rest kept |
 | `menuTree` | `projectTree`, `tagTree`: folders (`k: "f"`, `name`, `children`, `isExpanded`), project (`k: "p"`) and tag (`k: "t"`) nodes | order read; new entries appended |
-| `section` | sections inside a project or tag list (`contextId`, `contextType`, `title`, `taskIds`, `isExpanded`) | kept; deleted ids removed |
+| `section` | sections inside a project's or Today's list (`contextId`, `contextType`, `title`, `taskIds`, `isExpanded`) | read and written, see [Section](#section-sectionmodelts) |
 | `note` | notes (`projectId`, `content`, `isPinnedToToday`, `imgUrl`, `isLock`, `backgroundColor`, `created`, `modified`), `todayOrder` | kept |
 | `taskRepeatCfg` | repeating task rules (below) | kept |
 | `reminders` | `{id, remindAt, title, type: NOTE\|TASK, relatedId, recurringConfig?}` | kept; dropped with their task |
@@ -98,6 +98,30 @@ Rules the reducers keep (`src/app/features/tasks/store/task.reducer.util.ts`):
   `project.taskIds` and usually have no tags.
 - `dueWithTime` wins over `dueDay`; new data sets only one of them
   (ARCHITECTURE-DECISIONS #1).
+- **Planning at a time** (`scheduleTaskWithTime` and
+  `reScheduleTaskWithTime` in `task-shared-scheduling.reducer.ts`,
+  `planner.reducer.ts`; read at commit `9980fd76`, 2026-11-21): the task
+  gets `dueWithTime`, loses `dueDay`, and gets the `remindAt` the action
+  carries or loses it; the task's id leaves every `planner.days` list
+  and is not added to one; `TODAY.taskIds` gets the id on top when the
+  time is on the logical today and the id is not in it yet (its place
+  stays when it is), and loses it when the time is on another day.
+  Subtasks are treated the same. Nothing else changes.
+  `planning.schedule_time` writes exactly this (plus `modified`, as every
+  change of Pensum's does).
+- **Unplanning** (`unscheduleTask`): `dueDay`, `dueWithTime` and
+  `remindAt` are removed (not null), the id leaves `TODAY.taskIds` and
+  the planner's days (`planning.schedule_day(…, None)`). Removing only the
+  time plans the task for that day (`planTaskForDay`: `dueDay` set,
+  `dueWithTime` and `remindAt` removed, last in Today's order).
+- `hasPlannedTime` is only declared in `task.model.ts`; none of the
+  files that plan a task (the two reducers above, `task.reducer.ts`,
+  `task.service.ts`, the schedule dialog) writes it. Pensum wrote it
+  until 2026-11-21 and now keeps it as read. The whole source could not
+  be searched (see [development environment](dev-environment.md)).
+- Super Productivity's Today list shows the stored order
+  (`computeOrderedTaskIdsForToday` in `work-context.selectors.ts`); only
+  its schedule view orders by time.
 - Marking done sets `isDone` and `doneOn`; undoing removes `doneOn`.
 
 ## Project and tag (`project.model.ts`, `tag.model.ts`, `work-context.model.ts`)
@@ -108,6 +132,53 @@ top-level tasks), `theme` (colours, background images), `advancedCfg`
 `isDone`, `doneOn`, `isEnableBacklog`, `backlogTaskIds`, `noteIds`,
 `issueIntegrationCfgs`; tags add `color` and `created`.
 
+**Order.** A list's order is only these id lists: `project.taskIds`
+(and `backlogTaskIds`), `tag.taskIds`, `TODAY.taskIds`, for subtasks the
+parent's `subTaskIds`, and inside a [section](#section-sectionmodelts)
+its `taskIds`; reordering changes no task. Read at commit `9980fd76`
+(2026-11-21): `project.reducer.ts`, `tag.reducer.ts`, `task.reducer.ts`,
+`work-context-meta.actions.ts`, `work-context-meta.helper.ts`,
+`work-context.selectors.ts`, `util/array-move.ts`, `project.service.ts`
+and the task context menu.
+
+- **A drop** (`moveTaskInTodayList`, `moveProjectTaskInBacklogList`,
+  `moveSubTask`; `moveItemAfterAnchor`): the id is taken out and put
+  right after the task now shown before it, or at the start of the id
+  list when it is shown first; ids the list does not show stay where
+  they are. An anchor that is gone leaves the id where it is. For a
+  drop into first place among the done tasks Super Productivity appends
+  the id to the end instead; Pensum, whose Done list shows the stored
+  order, uses the start there too.
+- **Move Up / Move Down in a list** (`moveTaskUpInTodayList`,
+  `moveTaskDownInTodayList`): the action carries the ids of the list's
+  tasks that are not done, in list order (an id without a task counts
+  as not done). Up: the id goes before the nearest not-done id above
+  it, passing the done ones; with none above it goes to the start.
+  Down: after the nearest not-done id below; with none below it stays.
+  (`moveUndoneTaskUpInList` and its mirror are this move, plus one case
+  that only a replay on another device meets: when the not-done
+  neighbour of the action is no longer in the list, the id takes its
+  slot next to the nearest earlier or later not-done id.) The backlog
+  does the same on `backlogTaskIds` with its own not-done ids.
+- **Move to Top / to Bottom** (`moveTaskToTopInTodayList` and friends):
+  the very start or end of the id list, whatever it holds.
+- **Subtasks:** up and down swap with the direct neighbour, done or not
+  (`arrayMoveLeft`, `arrayMoveRight`); top and bottom are the start and
+  the end of `subTaskIds`.
+- **To and from the backlog by the menu**
+  (`moveProjectTaskToBacklogListAuto`, `…ToRegularListAuto`): first in
+  `backlogTaskIds`, last in `taskIds`; nothing else changes. Super
+  Productivity refuses the move into a backlog that is not enabled;
+  Pensum enables it (`isEnableBacklog`), as before.
+- **Pensum** (`pensum/store/order.py`, the list rules in
+  `pensum/store/list_moves.py`): `move_to` writes a drop, `move` the
+  menu's steps (also Alt+↑/↓). Pensum shows some tasks elsewhere than
+  Super Productivity does (Today's timed tasks by time, sectioned tasks
+  in their section), so one step can pass only such tasks and change
+  nothing visible; `move` then repeats the step until the task has
+  passed one it is shown with, each step being one Super Productivity
+  makes, and writes nothing when no step gets it there.
+
 `TODAY` is a **virtual tag** (ARCHITECTURE-DECISIONS #2): a task is in
 Today when its `dueDay` is today, or `dueWithTime` falls on today; the
 id `TODAY` is never in `task.tagIds`, and `TODAY.taskIds` only orders
@@ -115,6 +186,83 @@ the list (stale ids there are harmless). "Today" is the logical day:
 it starts at `globalConfig.misc.startOfNextDayTime` (`HH:MM`) or the
 older `startOfNextDay` (hours), so work at 1:00 with a 4:00 boundary
 counts for the previous day (`DateService`, `isTodayWithOffset`).
+
+## Notes as Markdown
+
+`task.notes` is the Markdown source as typed; what Super Productivity
+shows of it and what Pensum shows is in [Markdown in notes](markdown-notes.md).
+
+## Section (`section.model.ts`)
+
+Read at commit `9980fd76` (2026-11-21): `features/section/`
+(`section.model.ts`, `section.util.ts`, `section.service.ts`,
+`store/section.reducer.ts`, `store/section.actions.ts`),
+`root-store/meta/task-shared-meta-reducers/section-shared.reducer.ts`,
+the drop handling in `features/tasks/task-list/task-list.component.ts`
+and `docs/sync-and-op-log/section-conflict-replay.md`.
+
+- **Shape.** `section.ids` and `section.entities`; a section is `{id,
+  contextId, contextType: "PROJECT" | "TAG", title, isExpanded?,
+  taskIds}`. Only projects and the Today tag (`TAG`, `TODAY`) have
+  sections; other tags are refused (`isValidSectionContext`). A missing
+  `isExpanded` reads as open.
+- **Membership.** A section's `taskIds` say which top-level tasks are in
+  it and their order inside it; subtasks are never listed. The task
+  stays in the list's own order (`project.taskIds`, `TODAY.taskIds`) as
+  well; no task field names the section. The list shows the tasks in no
+  section first, in the list's order, then each section in the order of
+  its place in `section.ids`, with its tasks in the order of its
+  `taskIds` (`groupTasksBySection`); ids of tasks the list does not show
+  are skipped.
+- **Add:** a new id, the title trimmed and cut to 200 characters,
+  `isExpanded: true`, `taskIds: []`, appended to `section.ids`.
+  **Rename, collapse, expand:** only `title` (trimmed and cut again) or
+  `isExpanded` change. **Delete:** only the section goes
+  (`adapter.removeOne`); its tasks stay in the list and show in no
+  section.
+- **A task into a section, or to another place in it**
+  (`addTaskToSection {sectionId, taskId, afterTaskId, sourceSectionId}`):
+  the id leaves the source section when that is another one; in the
+  target it is added if missing and put right after `afterTaskId`, or
+  first when that is null (`moveItemAfterAnchor`, the rule of
+  [Order](#project-and-tag-projectmodelts-tagmodelts-work-contextmodelts)).
+  The list's own order does not change.
+- **A task out of a section** (`removeTaskFromSection`): the id leaves
+  the section, and in the list's own order it is put right after the
+  task shown before the drop place among the tasks in no section, or
+  first.
+- **Move Up, Down, to Top, to Bottom in the menu**
+  (`handleSectionTaskReorder`): the section that lists the task makes
+  the same step on its `taskIds` (up and down pass the ids that are not
+  among the list's not-done ids; top and bottom are the start and the
+  end), and the list's own order makes its step as for any task
+  ([Order](#project-and-tag-projectmodelts-tagmodelts-work-contextmodelts)).
+  The two lists move independently, each past its own neighbour.
+- **Tasks that leave** (`section-shared.reducer.ts`). Out of every
+  section: a deleted task with its subtasks, an archived one with its
+  subtasks, a task that becomes a subtask (`convertToSubTask`; Pensum
+  has no such action). Out of the old project's sections: a task moved
+  to another project, with its subtasks. Out of Today's sections: an id
+  that leaves `TODAY.taskIds`, whatever removed it. A task restored
+  from the archive comes back in no section (Pensum has no restore).
+  A deleted project takes its sections with it, and its tasks leave
+  Today's sections. **No change:** marking a task done or open, and
+  moving it to the backlog or back (no handler touches sections; the
+  section keeps the id and shows the task again when it is back in the
+  list).
+- **Import.** `is-related-model-data-valid.ts` has no section check
+  ("Section orphans … are repaired by `repairSections`"); typia checks
+  the slice's shape (`validation-fn.ts`). The repair, which runs when
+  another check fails, removes sections whose context is neither a
+  project in `project.ids` nor the Today tag, and ids in `taskIds` that
+  are not in `task.ids`; a `taskIds` that is no list becomes empty
+  (`_repairSections` in `data-repair.ts`). A task listed in two sections
+  is neither checked nor repaired. `validate.problems()` reports what
+  the repair would remove.
+- Pensum: `pensum/store/sections.py`, the moves in
+  `pensum/store/order.py` (`move`, `move_to`, `to_section`). Sections
+  of other tags and a task listed in two sections are kept as read (the
+  task shows in the first).
 
 ## Time tracking (`time-tracking.model.ts`, `archive.model.ts`)
 
@@ -196,7 +344,9 @@ the same (`pensum/store/archive.py`).
 
 From `is-related-model-data-valid.ts`, ported to
 `pensum/store/validate.py` and run by the tests after every kind of
-change (and logged before every save):
+change (and logged before every save); for sections, which the import
+does not check, `validate.py` reports what the repair would remove
+([Section](#section-sectionmodelts)):
 
 - every id in `project.taskIds`/`backlogTaskIds` names a task whose
   `projectId` is that project; every note id names a note of it;
@@ -297,5 +447,5 @@ for a non-empty tree, and now does it the same way.
 
 - The data model above was read at 19.3.1; CI tests 20.0.0. A 19.3.x
   app has not imported Pensum's files.
-- The round trip on the owner's own data and devices
-  ([#2](https://github.com/nexumia-de/pensum/issues/2)).
+- The round trip on the owner's own data and devices: a checklist in
+  [owner checks](owner-checks.md#round-trip-with-the-owners-data-2) (#2).

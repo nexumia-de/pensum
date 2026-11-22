@@ -1,6 +1,7 @@
 """The cross-model checks Super Productivity runs on every import
 (is-related-model-data-valid.ts), so Pensum never writes a dataset that
-it would refuse. Returns the problems found; empty means valid. No GTK."""
+it would refuse, and what its repair removes from sections
+(data-repair.ts). Returns the problems found; empty means valid. No GTK."""
 from pensum.store.backup import CORE_SLICES
 from pensum.store.defaults import TODAY_ID, slices
 
@@ -55,6 +56,23 @@ def problems(data):
         for tid in tag.get("taskIds", []):
             if tid not in tasks:
                 found.append(f"tag {tag['id']}: missing task {tid}")
+    # Not a check of the import, but what its repair removes
+    # (`_repairSections` in data-repair.ts): a section of a project that is
+    # gone or of a tag other than Today, and ids without a task.
+    sections = data["section"]
+    if set(sections.get("ids", [])) != set(sections.get("entities", {})):
+        found.append("section: ids and entities differ")
+    for section in sections.get("entities", {}).values():
+        context = (section.get("contextType"), section.get("contextId"))
+        if context != ("TAG", TODAY_ID) and not (
+                context[0] == "PROJECT" and context[1] in project_ids):
+            found.append(f"section {section['id']}: no such list")
+        if not isinstance(section.get("taskIds"), list):
+            found.append(f"section {section['id']}: taskIds is no list")
+            continue
+        for tid in section["taskIds"]:
+            if tid not in tasks:
+                found.append(f"section {section['id']}: missing task {tid}")
     for nid in data["note"]["todayOrder"]:
         if nid not in data["note"]["entities"]:
             found.append(f"note order: missing note {nid}")

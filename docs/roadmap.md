@@ -63,9 +63,11 @@ journeys as the start page (#78); German for Day Planner's own texts
 
 # M3 – Focus and reports
 
-**On hold** (owner, 2026-11-20): nothing of M3 is built until _Habits
-first_ is done. Simple counters (#21) are dropped; the journeys are Day
-Planner's habits.
+Was on hold (owner, 2026-11-20) until _Habits first_ was done; built on
+2026-11-22 once its items were in (#19, #20, #22-#27). Simple counters
+(#21) are dropped; the journeys are Day Planner's habits. Own habits
+(#80) wait only for the QuestArc release that carries the quick form
+([owner checks](owner-checks.md)).
 
 **Goal**: Pomodoro/Flowtime focus sessions, break reminders, worklog
 and daily summary, project notes, attachments, planner days, menu
@@ -83,7 +85,10 @@ incl. compressed and encrypted ones written by a real Super
 Productivity and never changes the folder (#28, #29). Then: reads v3;
 writes ops that Super Productivity replays to the same
 state, proven by end-to-end tests in both directions with concurrent
-edits ([sync files](super-productivity-sync.md)).
+edits ([sync files](super-productivity-sync.md)). Writing started on
+2026-11-22 with task edits for one Day Planner and one Super
+Productivity ([decision](decisions/sync-writing.md)); every further
+kind of change follows with its own end-to-end round.
 
 # Risks
 

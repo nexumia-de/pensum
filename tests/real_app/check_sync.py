@@ -10,9 +10,12 @@ pensum.sync and check, for round N:
 - validate.problems() is empty, also after an import;
 - round 2: the changes since round 1 (recentOps) name every task Super
   Productivity changed, and wrong decodes fail these checks: the first
-  snapshot kept, recentOps ignored, the previous file (.bak).
+  snapshot kept, recentOps ignored, the previous file (.bak);
+- round 3: after Pensum sent its edits (pensum_send.py) and Super
+  Productivity added a task and synced, both are in the folder and in
+  Super Productivity's export, Pensum's estimate included (#30).
 
-    python3 tests/real_app/check_sync.py DIR 1|2
+    python3 tests/real_app/check_sync.py DIR 1|2|3
 
 PENSUM_DAV_URL is the WebDAV server (default http://127.0.0.1:2345/),
 PENSUM_DAV_ROOT its directory on disk (default DIR/dav), PENSUM_DAV_FOLDER
@@ -56,13 +59,19 @@ T = {
     "bread": "Sync test: bake bread",
     "call": "Sync test: call the plumber",
     "sub": "Sync test: buy flour",
+    "callRenamed": "Sync test: call the plumber at nine",
+    "concurrent": "Sync test: oil the door",
 }
 EXPECT = {
     "1": {"plants": False, "letter": True, "bike": False, "bikeRenamed": None,
           "bread": False, "sub": ("bread", False), "call": None},
     "2": {"plants": True, "letter": True, "bike": None, "bikeRenamed": False,
           "bread": None, "sub": None, "call": False},
+    "3": {"plants": True, "letter": True, "bike": None, "bikeRenamed": True,
+          "bread": None, "sub": None, "call": None, "callRenamed": False,
+          "concurrent": False},
 }
+SENT_ESTIMATE = 30 * 60 * 1000  # pensum_send.py
 
 
 def hashes(directory):
@@ -273,6 +282,10 @@ def main(directory, round_):
     state_file = directory / f"round{round_}.pensum.json"
     state_file.write_text(json.dumps({"syncVersion": snapshot.sync_version,
                                       "data": snapshot.data}))
+    if round_ == "3":
+        estimate = by_title(sp).get(T["callRenamed"], {}).get("timeEstimate")
+        check("Pensum's estimate in Super Productivity",
+              [] if estimate == SENT_ESTIMATE else [f"timeEstimate {estimate}"])
     if round_ == "2":
         first = json.loads((directory / "round1.pensum.json").read_text())
         sp1 = backup.read(directory / "round1.sp.json")
@@ -326,6 +339,6 @@ def main(directory, round_):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3 or sys.argv[2] not in ("1", "2"):
+    if len(sys.argv) != 3 or sys.argv[2] not in ("1", "2", "3"):
         sys.exit(__doc__)
     sys.exit(main(sys.argv[1], sys.argv[2]))

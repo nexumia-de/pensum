@@ -11,6 +11,7 @@ from gi.repository import Adw, Gdk, Gio, GLib, Gtk  # noqa: E402
 
 from pensum import (APP_ID, NAME, NIGHTLY, REPO_URL, SUPPORT_URL,  # noqa: E402
                     VERSION_LABEL)
+from pensum.i18n import _
 
 log = logging.getLogger("pensum")
 
@@ -41,8 +42,11 @@ class Application(Adw.Application):
                                ("show-lists", self._on_show_lists),
                                ("show-archived", self._on_show_archived),
                                ("show-sync", self._on_show_sync),
+                               ("show-planner", lambda *_: self._window_do("show_planner")),
+                               ("show-summary", lambda *_: self._window_do("show_summary")),
                                ("show-journey", self._on_show_journey),
                                ("show-run", self._on_show_run),
+                               ("show-own-habit", self._on_show_own_habit),
                                ("search", self._on_search),
                                ("quit", self._on_quit)):
             action = Gio.SimpleAction.new(name, None)
@@ -123,6 +127,10 @@ class Application(Adw.Application):
         if self._window():
             self._window().show_archived()
 
+    def _window_do(self, method):
+        if self._window():
+            getattr(self._window(), method)()
+
     def _on_show_sync(self, *_):
         if self._window():
             self._window().show_sync()
@@ -130,6 +138,13 @@ class Application(Adw.Application):
     def _on_show_journey(self, *_):
         if self._window():
             self._window().show_journey()
+
+    def _on_show_own_habit(self, *_):
+        """The quick form for a habit of the user's own (#80)."""
+        if self._window():
+            from pensum.ui.journey.quick_page import QuickPage
+            self._window().show_journey()
+            self._window().nav.push(QuickPage(self._window()))
 
     def _on_show_run(self, *_):
         if self._window():
@@ -171,7 +186,7 @@ class Application(Adw.Application):
             from pensum.preferences import PreferencesDialog
             PreferencesDialog(window).present(window)
 
-    def _on_about(self, *_):
+    def _on_about(self, *args):
         dialog = Adw.AboutDialog(
             application_name=NAME,
             application_icon=APP_ID,
@@ -180,11 +195,11 @@ class Application(Adw.Application):
             website=REPO_URL,
             issue_url=f"{REPO_URL}/issues",
             license_type=Gtk.License.AGPL_3_0,
-            comments="Tasks and time tracking for the phone. Reads and writes "
-                     "Super Productivity's backup files. Not affiliated with "
-                     "the Super Productivity project.",
+            comments=_("Tasks and time tracking for the phone. Reads and writes "
+                       "Super Productivity's backup files. Not affiliated with "
+                       "the Super Productivity project."),
         )
-        dialog.add_link("Support Development", SUPPORT_URL)
+        dialog.add_link(_("Support Development"), SUPPORT_URL)
         dialog.present(self._window())
 
 

@@ -3,6 +3,7 @@ tasks and which tasks a list shows. Changes are in tasks.py, contexts.py
 and tracking.py. No GTK."""
 from dataclasses import dataclass
 
+from pensum.i18n import _
 from pensum.store import dates
 from pensum.store.defaults import INBOX_ID, TODAY_ID
 
@@ -76,7 +77,7 @@ class Dataset:
 
     def context_title(self, context):
         if context.kind == "today":
-            return "Today"
+            return _("Today")
         source = self.project_entities if context.kind == "project" else self.tag_entities
         entity = source.get(context.id)
         return entity.get("title") or "" if entity else ""
@@ -148,8 +149,19 @@ class Dataset:
     def list_tasks(self, context, today=None):
         """(open, done) top-level tasks of a list."""
         tasks = [self.tasks[i] for i in self.top_level_ids(context, today)]
-        return ([t for t in tasks if not t.get("isDone")],
-                [t for t in tasks if t.get("isDone")])
+        open_tasks = [t for t in tasks if not t.get("isDone")]
+        if context.kind == "today":
+            # The day's appointments first, in the order of their times;
+            # the stored order is for the tasks without a time.
+            open_tasks = (sorted((t for t in open_tasks if self.has_time(t)),
+                                 key=lambda t: t["dueWithTime"])
+                          + [t for t in open_tasks if not self.has_time(t)])
+        return open_tasks, [t for t in tasks if t.get("isDone")]
+
+    @staticmethod
+    def has_time(task):
+        """An open task planned at a time of day."""
+        return bool(task.get("dueWithTime")) and not task.get("isDone")
 
     def backlog_tasks(self, project_id):
         project = self.project_entities.get(project_id) or {}

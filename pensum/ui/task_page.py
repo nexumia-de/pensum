@@ -5,19 +5,27 @@ from datetime import datetime
 from gi.repository import Adw, GLib, Gtk, Pango
 
 from pensum import duration
-from pensum.store import dates, reminders, tasks
+from pensum.i18n import _
+from pensum.store import dates, planning, reminders, tasks
+from pensum.ui import scroll
+from pensum.ui.notes_box import NotesBox
 from pensum.ui.task_row import TaskRow
 
 
 class TaskPage(Adw.NavigationPage):
     def __init__(self, window, task_id):
-        super().__init__(title="Task", tag=f"task-{task_id}")
+        super().__init__(title=_("Task"), tag=f"task-{task_id}")
         self.window = window
         self.task_id = task_id
         self.sub_rows = []
-        self._notes_source = None
         toolbar = Adw.ToolbarView()
-        toolbar.add_top_bar(Adw.HeaderBar())
+        header = Adw.HeaderBar()
+        # Focus mode for this task (#19).
+        focus = Gtk.Button(icon_name="alarm-symbolic", tooltip_text=_("Focus"))
+        focus.update_property([Gtk.AccessibleProperty.LABEL], [_("Focus")])
+        focus.connect("clicked", lambda *_: window.show_focus(self.task_id))
+        header.pack_end(focus)
+        toolbar.add_top_bar(header)
         # The two things done most with a task, within thumb reach
         # (phosh-toolkit adaptive rule 10).
         actions = Gtk.Box(spacing=12, homogeneous=True, margin_top=6, margin_bottom=6,
@@ -39,120 +47,121 @@ class TaskPage(Adw.NavigationPage):
         self.set_child(toolbar)
 
         main = Adw.PreferencesGroup()
-        self.title_row = Adw.EntryRow(title="Title", show_apply_button=True)
+        self.title_row = Adw.EntryRow(title=_("Title"), show_apply_button=True)
         self.title_row.connect("apply", self._on_title)
         main.add(self.title_row)
         page.add(main)
 
-        time = Adw.PreferencesGroup(title="Time")
-        self.timer_row = Adw.ActionRow(title="Time Spent", activatable=True)
+        time = Adw.PreferencesGroup(title=_("Time"))
+        self.timer_row = Adw.ActionRow(title=_("Time Spent"), activatable=True)
         self.timer_row.connect("activated", self._on_edit_time)
         self.timer_row.add_suffix(Gtk.Image(icon_name="go-next-symbolic"))
         time.add(self.timer_row)
-        self.estimate_row = Adw.EntryRow(title="Estimate (like 1h 30m)",
+        self.estimate_row = Adw.EntryRow(title=_("Estimate (like 1h 30m)"),
                                          show_apply_button=True)
         self.estimate_row.connect("apply", self._on_estimate)
         time.add(self.estimate_row)
         page.add(time)
 
-        plan = Adw.PreferencesGroup(title="Planning")
-        self.today_row = Adw.SwitchRow(title="Today")
+        plan = Adw.PreferencesGroup(title=_("Planning"))
+        self.today_row = Adw.SwitchRow(title=_("Today"))
         self._today_handler = self.today_row.connect("notify::active", self._on_today)
         plan.add(self.today_row)
-        self.day_row = Adw.ActionRow(title="Planned For")
+        self.day_row = Adw.ActionRow(title=_("Planned For"))
         self.calendar = Gtk.Calendar()
         self._calendar_handler = self.calendar.connect("day-selected", self._on_day)
         popover = Gtk.Popover(child=self.calendar)
         day_button = Gtk.MenuButton(icon_name="x-office-calendar-symbolic",
                                     popover=popover, valign=Gtk.Align.CENTER,
-                                    tooltip_text="Choose Day")
+                                    tooltip_text=_("Choose Day"))
         day_button.add_css_class("flat")
-        day_button.update_property([Gtk.AccessibleProperty.LABEL], ["Choose Day"])
+        day_button.update_property([Gtk.AccessibleProperty.LABEL], [_("Choose Day")])
         self.clear_day = Gtk.Button(icon_name="edit-clear-symbolic",
-                                    valign=Gtk.Align.CENTER, tooltip_text="Unplan")
+                                    valign=Gtk.Align.CENTER, tooltip_text=_("Unplan"))
         self.clear_day.add_css_class("flat")
-        self.clear_day.update_property([Gtk.AccessibleProperty.LABEL], ["Unplan"])
+        self.clear_day.update_property([Gtk.AccessibleProperty.LABEL], [_("Unplan")])
         self.clear_day.connect("clicked", self._on_clear_day)
         self.day_row.add_suffix(self.clear_day)
         self.day_row.add_suffix(day_button)
         plan.add(self.day_row)
-        self.time_row = Adw.EntryRow(title="Time (like 14:30)", show_apply_button=True)
-        self.time_row.connect("apply", self._on_time)
+        self.time_row = Adw.ActionRow(title=_("Time"), activatable=True)
+        self.time_row.connect("activated", self._on_time)
+        self.clear_time = Gtk.Button(icon_name="edit-clear-symbolic",
+                                     valign=Gtk.Align.CENTER, tooltip_text=_("Remove Time"))
+        self.clear_time.add_css_class("flat")
+        self.clear_time.update_property([Gtk.AccessibleProperty.LABEL], [_("Remove Time")])
+        self.clear_time.connect("clicked", self._on_clear_time)
+        self.time_row.add_suffix(self.clear_time)
+        self.time_row.add_suffix(Gtk.Image(icon_name="go-next-symbolic"))
         plan.add(self.time_row)
         # A reminder is a lead before the time (pensum.store.reminders).
-        self.remind_row = Adw.ComboRow(title="Reminder", model=Gtk.StringList.new(
-            [label for _, label in reminders.OPTIONS]))
+        self.remind_row = Adw.ComboRow(title=_("Reminder"), model=Gtk.StringList.new(
+            reminders.option_labels()))
         self._remind_handler = self.remind_row.connect("notify::selected", self._on_remind)
         plan.add(self.remind_row)
-        self.deadline_row = Adw.ActionRow(title="Deadline")
+        self.deadline_row = Adw.ActionRow(title=_("Deadline"))
         self.deadline_calendar = Gtk.Calendar()
         self.deadline_calendar.connect("day-selected", self._on_deadline)
         deadline_button = Gtk.MenuButton(icon_name="x-office-calendar-symbolic",
                                          popover=Gtk.Popover(child=self.deadline_calendar),
                                          valign=Gtk.Align.CENTER,
-                                         tooltip_text="Choose Deadline")
+                                         tooltip_text=_("Choose Deadline"))
         deadline_button.add_css_class("flat")
-        deadline_button.update_property([Gtk.AccessibleProperty.LABEL], ["Choose Deadline"])
+        deadline_button.update_property([Gtk.AccessibleProperty.LABEL], [_("Choose Deadline")])
         self.clear_deadline = Gtk.Button(icon_name="edit-clear-symbolic",
                                          valign=Gtk.Align.CENTER,
-                                         tooltip_text="Remove Deadline")
+                                         tooltip_text=_("Remove Deadline"))
         self.clear_deadline.add_css_class("flat")
         self.clear_deadline.update_property([Gtk.AccessibleProperty.LABEL],
-                                            ["Remove Deadline"])
+                                            [_("Remove Deadline")])
         self.clear_deadline.connect("clicked", self._on_clear_deadline)
         self.deadline_row.add_suffix(self.clear_deadline)
         self.deadline_row.add_suffix(deadline_button)
         plan.add(self.deadline_row)
-        self.priority_row = Adw.ComboRow(title="Priority", model=Gtk.StringList.new(
-            ["None", "Low", "Medium", "High"]))
+        self.priority_row = Adw.ComboRow(title=_("Priority"), model=Gtk.StringList.new(
+            [_("None"), _("Low"), _("Medium"), _("High")]))
         self._priority_handler = self.priority_row.connect("notify::selected",
                                                            self._on_priority)
         plan.add(self.priority_row)
-        self.project_row = Adw.ComboRow(title="Project")
+        self.project_row = Adw.ComboRow(title=_("Project"))
         self._project_ids = []
         self._project_titles = None
         self._project_handler = self.project_row.connect("notify::selected",
                                                          self._on_project)
         plan.add(self.project_row)
-        self.tags_row = Adw.ActionRow(title="Tags", activatable=True)
+        self.tags_row = Adw.ActionRow(title=_("Tags"), activatable=True)
         self.tags_row.add_suffix(Gtk.Image(icon_name="go-next-symbolic"))
         self.tags_row.connect("activated", self._on_tags)
         plan.add(self.tags_row)
-        self.repeat_row = Adw.ActionRow(title="Repeat", activatable=True)
+        self.repeat_row = Adw.ActionRow(title=_("Repeat"), activatable=True)
         self.repeat_row.add_suffix(Gtk.Image(icon_name="go-next-symbolic"))
         self.repeat_row.connect("activated", self._on_repeat)
         plan.add(self.repeat_row)
         page.add(plan)
 
-        notes = Adw.PreferencesGroup(title="Notes")
-        self.notes = Gtk.TextView(wrap_mode=Gtk.WrapMode.WORD_CHAR, top_margin=12,
-                                  bottom_margin=12, left_margin=12, right_margin=12)
-        self.notes.update_property([Gtk.AccessibleProperty.LABEL], ["Notes"])
-        self.notes.set_size_request(-1, 120)
-        self.notes.add_css_class("pensum-notes")
-        frame = Gtk.Frame(child=self.notes)
-        frame.add_css_class("view")
-        notes.add(frame)
-        self._notes_handler = self.notes.get_buffer().connect("changed", self._on_notes)
-        page.add(notes)
+        self.notes = NotesBox(window, task_id)
+        page.add(self.notes)
+        from pensum.ui.attachments_group import AttachmentsGroup
+        self.attachments = AttachmentsGroup(window, task_id)
+        page.add(self.attachments)
 
-        self.subs = Adw.PreferencesGroup(title="Subtasks")
+        self.subs = Adw.PreferencesGroup(title=_("Subtasks"))
         self.sub_list = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
         self.sub_list.add_css_class("boxed-list")
         self.subs.add(self.sub_list)
-        self.sub_entry = Adw.EntryRow(title="Add Subtask", show_apply_button=True)
+        self.sub_entry = Adw.EntryRow(title=_("Add Subtask"), show_apply_button=True)
         self.sub_entry.connect("entry-activated", self._on_add_sub)
         self.sub_entry.connect("apply", self._on_add_sub)
         page.add(self.subs)
 
         danger = Adw.PreferencesGroup()
-        delete = Gtk.Button(label="Delete Task", halign=Gtk.Align.CENTER)
+        delete = Gtk.Button(label=_("Delete Task"), halign=Gtk.Align.CENTER)
         delete.add_css_class("pill")
         delete.add_css_class("destructive-action")
         delete.connect("clicked", self._on_delete)
         danger.add(delete)
         page.add(danger)
-        self.connect("hidden", lambda *_: self._save_notes())
+        self.connect("hidden", lambda *_: self.notes.save())
         self.refresh(initial=True)
 
     @property
@@ -166,19 +175,21 @@ class TaskPage(Adw.NavigationPage):
         if task is None:
             return
         ds = self.window.ds
+        self.attachments.refresh()
         if initial or not self.title_row.has_focus():
             self.title_row.set_text(task.get("title") or "")
-        self.set_title(task.get("title") or "Task")
+        self.set_title(task.get("title") or _("Task"))
         done = bool(task.get("isDone"))
         with self._blocked(self.done_button, self._done_handler):
             self.done_button.set_active(done)
-        self.done_label.set_label("Done" if done else "Mark as Done")
+        self.done_label.set_label(_("Done") if done else _("Mark as Done"))
 
         if initial:
             estimate = task.get("timeEstimate", 0)
             self.estimate_row.set_text(duration.format_short(estimate) if estimate else "")
-            with self._blocked(self.notes.get_buffer(), self._notes_handler):
-                self.notes.get_buffer().set_text(task.get("notes") or "")
+            self.notes.load()
+        else:
+            self.notes.sync()
         is_parent = bool(task.get("subTaskIds"))
         self.estimate_row.set_sensitive(not is_parent)
         self.tick()
@@ -191,12 +202,12 @@ class TaskPage(Adw.NavigationPage):
         day = task.get("dueDay")
         if task.get("dueWithTime"):
             day = dates.day_str(task["dueWithTime"])
-        self.day_row.set_subtitle(self._day_label(day, today) if day else "Not planned")
+        self.day_row.set_subtitle(self._day_label(day, today) if day else _("Not planned"))
         self.clear_day.set_visible(bool(day))
-        if initial or not self.time_row.has_focus():
-            due = task.get("dueWithTime")
-            self.time_row.set_text(datetime.fromtimestamp(due / 1000).strftime("%H:%M")
-                                   if due else "")
+        due = task.get("dueWithTime")
+        self.time_row.set_subtitle(datetime.fromtimestamp(due / 1000).strftime("%H:%M")
+                                   if due else _("No time"))
+        self.clear_time.set_visible(bool(due))
         option = reminders.option_of(task)
         keys = [key for key, _ in reminders.OPTIONS]
         with self._blocked(self.remind_row, self._remind_handler):
@@ -204,20 +215,21 @@ class TaskPage(Adw.NavigationPage):
         self.remind_row.set_sensitive(bool(task.get("dueWithTime")))
         remind = task.get("remindAt")
         self.remind_row.set_subtitle(
-            "Set a time first" if not task.get("dueWithTime") else
-            "At " + datetime.fromtimestamp(remind / 1000).strftime("%H:%M")
+            _("Set a time first") if not task.get("dueWithTime") else
+            _("At {time}").format(
+                time=datetime.fromtimestamp(remind / 1000).strftime("%H:%M"))
             if option == "custom" else "")
 
         deadline = tasks.deadline_day(ds, task)
         self.deadline_row.set_subtitle(self._day_label(deadline, today) if deadline
-                                       else "None")
+                                       else _("None"))
         self.clear_deadline.set_visible(bool(deadline))
         with self._blocked(self.priority_row, self._priority_handler):
             self.priority_row.set_selected(tasks.priority_level(task))
         top_level = not task.get("parentId")
         self.project_row.set_visible(top_level)
         projects = ds.projects()
-        titles = [p.get("title") or "Untitled" for p in projects]
+        titles = [p.get("title") or _("Untitled") for p in projects]
         with self._blocked(self.project_row, self._project_handler):
             # Replacing the model while the row is still handling a
             # selection crashes GTK, so only replace it when it changed.
@@ -227,9 +239,9 @@ class TaskPage(Adw.NavigationPage):
             self._project_ids = [p["id"] for p in projects]
             if task.get("projectId") in self._project_ids:
                 self.project_row.set_selected(self._project_ids.index(task["projectId"]))
-        names = [ds.tag_entities[t].get("title") or "Untitled"
+        names = [ds.tag_entities[t].get("title") or _("Untitled")
                  for t in task.get("tagIds", ()) if t in ds.tag_entities]
-        self.tags_row.set_subtitle(GLib.markup_escape_text(", ".join(names) or "None"))
+        self.tags_row.set_subtitle(GLib.markup_escape_text(", ".join(names) or _("None")))
 
         self.subs.set_visible(top_level)
         self.sub_list.remove_all()
@@ -243,7 +255,7 @@ class TaskPage(Adw.NavigationPage):
     def focus_row(self, task_id):
         for row in self.sub_rows:
             if row.task_id == task_id:
-                row.grab_focus()
+                scroll.focus_in_place(row)
                 return True
         return False
 
@@ -257,11 +269,11 @@ class TaskPage(Adw.NavigationPage):
         extra = timer.unbooked_ms() if running or sub_running else 0
         spent = task.get("timeSpent", 0) + extra
         today = (task.get("timeSpentOnDay") or {}).get(self.window.ds.today(), 0) + extra
-        self.timer_row.set_subtitle(f"{duration.format_short(spent)} in total, "
-                                    f"{duration.format_short(today)} today")
+        self.timer_row.set_subtitle(_("{total} in total, {today} today").format(
+            total=duration.format_short(spent), today=duration.format_short(today)))
         trackable = not task.get("subTaskIds") and not task.get("isDone")
         self.play.set_visible(trackable or running)
-        self.play_label.set_label("Stop Timer" if running else "Start Timer")
+        self.play_label.set_label(_("Stop Timer") if running else _("Start Timer"))
         if running:
             self.play.add_css_class("suggested-action")
         else:
@@ -273,14 +285,14 @@ class TaskPage(Adw.NavigationPage):
     @staticmethod
     def _day_label(day, today):
         if day == today:
-            return "Today"
+            return _("Today")
         if day == dates.shift_day(today, 1):
-            return "Tomorrow"
+            return _("Tomorrow")
         value = dates.parse_day(day)
         label = value.strftime("%a, %-d %b")
         if value.year != dates.parse_day(today).year:
             label += value.strftime(" %Y")
-        return label + (" (overdue)" if day < today else "")
+        return _("{day} (overdue)").format(day=label) if day < today else label
 
     class _blocked:
         def __init__(self, obj, handler):
@@ -307,10 +319,10 @@ class TaskPage(Adw.NavigationPage):
         tasks.set_done(self.window.ds, self.task_id, row.get_active())
         self._change()
 
-    def _on_edit_time(self, *_):
+    def _on_edit_time(self, *args):
         task = self.task
         if task is None or task.get("subTaskIds"):
-            self.window.toast("A parent's time is the sum of its subtasks'")
+            self.window.toast(_("A parent's time is the sum of its subtasks'"))
             return
         from pensum.ui.time_dialog import TimeDialog
         TimeDialog(self.window, self.task_id).present(self.window)
@@ -318,7 +330,7 @@ class TaskPage(Adw.NavigationPage):
     def _on_estimate(self, row):
         ms = duration.parse(row.get_text())
         if ms is None:
-            self.window.toast("Write the estimate like 1h 30m or 45m")
+            self.window.toast(_("Write the estimate like 1h 30m or 45m"))
             return
         tasks.set_estimate(self.window.ds, self.task_id, ms)
         row.set_text(duration.format_short(ms) if ms else "")
@@ -326,30 +338,34 @@ class TaskPage(Adw.NavigationPage):
 
     def _on_today(self, row, *_):
         ds = self.window.ds
-        tasks.schedule_day(ds, self.task_id, ds.today() if row.get_active() else None)
+        planning.schedule_day(ds, self.task_id, ds.today() if row.get_active() else None)
         self._change()
 
     def _on_day(self, calendar):
         value = calendar.get_date()
         day = datetime(value.get_year(), value.get_month(),
                        value.get_day_of_month()).strftime("%Y-%m-%d")
-        tasks.schedule_day(self.window.ds, self.task_id, day)
+        planning.schedule_day(self.window.ds, self.task_id, day)
         self._change()
 
-    def _on_time(self, row):
-        text = row.get_text().strip()
+    def _on_time(self, *_):
+        """The picker starts at the task's time, else at the next full hour."""
+        from pensum.ui.time_picker import TimePicker
+        due = (self.task or {}).get("dueWithTime")
+        start = datetime.fromtimestamp(due / 1000) if due else datetime.now()
+        hours, minutes = ((start.hour, start.minute) if due
+                          else ((start.hour + 1) % 24, 0))
+        TimePicker(hours, minutes, self.set_time).present(self.window)
+
+    def set_time(self, hours, minutes):
+        """Plan the task at a time on its planned day, else today."""
         ds = self.window.ds
-        if not text:
-            tasks.clear_time(ds, self.task_id)
-            self._change()
-            return
-        try:
-            moment = datetime.strptime(text.replace(".", ":"), "%H:%M")
-        except ValueError:
-            self.window.toast("Write the time like 14:30")
-            return
         day = ds.planned_day(self.task) or ds.today()
-        tasks.schedule_time(ds, self.task_id, day, moment.hour, moment.minute)
+        planning.schedule_time(ds, self.task_id, day, hours, minutes)
+        self._change()
+
+    def _on_clear_time(self, *_):
+        planning.clear_time(self.window.ds, self.task_id)
         self._change()
 
     def _on_remind(self, row, *_):
@@ -363,14 +379,14 @@ class TaskPage(Adw.NavigationPage):
         from pensum.store.repeat import rules
         from pensum.ui.repeat_page import describe
         cfg = rules.rule_of(ds, task)
-        return describe(cfg) if cfg else "Never"
+        return describe(cfg) if cfg else _("Never")
 
     def _on_repeat(self, *_):
         from pensum.ui.repeat_page import RepeatPage
         self.window.nav.push(RepeatPage(self.window, self.task_id))
 
     def _on_clear_day(self, *_):
-        tasks.schedule_day(self.window.ds, self.task_id, None)
+        planning.schedule_day(self.window.ds, self.task_id, None)
         self._change()
 
     def _on_deadline(self, calendar):
@@ -405,24 +421,6 @@ class TaskPage(Adw.NavigationPage):
         from pensum.ui.tags_dialog import TagsDialog
         TagsDialog(self.window, self.task_id).present(self.window)
 
-    def _on_notes(self, *_):
-        if self._notes_source is None:
-            self._notes_source = GLib.timeout_add(600, self._save_notes)
-
-    def _save_notes(self):
-        if self._notes_source is not None:
-            GLib.source_remove(self._notes_source)
-            self._notes_source = None
-        task = self.task
-        if task is None:
-            return GLib.SOURCE_REMOVE
-        buffer = self.notes.get_buffer()
-        text = buffer.get_text(buffer.get_start_iter(), buffer.get_end_iter(), False)
-        if text != (task.get("notes") or ""):
-            tasks.update(self.window.ds, self.task_id, notes=text)
-            self._change()
-        return GLib.SOURCE_REMOVE
-
     def _on_add_sub(self, entry):
         title = entry.get_text().strip()
         if not title:
@@ -432,7 +430,7 @@ class TaskPage(Adw.NavigationPage):
         self._change()
         entry.grab_focus()
 
-    def _on_delete(self, *_):
+    def _on_delete(self, *args):
         """Delete at once and offer Undo, instead of asking first (GNOME
         HIG: undo is better than a confirmation dialog)."""
         task = self.task
@@ -440,7 +438,7 @@ class TaskPage(Adw.NavigationPage):
             return
         if self.window.timer.task_id in [self.task_id] + task.get("subTaskIds", []):
             self.window.timer.stop()
-        title = task.get("title") or "Untitled"
+        title = task.get("title") or _("Untitled")
         self.window.nav.pop()
-        self.window.undoable(f"“{title}” deleted",
+        self.window.undoable(_("“{title}” deleted").format(title=title),
                              lambda: tasks.delete(self.window.ds, self.task_id))

@@ -28,7 +28,7 @@ sys.path.insert(0, str(ROOT))
 from pensum import demo  # noqa: E402
 from pensum.game import records  # noqa: E402
 from pensum.store import (archive, backup, contexts, dates, defaults,  # noqa: E402
-                          incoming, tasks, tracking, validate)
+                          incoming, planning, tasks, tracking, validate)
 from pensum.store.dataset import Context, Dataset  # noqa: E402
 from pensum.store.repeat import instances, rules  # noqa: E402
 
@@ -59,7 +59,7 @@ def changed_fixture(now):
     tasks.set_done(ds, first["id"], True, now)
 
     later = tasks.add_task(ds, "Real app planned", Context("project", garden["id"]), now)
-    tasks.schedule_day(ds, later["id"], dates.shift_day(today, 2), now)
+    planning.schedule_day(ds, later["id"], dates.shift_day(today, 2), now)
 
     for title in ("Real app lost one", "Real app lost two"):
         tasks.add_task(ds, title, Context("project", gone["id"]), now)

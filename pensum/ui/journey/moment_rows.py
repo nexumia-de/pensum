@@ -7,6 +7,7 @@ import re
 from gi.repository import Adw
 
 from pensum.game.content import t
+from pensum.i18n import _
 
 MAX_WORDS = 40
 TIME = re.compile(r"^([01]?\d|2[0-3]):([0-5]\d)$")
@@ -30,7 +31,7 @@ class MomentRows:
 
     def __init__(self, group, words="", time=""):
         self.routine = limit(Adw.EntryRow(title=t("ui.moment.routine"), text=words), MAX_WORDS)
-        self.time = limit(Adw.EntryRow(title=t("ui.moment.time") + " (24 h, like 21:30)",
+        self.time = limit(Adw.EntryRow(title=_("{when} (24 h, like 21:30)").format(when=t("ui.moment.time")),
                                        text=time), 5)
         group.add(self.routine)
         group.add(self.time)

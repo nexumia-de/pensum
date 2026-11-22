@@ -63,6 +63,12 @@ For the analysis in [data model](super-productivity-data.md):
 git clone --depth 1 https://github.com/johannesjo/super-productivity ../super-productivity
 ```
 
+Single files at a commit can be read from `raw.githubusercontent.com`
+(reached on 2026-11-21); the source archive from `codeload.github.com`
+was blocked by the proxy that day (403), so a search over the whole
+source needs the clone. A download can come back empty with status 200
+(seen twice that day); check the size before trusting a search in it.
+
 Read it, never copy code from it; values are transcribed as data
 (`pensum/store/sp-defaults.json`), fixtures copied with their licence.
 
@@ -116,6 +122,14 @@ a script with 502, so the test loads the page up to three times),
 without login on 2026-11-12.
 
 # Sync test
+
+On the cloud image Playwright's Chromium is preinstalled for another
+Playwright version; a folder of links under the version
+`tests/real_app` asks for makes it run (2026-11-22, 2 min against the
+live web app): link every entry of `/opt/pw-browsers` into a folder,
+add `chromium_headless_shell-<wanted>` pointing to the installed one,
+and set `PLAYWRIGHT_BROWSERS_PATH` to that folder. `WSGIDAV` points to a
+virtualenv with `requirements-webdav.txt`.
 
 `tests/real_app/run_sync.sh` checks reading a sync folder against a real
 Super Productivity ([what it checks](super-productivity-sync.md#checked-against-a-real-super-productivity)):

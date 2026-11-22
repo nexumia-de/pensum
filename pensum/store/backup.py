@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 
+from pensum.i18n import _
 from pensum.store import defaults
 
 # Slices a backup must carry; the others are filled with their empty
@@ -21,35 +22,37 @@ def parse(text):
     try:
         raw = json.loads(text)
     except ValueError as error:
-        raise BackupError("The file is not a Super Productivity backup "
-                          "(no JSON).") from error
+        raise BackupError(_("The file is not a Super Productivity backup "
+                            "(no JSON).")) from error
     if not isinstance(raw, dict):
-        raise BackupError("The file is not a Super Productivity backup.")
+        raise BackupError(_("The file is not a Super Productivity backup."))
     if "data" in raw and "crossModelVersion" in raw:
         version = raw.get("crossModelVersion")
         if not isinstance(version, (int, float)):
-            raise BackupError("The backup has no data model version.")
+            raise BackupError(_("The backup has no data model version."))
         if version > defaults.CROSS_MODEL_VERSION:
             raise BackupError(
-                f"The backup was made by a newer Super Productivity (data "
-                f"model {version}). Update Pensum to open it.")
+                _("The backup was made by a newer Super Productivity (data "
+                  "model {version}). Update Day Planner to open it.").format(
+                      version=version))
         if version < defaults.CROSS_MODEL_VERSION:
             raise BackupError(
-                f"The backup uses the old data model {version}. Import it "
-                f"into Super Productivity once and export it again.")
+                _("The backup uses the old data model {version}. Import it "
+                  "into Super Productivity once and export it again.").format(
+                      version=version))
         data = raw["data"]
     else:
         # Automatic backups of the desktop app hold the bare dataset.
         data = raw
     if not isinstance(data, dict):
-        raise BackupError("The file is not a Super Productivity backup.")
+        raise BackupError(_("The file is not a Super Productivity backup."))
     missing = [name for name in CORE_SLICES if not isinstance(data.get(name), dict)]
     if missing:
-        raise BackupError("The file is not a Super Productivity backup "
-                          f"(missing {', '.join(missing)}).")
+        raise BackupError(_("The file is not a Super Productivity backup "
+                            "(missing {names}).").format(names=", ".join(missing)))
     if not isinstance(data["task"].get("entities"), dict):
-        raise BackupError("The backup uses an old data model. Import it into "
-                          "Super Productivity once and export it again.")
+        raise BackupError(_("The backup uses an old data model. Import it into "
+                            "Super Productivity once and export it again."))
     for name, empty in defaults.slices().items():
         if data.get(name) is None:
             data[name] = empty
@@ -60,7 +63,7 @@ def read(path):
     try:
         text = Path(path).read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError) as error:
-        raise BackupError(f"The file can't be read: {error}") from error
+        raise BackupError(_("The file can't be read: {reason}").format(reason=error)) from error
     return parse(text)
 
 

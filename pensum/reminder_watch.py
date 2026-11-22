@@ -11,6 +11,7 @@ import logging
 from gi.repository import Gio, GLib
 
 from pensum import background
+from pensum.i18n import _
 from pensum.store import dates, reminders, tasks
 from pensum.store.repeat import instances
 
@@ -107,17 +108,17 @@ class ReminderWatch:
     # --- notifications -------------------------------------------------------
 
     def _notify(self, task):
-        note = Gio.Notification.new(task.get("title") or "Reminder")
+        note = Gio.Notification.new(task.get("title") or _("Reminder"))
         due = task.get("dueWithTime")
         if due:
-            note.set_body("Planned at " + GLib.DateTime.new_from_unix_local(
-                due // 1000).format("%H:%M"))
+            note.set_body(_("Planned at {time}").format(
+                time=GLib.DateTime.new_from_unix_local(due // 1000).format("%H:%M")))
         note.set_priority(Gio.NotificationPriority.HIGH)
         target = GLib.Variant("s", task["id"])
         note.set_default_action_and_target("app.reminder-open", target)
-        note.add_button_with_target("Done", "app.reminder-done", target)
-        note.add_button_with_target(f"Snooze {reminders.SNOOZE_MINUTES} min",
-                                    "app.reminder-snooze", target)
+        note.add_button_with_target(_("Done"), "app.reminder-done", target)
+        snooze = _("Snooze {minutes} min").format(minutes=reminders.SNOOZE_MINUTES)
+        note.add_button_with_target(snooze, "app.reminder-snooze", target)
         self.app.send_notification(f"reminder-{task['id']}", note)
         log.info("reminder shown for task %s", task["id"])
 

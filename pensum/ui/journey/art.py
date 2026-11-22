@@ -29,6 +29,8 @@ gi.require_version("Rsvg", "2.0")
 from gi.repository import Adw, GLib, Gtk, Rsvg  # noqa: E402
 
 from pensum.game import content  # noqa: E402
+from pensum.i18n import _
+from pensum.ui.journey import drawing  # noqa: E402
 
 ROLES = ("fg", "accent", "dim", "bg", "tint", "tint-strong")
 DIM = 0.3  # share of the text colour in dim
@@ -94,7 +96,7 @@ def colours(widget, card=False, hue=None):
 def _host_colours(widget, card):
     below = surface(widget, card)
     fg = widget.get_color()
-    acc = Gtk.Label(css_classes=["accent"]).get_color()
+    acc = drawing.accent()
     text = _over((fg.red, fg.green, fg.blue, fg.alpha), below)
     accent = _over((acc.red, acc.green, acc.blue, acc.alpha), below)
     return {
@@ -224,7 +226,7 @@ def ladder_scene(ladder, version, progress=0, ready=False, versions=None, gradua
     shown = 0 if last else marker_elements(ladder) if ready else elements_shown(ladder, progress)
     title = build_words(ladder, version)
     if graduated:
-        title += ", the lantern lit"
+        title = _("{title}, the lantern lit").format(title=title)
     pictures = []
     for place in ladder["pictures"]:
         slot = place.get("slot")

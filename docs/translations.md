@@ -61,9 +61,22 @@ page „Repeat“) until it is translated.
   `ui.art.ladder.*` and `ui.art.hue.*`), and "A hut stands" uses
   QuestArc's own words and grammar (`ui.build.words.*`,
   `ui.grammar.singular`).
-- **Step 2, open** (#79): the task manager's pages (lists, task page,
-  Repeat page, search, sync, preferences, dialogs and toasts), the
-  reminder notification, the `.desktop` file and the metainfo.
+- **Step 2, done** (#79): the task manager's pages (lists, task page,
+  Repeat page, search, archived projects, sync, preferences, dialogs and
+  toasts), the About dialog, the reminder notification and the
+  background reason, the reminder options, and the error messages of
+  backup and sync files that the page shows verbatim. The Repeat page's
+  sentences are whole msgids with `{n}`, `{rule}` and `{date}`
+  placeholders; ordinals are `{n}th`, `{n}st`, `{n}nd`, `{n}rd` (German
+  "{n}."). Counts have no plural forms: a "1 …" text and a "{count} …"
+  text are chosen in the code.
+- **Still English**: the `.desktop` file and the metainfo (they are
+  read as plain files by the nightly `sed` in `meson.build`, the CI
+  validators, `tests/test_metadata.py` and the release script; making
+  them gettext templates is a separate change), dates and months
+  written by `strftime` (they follow the process locale, not the
+  catalogue), the duration units "h" and "m", and the names the user
+  gave projects, tags and tasks.
 
 ## Found on the way
 

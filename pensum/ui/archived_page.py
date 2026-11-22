@@ -2,20 +2,21 @@
 sidebar."""
 from gi.repository import Adw, GLib, Gtk
 
+from pensum.i18n import _
 from pensum.store import contexts
 from pensum.store.dataset import Context
 
 
 class ArchivedPage(Adw.NavigationPage):
     def __init__(self, window):
-        super().__init__(title="Archived Projects", tag="archived")
+        super().__init__(title=_("Archived Projects"), tag="archived")
         self.window = window
         toolbar = Adw.ToolbarView()
         toolbar.add_top_bar(Adw.HeaderBar())
         self.page = Adw.PreferencesPage()
         self.status = Adw.StatusPage(icon_name="folder-symbolic",
-                                     title="No Archived Projects",
-                                     description="Archive a project from its list menu.")
+                                     title=_("No Archived Projects"),
+                                     description=_("Archive a project from its list menu."))
         self.stack = Gtk.Stack()
         self.stack.add_named(self.page, "list")
         self.stack.add_named(self.status, "empty")
@@ -33,10 +34,12 @@ class ArchivedPage(Adw.NavigationPage):
             open_count = sum(1 for i in project.get("taskIds", ())
                              if not (self.window.ds.task(i) or {}).get("isDone", True))
             row = Adw.ActionRow(
-                title=GLib.markup_escape_text(project.get("title") or "Untitled"),
-                subtitle=f"{open_count} open tasks", activatable=True)
+                title=GLib.markup_escape_text(project.get("title") or _("Untitled")),
+                subtitle=(_("{count} open tasks").format(count=open_count)
+                      if open_count != 1 else _("1 open task")),
+                activatable=True)
             row.connect("activated", self._on_open, project["id"])
-            button = Gtk.Button(label="Unarchive", valign=Gtk.Align.CENTER)
+            button = Gtk.Button(label=_("Unarchive"), valign=Gtk.Align.CENTER)
             button.connect("clicked", self._on_unarchive, project["id"])
             row.add_suffix(button)
             self.group.add(row)
@@ -48,5 +51,5 @@ class ArchivedPage(Adw.NavigationPage):
 
     def _on_unarchive(self, button, project_id):
         contexts.set_archived(self.window.ds, project_id, False)
-        self.window.toast("Project back in the sidebar")
+        self.window.toast(_("Project back in the sidebar"))
         self.window.changed()
