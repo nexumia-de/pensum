@@ -1,21 +1,18 @@
-"""Read a Super Productivity sync folder (WebDAV, Nextcloud or a folder on
-this device), show what it holds and offer it as an import. Pensum only
-reads the folder (pensum.sync); the import replaces Pensum's data like a
-backup import."""
+"""Read a Super Productivity sync folder (WebDAV, Nextcloud, a folder on
+this device or a GitHub repository kept by Git Sync; the form is
+pensum.ui.sync_source), show what it holds and offer it as an import.
+Reading never changes the folder (pensum.sync); the import replaces
+Pensum's data like a backup import; Send Changes is pensum.ui.sync_send."""
 import logging
 import threading
 
 from gi.repository import Adw, GLib, Gtk
 
 from pensum.i18n import _
-from pensum.sync import SyncError, changes, keyring, reader, summary
-from pensum.sync.local import LocalFolder
-from pensum.sync.webdav import WebDav
+from pensum.sync import SyncError, changes, reader, summary
+from pensum.ui import sync_source
 
 log = logging.getLogger("pensum.sync")
-
-KINDS = ("webdav", "local")
-
 
 class SyncPage(Adw.NavigationPage):
     def __init__(self, window):
@@ -36,7 +33,7 @@ class SyncPage(Adw.NavigationPage):
         self.banner = Adw.Banner()
         toolbar.add_top_bar(self.banner)
         page = Adw.PreferencesPage()
-        page.add(self._folder_group())
+        page.add(sync_source.build_group(self))
         encryption = Adw.PreferencesGroup(
             description=_("Only when encryption is switched on in Super "
                           "Productivity's sync settings."))
@@ -63,37 +60,6 @@ class SyncPage(Adw.NavigationPage):
 
     # --- layout ---------------------------------------------------------
 
-    def _folder_group(self):
-        group = Adw.PreferencesGroup(
-            description=_("Read the tasks Super Productivity keeps in its sync "
-                          "folder. Day Planner only reads the folder and never "
-                          "changes it."))
-        s = self.settings
-        self.kind_row = Adw.ComboRow(title=_("Kind"), model=Gtk.StringList.new(
-            [_("WebDAV or Nextcloud"), _("Folder on This Device")]))
-        self.kind_row.set_selected(KINDS.index(s.sync_kind) if s.sync_kind in KINDS else 0)
-        self.kind_row.connect("notify::selected", self._on_kind_changed)
-        group.add(self.kind_row)
-        self.url_row = Adw.EntryRow(title=_("Server Address"), text=s.sync_url,
-                                    input_purpose=Gtk.InputPurpose.URL)
-        self.user_row = Adw.EntryRow(title=_("User Name"), text=s.sync_user)
-        self.password_row = Adw.PasswordEntryRow(title=_("Password"))
-        self.folder_row = Adw.EntryRow(title=_("Folder on the Server"), text=s.sync_folder)
-        self.webdav_rows = (self.url_row, self.user_row, self.password_row, self.folder_row)
-        for row in self.webdav_rows:
-            group.add(row)
-        self.local_row = Adw.ActionRow(title=_("Folder"),
-                                       subtitle=s.sync_local_path or _("None chosen"))
-        choose = Gtk.Button(label=_("Choose…"), valign=Gtk.Align.CENTER)
-        choose.connect("clicked", self._on_choose)
-        self.local_row.add_suffix(choose)
-        group.add(self.local_row)
-        if s.sync_url and s.sync_user:
-            password = keyring.lookup(s.sync_url, s.sync_user)
-            if password:
-                self.password_row.set_text(password)
-        return group
-
     def _bottom_bar(self):
         bar = Gtk.Box(spacing=12, halign=Gtk.Align.CENTER,
                       margin_top=8, margin_bottom=8, margin_start=12, margin_end=12)
@@ -115,60 +81,18 @@ class SyncPage(Adw.NavigationPage):
         sync_send.send(self, wait)
 
     def _kind(self):
-        return KINDS[self.kind_row.get_selected()]
+        return sync_source.kind(self)
 
     def _on_kind_changed(self, *_):
-        webdav = self._kind() == "webdav"
-        for row in self.webdav_rows:
-            row.set_visible(webdav)
-        self.local_row.set_visible(not webdav)
-
-    def _on_choose(self, *args):
-        dialog = Gtk.FileDialog(title=_("Choose the Sync Folder"), modal=True)
-
-        def chosen(dialog, result):
-            try:
-                folder = dialog.select_folder_finish(result)
-            except GLib.Error:
-                return  # cancelled
-            self.settings.sync_local_path = folder.get_path() or ""
-            self.local_row.set_subtitle(self.settings.sync_local_path or _("None chosen"))
-            self.window.save_settings()
-
-        dialog.select_folder(self.window, None, chosen)
+        sync_source.on_kind_changed(self)
 
     # --- reading --------------------------------------------------------
 
     def _source(self):
-        """The source from the form, and a key that names it; remembers
-        the form (the password only in the keyring)."""
-        s = self.settings
-        s.sync_kind = self._kind()
-        if s.sync_kind == "local":
-            if not s.sync_local_path:
-                raise SyncError(_("Choose the folder first."))
-            self.window.save_settings()
-            return LocalFolder(s.sync_local_path), f"local:{s.sync_local_path}"
-        s.sync_url = self.url_row.get_text().strip()
-        s.sync_user = self.user_row.get_text().strip()
-        s.sync_folder = self.folder_row.get_text().strip()
-        password = self.password_row.get_text()
-        if not s.sync_url:
-            raise SyncError(_("Enter the server address."))
-        self.window.save_settings()
-        if s.sync_user and password:
-            keyring.store(s.sync_url, s.sync_user, password)
-        source = WebDav(s.sync_url, s.sync_user, password, s.sync_folder)
-        return source, f"webdav:{s.sync_url}|{s.sync_user}|{s.sync_folder}"
+        return sync_source.source(self)
 
     def _encryption_password(self, key):
-        """The password typed, remembered in the keyring for this source,
-        or the one remembered before."""
-        typed = self.encryption_row.get_text()
-        if typed:
-            keyring.store(f"encryption:{key}", "", typed)
-            return typed
-        return keyring.lookup(f"encryption:{key}", "")
+        return sync_source.encryption_password(self, key)
 
     def read(self, wait=False):
         """Read the folder in a thread; `wait` reads at once (tests)."""
@@ -184,21 +108,24 @@ class SyncPage(Adw.NavigationPage):
         self.spinner.set_visible(True)
 
         def work():
+            stale = False
             try:
                 result = reader.read(source, password)
+                # Git Sync: Day Planner's last send did not reach the desktop.
+                stale = bool(getattr(source, "is_stale", None) and source.is_stale())
             except SyncError as error:
                 result = error
             if wait:
-                self._done(key, result)
+                self._done(key, result, stale)
             else:
-                GLib.idle_add(self._done, key, result)
+                GLib.idle_add(self._done, key, result, stale)
 
         if wait:
             work()
         else:
             threading.Thread(target=work, daemon=True).start()
 
-    def _done(self, key, result):
+    def _done(self, key, result, stale=False):
         self.read_button.set_sensitive(True)
         self.spinner.set_visible(False)
         if isinstance(result, SyncError):
@@ -213,6 +140,9 @@ class SyncPage(Adw.NavigationPage):
         self.window.save_settings()
         self.snapshot, self.source_key = result, key
         self._show(result)
+        if stale:
+            self._show_error(_("Your last sent changes did not reach Super "
+                               "Productivity. Send Changes sends them again."))
         return GLib.SOURCE_REMOVE
 
     def _show_error(self, message):

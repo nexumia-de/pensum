@@ -19,7 +19,8 @@ pensum.sync and check, for round N:
 
 PENSUM_DAV_URL is the WebDAV server (default http://127.0.0.1:2345/),
 PENSUM_DAV_ROOT its directory on disk (default DIR/dav), PENSUM_DAV_FOLDER
-the sync folder (default super-productivity); with PENSUM_SYNC_PASSWORD
+the sync folder (default super-productivity), PENSUM_SYNC_SOURCE=github
+reads through the GitHub stand-in instead (test_source.py); with PENSUM_SYNC_PASSWORD
 the files must be compressed and encrypted, a wrong password must fail.
 Prints ids and counts, never titles. Exits 1 on a difference.
 """
@@ -41,7 +42,7 @@ from pensum.store.dataset import Dataset  # noqa: E402
 from pensum.store.files import Files  # noqa: E402
 from pensum.sync import SyncError, changes, crypto, envelope, reader, replay  # noqa: E402
 from pensum.sync.local import LocalFolder  # noqa: E402
-from pensum.sync.webdav import WebDav  # noqa: E402
+from test_source import sync_source  # noqa: E402
 
 FOLDER = os.environ.get("PENSUM_DAV_FOLDER") or "super-productivity"
 PASSWORD = os.environ.get("PENSUM_SYNC_PASSWORD") or None
@@ -221,7 +222,6 @@ def follows(snapshot, seen, expected):
 def main(directory, round_):
     directory = Path(directory)
     dav = Path(os.environ.get("PENSUM_DAV_ROOT") or directory / "dav")
-    url = os.environ.get("PENSUM_DAV_URL", "http://127.0.0.1:2345/")
     failures = []
 
     def check(what, problems):
@@ -233,13 +233,14 @@ def main(directory, round_):
             print(f"ok: {what}")
 
     before = hashes(dav)
-    over_webdav = reader.read(WebDav(url, "test", "test", FOLDER), PASSWORD)
+    source, source_name = sync_source()
+    over_webdav = reader.read(source, PASSWORD)
     on_disk = reader.read(LocalFolder(dav / FOLDER), PASSWORD)
     after = hashes(dav)
     check("folder unchanged by reading", [] if before == after else
           [f"{len(set(before.items()) ^ set(after.items()))} file entries differ"])
     # Replayed ops (v3) carry the time of reading in `modified`.
-    check("WebDAV and disk read the same",
+    check(f"{source_name} and disk read the same",
           compare_states(over_webdav.data, on_disk.data)
           + ([] if over_webdav.sync_version == on_disk.sync_version else ["syncVersion"]))
     snapshot = over_webdav

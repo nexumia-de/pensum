@@ -1,7 +1,7 @@
 """The sync test's writing step (#30, docs/super-productivity-sync.md):
 after round 2, Pensum takes the folder's data as its base, edits test
 tasks the way its UI does (a new title, done, an estimate) and sends
-them with pensum.sync.writer over WebDAV; Super Productivity's round 3
+them with pensum.sync.writer over WebDAV (or GitHub, test_source.py); Super Productivity's round 3
 must then show them. Also checks that the file it wrote reads back with
 the edits, one syncVersion further, and that a second send with no new
 edits writes nothing.
@@ -24,9 +24,8 @@ for toolkit in (ROOT.parent / "phosh-toolkit", ROOT / ".phosh-toolkit"):
 from pensum.store import tasks, validate  # noqa: E402
 from pensum.store.dataset import Dataset  # noqa: E402
 from pensum.sync import reader, writer  # noqa: E402
-from pensum.sync.webdav import WebDav  # noqa: E402
+from test_source import sync_source  # noqa: E402
 
-FOLDER = os.environ.get("PENSUM_DAV_FOLDER") or "super-productivity"
 PASSWORD = os.environ.get("PENSUM_SYNC_PASSWORD") or None
 CALL = "Sync test: call the plumber"
 CALL_RENAMED = "Sync test: call the plumber at nine"
@@ -40,9 +39,7 @@ def by_title(data):
 
 def main(directory):
     directory = Path(directory)
-    url = os.environ.get("PENSUM_DAV_URL", "http://127.0.0.1:2345/")
-    source = WebDav(url, "test", "test", FOLDER)
-    snapshot = reader.read(source, PASSWORD)
+    snapshot = reader.read(sync_source()[0], PASSWORD)
     base = copy.deepcopy(snapshot.data)
     ds = Dataset(copy.deepcopy(snapshot.data))
     found = by_title(ds.data)
@@ -52,9 +49,9 @@ def main(directory):
     tasks.set_done(ds, bike, True)
     failures = []
     client = writer.new_client_id()
-    sent = writer.send(source, PASSWORD, ds.data, base, snapshot.sync_version, client)
+    sent = writer.send(sync_source()[0], PASSWORD, ds.data, base, snapshot.sync_version, client)
     print(f"sent {sent.count} ops, syncVersion {snapshot.sync_version} -> {sent.sync_version}")
-    after = reader.read(source, PASSWORD)
+    after = reader.read(sync_source()[0], PASSWORD)
     now = by_title(after.data)
     problems = []
     if sent.count != 2 or after.sync_version != snapshot.sync_version + 1:
@@ -67,8 +64,9 @@ def main(directory):
     if len(mine) != 2 or any(op.get("sv") != after.sync_version for op in mine):
         problems.append("Pensum's ops in recentOps")
     problems += validate.problems(after.data)
-    again = writer.send(source, PASSWORD, after.data, after.data, after.sync_version, client)
-    if again.count or reader.read(source, PASSWORD).sync_version != after.sync_version:
+    again = writer.send(sync_source()[0], PASSWORD, after.data, after.data, after.sync_version,
+                        client)
+    if again.count or reader.read(sync_source()[0], PASSWORD).sync_version != after.sync_version:
         problems.append("a send without edits wrote")
     for p in problems:
         print(f"FAIL: {p}")

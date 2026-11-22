@@ -1,7 +1,9 @@
 """Sending Day Planner's task edits to the sync folder from the sync page
 (#30, pensum.sync.writer): **Send Changes** works in a thread and then
 takes the folder's data as Day Planner's, so both show the same; the
-base for the next send is kept (pensum.sync.base). Logs counts only."""
+base for the next send is kept (pensum.sync.base). With Git Sync a send
+that did not reach the desktop is sent again (pensum.sync.github). Logs
+counts only."""
 import copy
 import logging
 import threading
@@ -10,7 +12,7 @@ from gi.repository import GLib
 
 from pensum.i18n import _
 from pensum.store.dataset import Dataset
-from pensum.sync import SyncError, base, writer
+from pensum.sync import SyncError, base, reader, writer
 
 log = logging.getLogger("pensum.sync")
 
@@ -46,7 +48,9 @@ def send(page, wait=False):
 
     def work():
         try:
-            result = writer.send(source, password, local, base_data, version, s.sync_client_id)
+            base_version, base_dataset = _stale_base(source, password) or (version, base_data)
+            result = writer.send(source, password, local, base_dataset, base_version,
+                                 s.sync_client_id)
         except SyncError as error:
             result = error
         if wait:
@@ -58,6 +62,20 @@ def send(page, wait=False):
         work()
     else:
         threading.Thread(target=work, daemon=True).start()
+
+
+def _stale_base(source, password):
+    """Git Sync (pensum.sync.github): when Day Planner's last send did not
+    reach the desktop, the data it was built on is the base again, so the
+    edits of that send go out once more with the new ones."""
+    stale = getattr(source, "stale_base", None)
+    at = stale() if stale else None
+    if at is None:
+        return None
+    snapshot = reader.read(at, password)
+    log.info("last send not delivered; sending again from syncVersion %d",
+             snapshot.sync_version)
+    return snapshot.sync_version, snapshot.data
 
 
 def _done(page, key, result):

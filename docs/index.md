@@ -18,6 +18,7 @@ Change history is in [log.md](log.md).
 
 * [Data model](super-productivity-data.md) - Every slice of the dataset with fields and consistency rules, the backup files, how Pensum stores, imports and exports them.
 * [Sync files](super-productivity-sync.md) - The WebDAV/local-folder sync format (v2, v3), envelope, compression, encryption, operations, and what Pensum needs to sync.
+* [Git Sync](git-sync.md) - The sync folder in a GitHub repository kept by the plugin in nexumia-de/tabularium: reading main, handing over on day-planner, stale sends, tests.
 
 # Notes
 

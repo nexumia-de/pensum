@@ -18,6 +18,7 @@ pensum/store/worklog.py
 pensum/sync/base.py
 pensum/sync/crypto.py
 pensum/sync/envelope.py
+pensum/sync/github.py
 pensum/sync/local.py
 pensum/sync/reader.py
 pensum/sync/replay/__init__.py
@@ -59,6 +60,7 @@ pensum/ui/sidebar_folders.py
 pensum/ui/summary_page.py
 pensum/ui/sync_page.py
 pensum/ui/sync_send.py
+pensum/ui/sync_source.py
 pensum/ui/tags_dialog.py
 pensum/ui/task_list.py
 pensum/ui/task_page.py

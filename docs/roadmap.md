@@ -88,7 +88,9 @@ state, proven by end-to-end tests in both directions with concurrent
 edits ([sync files](super-productivity-sync.md)). Writing started on
 2026-11-22 with task edits for one Day Planner and one Super
 Productivity ([decision](decisions/sync-writing.md)); every further
-kind of change follows with its own end-to-end round.
+kind of change follows with its own end-to-end round. Besides WebDAV
+and a local folder, the folder can live in a GitHub repository kept by
+the plugin Git Sync (owner, 2026-11-22, [decision](decisions/git-sync.md)).
 
 # Risks
 

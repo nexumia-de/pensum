@@ -289,6 +289,11 @@ adds a task without having synced (so its upload is concurrent), syncs
 with no sync error, and its export and Today show Pensum's three edits
 and its own task. Unit tests: `tests/test_sync_write.py`.
 
+## Through a Git repository
+
+The same files, kept in a GitHub repository by the Super Productivity
+plugin Git Sync: [Git Sync](git-sync.md).
+
 ## SuperSync
 
 Super Productivity 20 offers SuperSync first in its sync dialog; WebDAV,
