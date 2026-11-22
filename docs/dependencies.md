@@ -17,7 +17,7 @@ installs no licence files.
 
 | Module | Version | Licence | Licence files |
 |---|---|---|---|
-| `phosh-toolkit` | tag `v0.8.0` (commit `3ec15b8`) | GPL-3.0-or-later (own code, same author) | `LICENSE` → `/app/share/licenses/<app id>/phosh-toolkit/` |
+| `phosh-toolkit` | tag `v0.8.1` (commit `1910057`) | GPL-3.0-or-later (own code, same author) | `LICENSE` → `/app/share/licenses/<app id>/phosh-toolkit/` |
 | `questarc-engine` | release archive `v4.3.1` (sha256 `899d73f0…`) | engine AGPL-3.0-or-later (same author); journeys in `content/journeys/` CC BY-SA 4.0 | `LICENSE` → `…/questarc-engine/`, `content/LICENSE` → `…/questarc-journeys/` |
 
 | `python3-build-tools` | wheels: setuptools 84.2.1, setuptools-scm 10.3.4, vcs-versioning 2.6.0, packaging 26.3, scikit-build-core 1.1.2, pathspec 1.1.1 | MIT; packaging Apache-2.0 OR BSD-2-Clause; scikit-build-core Apache-2.0; pathspec MPL-2.0 | each wheel's `dist-info/licenses/` → `…/python3-build-tools/<wheel>/`; the modules themselves are removed after the build (pure-Python build tools, not shipped) |

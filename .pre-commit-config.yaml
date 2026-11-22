@@ -4,7 +4,7 @@
 repos:
   - repo: https://github.com/nexumia-de/phosh-toolkit
     # The commit of the toolkit tag the app's workflows pin.
-    rev: 3ec15b8fb1ec01e9db75bb0952b89b101ea42d69  # frozen: v0.8.0
+    rev: 1910057162098f0963b44623e91b3650f685c49b  # frozen: v0.8.1
     hooks:
       - id: phosh-metadata
       - id: phosh-changelog
