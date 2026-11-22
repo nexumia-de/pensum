@@ -7,6 +7,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
+from pensum.i18n import _
 from pensum.sync import SyncError
 
 TIMEOUT = 30
@@ -16,7 +17,7 @@ def file_url(base_url, folder, name):
     """Super Productivity's path: the base URL, the sync folder, the file."""
     base = base_url.strip()
     if not base.lower().startswith(("https://", "http://")):
-        raise SyncError("The server address must start with https://.")
+        raise SyncError(_("The server address must start with https://."))
     parts = [p for p in folder.strip().split("/") if p] + [name]
     path = "/".join(urllib.parse.quote(p) for p in parts)
     return base.rstrip("/") + "/" + path
@@ -45,12 +46,13 @@ class WebDav:
             if error.code == 404:
                 return None
             if error.code in (401, 403):
-                raise SyncError("The server refused the user name or "
-                                "password.") from error
-            raise SyncError(f"The server answered {error.code}.") from error
+                raise SyncError(_("The server refused the user name or "
+                                  "password.")) from error
+            raise SyncError(_("The server answered {code}.").format(
+                code=error.code)) from error
         except ssl.SSLError as error:
-            raise SyncError("The server's certificate is not trusted.") from error
+            raise SyncError(_("The server's certificate is not trusted.")) from error
         except (urllib.error.URLError, socket.timeout, OSError) as error:
-            raise SyncError("Can't reach the server.") from error
+            raise SyncError(_("Can't reach the server.")) from error
         except UnicodeDecodeError as error:
-            raise SyncError("A sync file is damaged (not text).") from error
+            raise SyncError(_("A sync file is damaged (not text).")) from error

@@ -11,6 +11,7 @@ from gi.repository import Adw, Gdk, Gio, GLib, Gtk  # noqa: E402
 
 from pensum import (APP_ID, NAME, NIGHTLY, REPO_URL, SUPPORT_URL,  # noqa: E402
                     VERSION_LABEL)
+from pensum.i18n import _
 
 log = logging.getLogger("pensum")
 
@@ -179,7 +180,7 @@ class Application(Adw.Application):
             from pensum.preferences import PreferencesDialog
             PreferencesDialog(window).present(window)
 
-    def _on_about(self, *_):
+    def _on_about(self, *args):
         dialog = Adw.AboutDialog(
             application_name=NAME,
             application_icon=APP_ID,
@@ -188,11 +189,11 @@ class Application(Adw.Application):
             website=REPO_URL,
             issue_url=f"{REPO_URL}/issues",
             license_type=Gtk.License.AGPL_3_0,
-            comments="Tasks and time tracking for the phone. Reads and writes "
-                     "Super Productivity's backup files. Not affiliated with "
-                     "the Super Productivity project.",
+            comments=_("Tasks and time tracking for the phone. Reads and writes "
+                       "Super Productivity's backup files. Not affiliated with "
+                       "the Super Productivity project."),
         )
-        dialog.add_link("Support Development", SUPPORT_URL)
+        dialog.add_link(_("Support Development"), SUPPORT_URL)
         dialog.present(self._window())
 
 

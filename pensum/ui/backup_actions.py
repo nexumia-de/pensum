@@ -6,6 +6,7 @@ from datetime import datetime
 from gi.repository import Gio, GLib, Gtk
 
 from pensum.game import records
+from pensum.i18n import N_, _
 from pensum.store import dates, incoming
 from pensum.store.backup import BackupError
 from pensum.ui.dialogs import confirm_dialog
@@ -15,7 +16,7 @@ log = logging.getLogger("pensum.import")
 
 def _json_filter():
     filters = Gio.ListStore.new(Gtk.FileFilter)
-    json_filter = Gtk.FileFilter(name="Super Productivity Backups")
+    json_filter = Gtk.FileFilter(name=_("Super Productivity Backups"))
     json_filter.add_pattern("*.json")
     json_filter.add_mime_type("application/json")
     filters.append(json_filter)
@@ -23,7 +24,7 @@ def _json_filter():
 
 
 def import_backup(window):
-    dialog = Gtk.FileDialog(title="Import Backup", modal=True, filters=_json_filter())
+    dialog = Gtk.FileDialog(title=_("Import Backup"), modal=True, filters=_json_filter())
 
     def chosen(dialog, result):
         try:
@@ -35,8 +36,13 @@ def import_backup(window):
     dialog.open(window, None, chosen)
 
 
-def _count(number, word, words=None):
-    return f"{number} {word}" if number == 1 else f"{number} {words or word + 's'}"
+def _count(number, one, many):
+    """"1 task" or "3 tasks": `one` and `many` are texts for translation."""
+    return _(one) if number == 1 else _(many).format(count=number)
+
+
+def _and(first, second):
+    return _("{first} and {second}").format(first=first, second=second)
 
 
 def _days(ds, completions, shown=3):
@@ -44,31 +50,36 @@ def _days(ds, completions, shown=3):
             for _task_id, done_on in completions]
     if len(days) > shown:
         rest = len(days) - shown
-        return ", ".join(days[:shown]) + f" and {_count(rest, 'more day')}"
-    return days[0] if len(days) == 1 else ", ".join(days[:-1]) + " and " + days[-1]
+        return _and(", ".join(days[:shown]),
+                    _count(rest, N_("1 more day"), N_("{count} more days")))
+    return days[0] if len(days) == 1 else _and(", ".join(days[:-1]), days[-1])
 
 
 def warning(ds, loss):
     """Heading and body of the import dialog for what the import would
     lose (pensum.store.incoming.Loss); no loss, the plain question."""
-    keep = "A copy of the current data is kept in the backups folder."
+    keep = _("A copy of the current data is kept in the backups folder.")
     if not loss:
-        return ("Replace All Tasks?",
-                "Your tasks, projects and tracked time are replaced by the "
-                f"backup's. {keep}")
-    parts = [_count(len(loss.tasks), "task")] if loss.tasks else []
+        return (_("Replace All Tasks?"),
+                _("Your tasks, projects and tracked time are replaced by the "
+                  "backup's.") + f" {keep}")
+    parts = ([_count(len(loss.tasks), N_("1 task"), N_("{count} tasks"))]
+             if loss.tasks else [])
     if loss.records:
-        parts.append(_count(len(loss.records), "journey entry", "journey entries"))
-    lost = " and ".join(parts)
+        parts.append(_count(len(loss.records), N_("1 journey entry"),
+                            N_("{count} journey entries")))
+    lost = _and(*parts) if len(parts) == 2 else parts[0]
     if loss.unrelated:
-        heading, body = ("Replace Other Data?",
-                         f"This file has none of the tasks on this device: {lost} would be lost.")
+        heading = _("Replace Other Data?")
+        body = _("This file has none of the tasks on this device: {lost} "
+                 "would be lost.").format(lost=lost)
     else:
-        heading, body = ("Import Older Data?",
-                         f"This file is older than what is on this device: {lost} would be lost.")
+        heading = _("Import Older Data?")
+        body = _("This file is older than what is on this device: {lost} "
+                 "would be lost.").format(lost=lost)
     if loss.completions:
-        body += (" Among them is your journey's task, done on "
-                 f"{_days(ds, loss.completions)}.")
+        body += " " + _("Among them is your journey's task, done on {days}.").format(
+            days=_days(ds, loss.completions))
     return heading, f"{body} {keep}"
 
 
@@ -94,16 +105,16 @@ def confirm(window, path):
             window.toast(str(error))
             return
         window.replace_dataset(imported)
-        window.toast("Backup imported")
+        window.toast(_("Backup imported"))
 
     heading, body = warning(window.ds, loss)
     return confirm_dialog(window, heading, body,
-                          "Import Anyway" if loss else "Replace", done)
+                          _("Import Anyway") if loss else _("Replace"), done)
 
 
 def export_backup(window):
     name = f"sp-backup-{datetime.now():%Y-%m-%d_%H%M%S}.json"
-    dialog = Gtk.FileDialog(title="Export Backup", modal=True, initial_name=name,
+    dialog = Gtk.FileDialog(title=_("Export Backup"), modal=True, initial_name=name,
                             filters=_json_filter())
 
     def chosen(dialog, result):
@@ -115,8 +126,8 @@ def export_backup(window):
         try:
             window.files.export_file(file.get_path(), window.ds)
         except OSError as error:
-            window.toast(f"Can't export: {error.strerror}")
+            window.toast(_("Can't export: {reason}").format(reason=error.strerror))
             return
-        window.toast("Backup exported")
+        window.toast(_("Backup exported"))
 
     dialog.save(window, None, chosen)

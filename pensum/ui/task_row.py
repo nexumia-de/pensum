@@ -4,11 +4,12 @@ row menu that moves it."""
 from gi.repository import Adw, Gdk, Gio, GLib, Gtk
 
 from pensum import duration
+from pensum.i18n import N_, _
 from pensum.store import dates
 from pensum.ui import row_drag
 
 
-PRIORITY_NAMES = {1: "Low", 2: "Medium", 3: "High"}
+PRIORITY_NAMES = {1: N_("Low priority"), 2: N_("Medium priority"), 3: N_("High priority")}
 
 
 def summary(ds, task, today, running_ms=0):
@@ -17,23 +18,25 @@ def summary(ds, task, today, running_ms=0):
     parts = []
     level = priority_level(task)
     if level:
-        parts.append(PRIORITY_NAMES[level] + " priority")
+        parts.append(_(PRIORITY_NAMES[level]))
     if task.get("dueWithTime") and not task.get("isDone"):
         from datetime import datetime
         clock = datetime.fromtimestamp(task["dueWithTime"] / 1000).strftime("%H:%M")
-        parts.append(f"At {clock}")
+        parts.append(_("At {time}").format(time=clock))
     planned = ds.planned_day(task) if not task.get("isDone") else None
     if planned and planned > today:
-        parts.append("Planned " + dates.parse_day(planned).strftime("%a, %-d %b"))
+        parts.append(_("Planned {date}").format(
+            date=dates.parse_day(planned).strftime("%a, %-d %b")))
     from pensum.store.tasks import deadline_day
     deadline = deadline_day(ds, task) if not task.get("isDone") else None
     if deadline:
         if deadline < today:
-            parts.append("Deadline passed")
+            parts.append(_("Deadline passed"))
         elif deadline == today:
-            parts.append("Deadline today")
+            parts.append(_("Deadline today"))
         else:
-            parts.append("Deadline " + dates.parse_day(deadline).strftime("%a, %-d %b"))
+            parts.append(_("Deadline {date}").format(
+                date=dates.parse_day(deadline).strftime("%a, %-d %b")))
     spent = task.get("timeSpent", 0) + running_ms
     estimate = task.get("timeEstimate", 0)
     if spent and estimate:
@@ -41,16 +44,16 @@ def summary(ds, task, today, running_ms=0):
     elif spent:
         parts.append(duration.format_short(spent))
     elif estimate:
-        parts.append(f"{duration.format_short(estimate)} estimated")
+        parts.append(_("{time} estimated").format(time=duration.format_short(estimate)))
     subs = ds.subtasks(task)
     if subs:
         done = sum(1 for s in subs if s.get("isDone"))
-        parts.append(f"{done} of {len(subs)} subtasks")
+        parts.append(_("{done} of {total} subtasks").format(done=done, total=len(subs)))
     return " · ".join(parts)
 
 
-MOVES = (("Move to Top", "top", -10_000), ("Move Up", "up", -1),
-         ("Move Down", "down", 1), ("Move to Bottom", "bottom", 10_000))
+MOVES = ((N_("Move to Top"), "top", -10_000), (N_("Move Up"), "up", -1),
+         (N_("Move Down"), "down", 1), (N_("Move to Bottom"), "bottom", 10_000))
 
 
 class TaskRow(Adw.ActionRow):
@@ -88,14 +91,14 @@ class TaskRow(Adw.ActionRow):
             action.connect("activate", lambda *_, o=offset: self.move(o))
             group.add_action(action)
             self.move_actions.append(action)
-            menu.append(label, f"row.{name}")
+            menu.append(_(label), f"row.{name}")
         self._add_section_menu(group, menu)
         self.backlog_action = Gio.SimpleAction.new("backlog", None)
         self.backlog_action.connect("activate", self._on_backlog)
         group.add_action(self.backlog_action)
         if self.context is not None and self.context.kind == "project":
             section = Gio.Menu()
-            section.append("Move to Backlog / List", "row.backlog")
+            section.append(_("Move to Backlog / List"), "row.backlog")
             menu.append_section(None, section)
         self.insert_action_group("row", group)
         self.popover = Gtk.PopoverMenu(menu_model=menu, has_arrow=True)
@@ -137,12 +140,12 @@ class TaskRow(Adw.ActionRow):
         action.connect("activate", lambda _a, value: self.to_section(value.unpack() or None))
         group.add_action(action)
         submenu = Gio.Menu()
-        for title, section_id in [("No Section", "")] + [
-                (s.get("title") or "Untitled", s["id"]) for s in found]:
+        for title, section_id in [(_("No Section"), "")] + [
+                (s.get("title") or _("Untitled"), s["id"]) for s in found]:
             item = Gio.MenuItem.new(title.replace("_", "__"), None)
             item.set_action_and_target_value("row.section", GLib.Variant("s", section_id))
             submenu.append_item(item)
-        menu.append_submenu("Move to Section", submenu)
+        menu.append_submenu(_("Move to Section"), submenu)
 
     def to_section(self, section_id):
         from pensum.store import order
@@ -205,7 +208,7 @@ class TaskRow(Adw.ActionRow):
         if task is None:
             return
         ds = self.window.ds
-        self.set_title(GLib.markup_escape_text(task.get("title") or "Untitled"))
+        self.set_title(GLib.markup_escape_text(task.get("title") or _("Untitled")))
         running = self.window.timer.task_id
         running_ms = self.window.timer.unbooked_ms() if running == self.task_id else 0
         if running and running in task.get("subTaskIds", ()):
@@ -219,15 +222,15 @@ class TaskRow(Adw.ActionRow):
         self.check.handler_block(self._check_handler)
         self.check.set_active(bool(task.get("isDone")))
         self.check.handler_unblock(self._check_handler)
-        title = task.get("title") or "Untitled"
+        title = task.get("title") or _("Untitled")
         self.check.update_property([Gtk.AccessibleProperty.LABEL],
-                                   [f"Mark “{title}” as done"])
+                                   [_("Mark “{title}” as done").format(title=title)])
         trackable = not task.get("subTaskIds") and not task.get("isDone")
         self.play.set_visible(trackable or running == self.task_id)
         is_running = running == self.task_id
         self.play.set_icon_name("media-playback-pause-symbolic" if is_running
                                 else "media-playback-start-symbolic")
-        tip = "Stop Timer" if is_running else "Start Timer"
+        tip = _("Stop Timer") if is_running else _("Start Timer")
         self.play.set_tooltip_text(tip)
         self.play.update_property([Gtk.AccessibleProperty.LABEL], [tip])
         # Nothing to move among: an overdue task, or one that Today lists

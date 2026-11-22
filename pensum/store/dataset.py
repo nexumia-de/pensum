@@ -3,6 +3,7 @@ tasks and which tasks a list shows. Changes are in tasks.py, contexts.py
 and tracking.py. No GTK."""
 from dataclasses import dataclass
 
+from pensum.i18n import _
 from pensum.store import dates
 from pensum.store.defaults import INBOX_ID, TODAY_ID
 
@@ -76,7 +77,7 @@ class Dataset:
 
     def context_title(self, context):
         if context.kind == "today":
-            return "Today"
+            return _("Today")
         source = self.project_entities if context.kind == "project" else self.tag_entities
         entity = source.get(context.id)
         return entity.get("title") or "" if entity else ""

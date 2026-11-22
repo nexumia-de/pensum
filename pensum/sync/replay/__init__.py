@@ -7,6 +7,7 @@ listed in SUPPORTED are applied; any other op makes the whole replay
 fail with Unsupported, never a guess. No GTK."""
 import copy
 
+from pensum.i18n import _
 from pensum.store import dates
 from pensum.sync import SyncError
 from pensum.sync.replay import config, ops, tasks
@@ -17,8 +18,9 @@ class Unsupported(SyncError):
 
     def __init__(self, action, detail=""):
         self.action = action
-        super().__init__(f"The data contains a change Pensum can't apply yet "
-                         f"({action}{': ' + detail if detail else ''}).")
+        super().__init__(_("The data contains a change Day Planner can't apply yet "
+                           "({detail}).").format(
+                               detail=f"{action}: {detail}" if detail else action))
 
 
 SUPPORTED = {

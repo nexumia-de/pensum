@@ -5,21 +5,22 @@ from datetime import datetime
 from gi.repository import Adw, Gtk
 
 from pensum import duration
+from pensum.i18n import _
 from pensum.store import dates, tracking
 
 
 class TimeDialog(Adw.Dialog):
     def __init__(self, window, task_id):
-        super().__init__(title="Time Spent", content_width=360, content_height=520)
+        super().__init__(title=_("Time Spent"), content_width=360, content_height=520)
         self.window = window
         self.task_id = task_id
         toolbar = Adw.ToolbarView()
         header = Adw.HeaderBar()
         self.calendar = Gtk.Calendar()
         self.calendar.connect("day-selected", self._on_day)
-        add = Gtk.MenuButton(icon_name="list-add-symbolic", tooltip_text="Add Day",
+        add = Gtk.MenuButton(icon_name="list-add-symbolic", tooltip_text=_("Add Day"),
                              popover=Gtk.Popover(child=self.calendar))
-        add.update_property([Gtk.AccessibleProperty.LABEL], ["Add Day"])
+        add.update_property([Gtk.AccessibleProperty.LABEL], [_("Add Day")])
         header.pack_start(add)
         toolbar.add_top_bar(header)
         self.page = Adw.PreferencesPage()
@@ -37,11 +38,11 @@ class TimeDialog(Adw.Dialog):
         per_day = task.get("timeSpentOnDay") or {}
         days = sorted(set(per_day) | {ds.today()} | self.extra_days, reverse=True)
         self.group = Adw.PreferencesGroup(
-            description="Write the time like 1h 30m; empty or 0 removes the day.")
+            description=_("Write the time like 1h 30m; empty or 0 removes the day."))
         for day in days:
             label = dates.parse_day(day).strftime("%a, %-d %b %Y")
             if day == ds.today():
-                label = "Today"
+                label = _("Today")
             row = Adw.EntryRow(title=label, show_apply_button=True)
             ms = per_day.get(day, 0)
             row.set_text(duration.format_short(ms) if ms else "")
@@ -52,7 +53,7 @@ class TimeDialog(Adw.Dialog):
     def _on_apply(self, row, day):
         ms = duration.parse(row.get_text())
         if ms is None:
-            self.window.toast("Write the time like 1h 30m or 45m")
+            self.window.toast(_("Write the time like 1h 30m or 45m"))
             return
         tracking.set_time_on_day(self.window.ds, self.task_id, day, ms)
         self.window.changed()

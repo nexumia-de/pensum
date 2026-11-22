@@ -6,6 +6,7 @@ option id) give each new instance its time and reminder. `remindAt` is
 optional and non-nullable: it is deleted, never set to null. No GTK."""
 from datetime import datetime
 
+from pensum.i18n import N_, _
 from pensum.store import dates, planning, tasks
 from pensum.store.repeat import instances
 
@@ -13,10 +14,16 @@ from pensum.store.repeat import instances
 # before the task's time, and the label of each.
 LEAD_MINUTES = instances.REMIND_MINUTES
 NONE = "DoNotRemind"
-OPTIONS = [(NONE, "No reminder"), ("AtStart", "At the time"), ("m5", "5 minutes before"),
-           ("m10", "10 minutes before"), ("m15", "15 minutes before"),
-           ("m30", "30 minutes before"), ("h1", "1 hour before")]
+OPTIONS = [(NONE, N_("No reminder")), ("AtStart", N_("At the time")),
+           ("m5", N_("5 minutes before")), ("m10", N_("10 minutes before")),
+           ("m15", N_("15 minutes before")), ("m30", N_("30 minutes before")),
+           ("h1", N_("1 hour before"))]
 SNOOZE_MINUTES = 10
+
+
+def option_labels():
+    """The label of each option, in the user's language."""
+    return [_(label) for _key, label in OPTIONS]
 
 
 def option_of(task):

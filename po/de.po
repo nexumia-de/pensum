@@ -5,46 +5,118 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pensum\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-20 20:13+0000\n"
+"POT-Creation-Date: 2026-11-22 05:24+0000\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: pensum/game/sentences.py:13
+#: pensum/background.py:13
+msgid "Show reminders for your tasks"
+msgstr "Erinnerungen für deine Aufgaben anzeigen"
+
+#: pensum/game/sentences.py:13 pensum/ui/repeat_page.py:12
 msgid "Monday"
 msgstr "Montag"
 
-#: pensum/game/sentences.py:13
+#: pensum/game/sentences.py:13 pensum/ui/repeat_page.py:12
 msgid "Tuesday"
 msgstr "Dienstag"
 
-#: pensum/game/sentences.py:13
+#: pensum/game/sentences.py:13 pensum/ui/repeat_page.py:12
 msgid "Wednesday"
 msgstr "Mittwoch"
 
-#: pensum/game/sentences.py:13
+#: pensum/game/sentences.py:13 pensum/ui/repeat_page.py:12
 msgid "Thursday"
 msgstr "Donnerstag"
 
-#: pensum/game/sentences.py:13
+#: pensum/game/sentences.py:13 pensum/ui/repeat_page.py:12
 msgid "Friday"
 msgstr "Freitag"
 
-#: pensum/game/sentences.py:14
+#: pensum/game/sentences.py:14 pensum/ui/repeat_page.py:13
 msgid "Saturday"
 msgstr "Samstag"
 
-#: pensum/game/sentences.py:14
+#: pensum/game/sentences.py:14 pensum/ui/repeat_page.py:13
 msgid "Sunday"
 msgstr "Sonntag"
 
-#: pensum/game/sentences.py:116
+#: pensum/game/sentences.py:116 pensum/ui/repeat_page.py:38
+#: pensum/ui/repeat_page.py:53
 msgid "Monday to Friday"
 msgstr "Montag bis Freitag"
 
+#: pensum/main.py:192
+msgid ""
+"Tasks and time tracking for the phone. Reads and writes Super Productivity's "
+"backup files. Not affiliated with the Super Productivity project."
+msgstr "Aufgaben und Zeiterfassung für das Telefon. Liest und schreibt die Sicherungsdateien von Super Productivity. Steht in keiner Verbindung zum Projekt Super Productivity."
+
+#: pensum/main.py:196
+msgid "Support Development"
+msgstr "Entwicklung unterstützen"
+
+#: pensum/preferences.py:10 pensum/ui/sidebar.py:19
+msgid "Preferences"
+msgstr "Einstellungen"
+
+#: pensum/preferences.py:12
+msgid "General"
+msgstr "Allgemein"
+
+#: pensum/preferences.py:14
+msgid "Appearance"
+msgstr "Erscheinungsbild"
+
+#: pensum/preferences.py:19
+msgid "Day"
+msgstr "Tag"
+
+#: pensum/preferences.py:20
+msgid ""
+"Work after midnight still counts for the previous day until this hour. "
+"Shared with Super Productivity."
+msgstr "Arbeit nach Mitternacht zählt bis zu dieser Stunde noch zum vorigen Tag. Wird mit Super Productivity geteilt."
+
+#: pensum/preferences.py:23
+msgid "Next Day Starts At"
+msgstr "Neuer Tag beginnt um"
+
+#: pensum/preferences.py:29
+msgid "Reminders"
+msgstr "Erinnerungen"
+
+#: pensum/preferences.py:31
+msgid "Remind When Closed"
+msgstr "Auch bei geschlossener App erinnern"
+
+#: pensum/preferences.py:32
+msgid "Day Planner stays in the background while a reminder is waiting"
+msgstr "Day Planner bleibt im Hintergrund, solange eine Erinnerung wartet"
+
+#: pensum/preferences.py:41
+msgid "Data"
+msgstr "Daten"
+
+#: pensum/preferences.py:42
+msgid ""
+"Day Planner keeps everything in a Super Productivity backup file and makes "
+"an automatic backup at most every 15 minutes. Use Export Backup to move the "
+"data to Super Productivity, and Import Backup for the other way."
+msgstr "Day Planner speichert alles in einer Sicherungsdatei von Super Productivity und legt höchstens alle 15 Minuten automatisch eine Sicherung an. Mit „Sicherung exportieren“ übernimmst du die Daten in Super Productivity, mit „Sicherung importieren“ den umgekehrten Weg."
+
+#: pensum/preferences.py:46
+msgid "Data File"
+msgstr "Datendatei"
+
+#: pensum/preferences.py:47
+msgid "Automatic Backups"
+msgstr "Automatische Sicherungen"
+
 #: pensum/preferences.py:55 pensum/ui/journey/page.py:23
-#: pensum/ui/journey/page.py:103 pensum/ui/sidebar.py:124
+#: pensum/ui/journey/page.py:103 pensum/ui/sidebar.py:125
 msgid "Journeys"
 msgstr "Reisen"
 
@@ -55,6 +127,385 @@ msgstr "Auf „Heute“ zeigen"
 #: pensum/preferences.py:57
 msgid "The step that is growing, on top of Today's tasks"
 msgstr "Der Schritt, der gerade wächst, über den Aufgaben von heute"
+
+#: pensum/reminder_watch.py:111 pensum/ui/repeat_page.py:119
+#: pensum/ui/task_page.py:92
+msgid "Reminder"
+msgstr "Erinnerung"
+
+#: pensum/reminder_watch.py:114
+#, python-brace-format
+msgid "Planned at {time}"
+msgstr "Geplant um {time}"
+
+#: pensum/reminder_watch.py:119 pensum/ui/notes_box.py:89
+#: pensum/ui/search_page.py:51 pensum/ui/task_page.py:175
+msgid "Done"
+msgstr "Erledigt"
+
+#: pensum/reminder_watch.py:120
+#, python-brace-format
+msgid "Snooze {minutes} min"
+msgstr "{minutes} Min. später"
+
+#: pensum/store/backup.py:25
+msgid "The file is not a Super Productivity backup (no JSON)."
+msgstr "Die Datei ist keine Sicherung von Super Productivity (kein JSON)."
+
+#: pensum/store/backup.py:28 pensum/store/backup.py:48
+msgid "The file is not a Super Productivity backup."
+msgstr "Die Datei ist keine Sicherung von Super Productivity."
+
+#: pensum/store/backup.py:32
+msgid "The backup has no data model version."
+msgstr "Die Sicherung hat keine Version des Datenmodells."
+
+#: pensum/store/backup.py:35
+#, python-brace-format
+msgid ""
+"The backup was made by a newer Super Productivity (data model {version}). "
+"Update Day Planner to open it."
+msgstr "Die Sicherung stammt von einem neueren Super Productivity (Datenmodell {version}). Aktualisiere Day Planner, um sie zu öffnen."
+
+#: pensum/store/backup.py:40
+#, python-brace-format
+msgid ""
+"The backup uses the old data model {version}. Import it into Super "
+"Productivity once and export it again."
+msgstr "Die Sicherung nutzt das alte Datenmodell {version}. Importiere sie einmal in Super Productivity und exportiere sie erneut."
+
+#: pensum/store/backup.py:51
+#, python-brace-format
+msgid "The file is not a Super Productivity backup (missing {names})."
+msgstr "Die Datei ist keine Sicherung von Super Productivity (es fehlt: {names})."
+
+#: pensum/store/backup.py:54
+msgid ""
+"The backup uses an old data model. Import it into Super Productivity once "
+"and export it again."
+msgstr "Die Sicherung nutzt ein altes Datenmodell. Importiere sie einmal in Super Productivity und exportiere sie erneut."
+
+#: pensum/store/backup.py:66
+#, python-brace-format
+msgid "The file can't be read: {reason}"
+msgstr "Die Datei kann nicht gelesen werden: {reason}"
+
+#: pensum/store/dataset.py:80 pensum/ui/sidebar.py:120
+#: pensum/ui/task_list.py:21 pensum/ui/task_page.py:61
+#: pensum/ui/task_page.py:278 pensum/ui/time_dialog.py:45
+msgid "Today"
+msgstr "Heute"
+
+#: pensum/store/reminders.py:17
+msgid "No reminder"
+msgstr "Keine Erinnerung"
+
+#: pensum/store/reminders.py:17
+msgid "At the time"
+msgstr "Zur geplanten Zeit"
+
+#: pensum/store/reminders.py:18
+msgid "5 minutes before"
+msgstr "5 Minuten vorher"
+
+#: pensum/store/reminders.py:18
+msgid "10 minutes before"
+msgstr "10 Minuten vorher"
+
+#: pensum/store/reminders.py:19
+msgid "15 minutes before"
+msgstr "15 Minuten vorher"
+
+#: pensum/store/reminders.py:19
+msgid "30 minutes before"
+msgstr "30 Minuten vorher"
+
+#: pensum/store/reminders.py:20
+msgid "1 hour before"
+msgstr "1 Stunde vorher"
+
+#: pensum/sync/crypto.py:54
+msgid "A sync file is damaged (base64)."
+msgstr "Eine Sync-Datei ist beschädigt (Base64)."
+
+#: pensum/sync/crypto.py:61
+msgid "A sync file is damaged (gzip)."
+msgstr "Eine Sync-Datei ist beschädigt (gzip)."
+
+#: pensum/sync/crypto.py:85
+msgid "The encryption password is wrong."
+msgstr "Das Verschlüsselungspasswort ist falsch."
+
+#: pensum/sync/crypto.py:86
+msgid "A sync file is damaged (too short to be encrypted)."
+msgstr "Eine Sync-Datei ist beschädigt (zu kurz für eine Verschlüsselung)."
+
+#: pensum/sync/crypto.py:93 pensum/sync/webdav.py:58
+msgid "A sync file is damaged (not text)."
+msgstr "Eine Sync-Datei ist beschädigt (kein Text)."
+
+#: pensum/sync/crypto.py:102
+msgid "Encrypted sync files need the Argon2 module, which is missing."
+msgstr "Verschlüsselte Sync-Dateien brauchen das Argon2-Modul, das fehlt."
+
+#: pensum/sync/crypto.py:109
+#, python-brace-format
+msgid "The encryption key can't be derived (Argon2 error {code})."
+msgstr "Der Verschlüsselungsschlüssel lässt sich nicht ableiten (Argon2-Fehler {code})."
+
+#: pensum/sync/crypto.py:142
+msgid "Encrypted sync files need OpenSSL, which is missing."
+msgstr "Verschlüsselte Sync-Dateien brauchen OpenSSL, das fehlt."
+
+#: pensum/sync/crypto.py:153 pensum/sync/crypto.py:163
+#: pensum/sync/crypto.py:166
+msgid "OpenSSL failed."
+msgstr "OpenSSL ist fehlgeschlagen."
+
+#: pensum/sync/envelope.py:23
+msgid "A sync file is not in Super Productivity's format."
+msgstr "Eine Sync-Datei hat nicht das Format von Super Productivity."
+
+#: pensum/sync/envelope.py:28
+msgid ""
+"The sync files are encrypted. Enter the encryption password set in Super "
+"Productivity."
+msgstr "Die Sync-Dateien sind verschlüsselt. Gib das Verschlüsselungspasswort ein, das du in Super Productivity festgelegt hast."
+
+#: pensum/sync/envelope.py:36
+msgid "A sync file is damaged (no JSON)."
+msgstr "Eine Sync-Datei ist beschädigt (kein JSON)."
+
+#: pensum/sync/envelope.py:38
+msgid "A sync file is damaged."
+msgstr "Eine Sync-Datei ist beschädigt."
+
+#: pensum/sync/local.py:20
+msgid "The folder does not exist."
+msgstr "Der Ordner existiert nicht."
+
+#: pensum/sync/local.py:26
+#, python-brace-format
+msgid "A sync file can't be read: {reason}"
+msgstr "Eine Sync-Datei kann nicht gelesen werden: {reason}"
+
+#: pensum/sync/reader.py:54
+msgid ""
+"The folder was written by Super Productivity 16 or older. Sync it with a "
+"current Super Productivity first."
+msgstr "Der Ordner wurde von Super Productivity 16 oder älter geschrieben. Synchronisiere ihn zuerst mit einem aktuellen Super Productivity."
+
+#: pensum/sync/reader.py:57
+msgid "No Super Productivity sync files in this folder."
+msgstr "In diesem Ordner liegen keine Sync-Dateien von Super Productivity."
+
+#: pensum/sync/reader.py:60
+msgid "The folder uses Surgical sync, but its operations file is missing."
+msgstr "Der Ordner nutzt Surgical Sync, aber seine Operationsdatei fehlt."
+
+#: pensum/sync/reader.py:63
+#, python-brace-format
+msgid "Unknown sync file version {version}."
+msgstr "Unbekannte Version der Sync-Datei: {version}."
+
+#: pensum/sync/reader.py:76
+msgid "The Surgical sync operations file is damaged."
+msgstr "Die Operationsdatei von Surgical Sync ist beschädigt."
+
+#: pensum/sync/reader.py:94
+msgid "The Surgical sync snapshot is missing."
+msgstr "Der Schnappschuss von Surgical Sync fehlt."
+
+#: pensum/sync/reader.py:111
+msgid "The sync file holds no data."
+msgstr "Die Sync-Datei enthält keine Daten."
+
+#: pensum/sync/reader.py:120
+#, python-brace-format
+msgid "The synced data can't be opened: {reason}"
+msgstr "Die synchronisierten Daten lassen sich nicht öffnen: {reason}"
+
+#: pensum/sync/replay/__init__.py:21
+#, python-brace-format
+msgid "The data contains a change Day Planner can't apply yet ({detail})."
+msgstr "Die Daten enthalten eine Änderung, die Day Planner noch nicht übernehmen kann ({detail})."
+
+#: pensum/sync/replay/ops.py:34 pensum/sync/replay/ops.py:36
+msgid "A change in the sync data is damaged."
+msgstr "Eine Änderung in den Sync-Daten ist beschädigt."
+
+#: pensum/sync/webdav.py:20
+msgid "The server address must start with https://."
+msgstr "Die Serveradresse muss mit https:// beginnen."
+
+#: pensum/sync/webdav.py:49
+msgid "The server refused the user name or password."
+msgstr "Der Server hat Benutzername oder Passwort abgelehnt."
+
+#: pensum/sync/webdav.py:51
+#, python-brace-format
+msgid "The server answered {code}."
+msgstr "Der Server hat mit {code} geantwortet."
+
+#: pensum/sync/webdav.py:54
+msgid "The server's certificate is not trusted."
+msgstr "Dem Zertifikat des Servers wird nicht vertraut."
+
+#: pensum/sync/webdav.py:56
+msgid "Can't reach the server."
+msgstr "Der Server ist nicht erreichbar."
+
+#: pensum/ui/archived_page.py:12 pensum/ui/sidebar.py:18
+msgid "Archived Projects"
+msgstr "Archivierte Projekte"
+
+#: pensum/ui/archived_page.py:18
+msgid "No Archived Projects"
+msgstr "Keine archivierten Projekte"
+
+#: pensum/ui/archived_page.py:19
+msgid "Archive a project from its list menu."
+msgstr "Archiviere ein Projekt über das Menü seiner Liste."
+
+#: pensum/ui/archived_page.py:37 pensum/ui/search_page.py:52
+#: pensum/ui/section_group.py:17 pensum/ui/section_group.py:93
+#: pensum/ui/sidebar.py:127 pensum/ui/sidebar.py:129
+#: pensum/ui/tags_dialog.py:28 pensum/ui/task_page.py:222
+#: pensum/ui/task_page.py:232 pensum/ui/task_page.py:431
+#: pensum/ui/task_row.py:144 pensum/ui/task_row.py:211
+#: pensum/ui/task_row.py:225 pensum/ui/tracker_bar.py:49
+msgid "Untitled"
+msgstr "Ohne Titel"
+
+#: pensum/ui/archived_page.py:38
+#, python-brace-format
+msgid "{count} open tasks"
+msgstr "{count} offene Aufgaben"
+
+#: pensum/ui/archived_page.py:39
+msgid "1 open task"
+msgstr "1 offene Aufgabe"
+
+#: pensum/ui/archived_page.py:42
+msgid "Unarchive"
+msgstr "Wiederherstellen"
+
+#: pensum/ui/archived_page.py:54 pensum/ui/list_menu.py:70
+msgid "Project back in the sidebar"
+msgstr "Projekt wieder in der Seitenleiste"
+
+#: pensum/ui/backup_actions.py:19
+msgid "Super Productivity Backups"
+msgstr "Super-Productivity-Sicherungen"
+
+#: pensum/ui/backup_actions.py:27
+msgid "Import Backup"
+msgstr "Sicherung importieren"
+
+#: pensum/ui/backup_actions.py:45
+#, python-brace-format
+msgid "{first} and {second}"
+msgstr "{first} und {second}"
+
+#: pensum/ui/backup_actions.py:54
+msgid "1 more day"
+msgstr "noch 1 Tag"
+
+#: pensum/ui/backup_actions.py:54
+#, python-brace-format
+msgid "{count} more days"
+msgstr "noch {count} Tage"
+
+#: pensum/ui/backup_actions.py:61
+msgid "A copy of the current data is kept in the backups folder."
+msgstr "Eine Kopie der aktuellen Daten bleibt im Sicherungsordner erhalten."
+
+#: pensum/ui/backup_actions.py:63 pensum/ui/sync_page.py:237
+msgid "Replace All Tasks?"
+msgstr "Alle Aufgaben ersetzen?"
+
+#: pensum/ui/backup_actions.py:64
+msgid "Your tasks, projects and tracked time are replaced by the backup's."
+msgstr "Deine Aufgaben, Projekte und erfasste Zeit werden durch die aus der Sicherung ersetzt."
+
+#: pensum/ui/backup_actions.py:66
+msgid "1 task"
+msgstr "1 Aufgabe"
+
+#: pensum/ui/backup_actions.py:66
+#, python-brace-format
+msgid "{count} tasks"
+msgstr "{count} Aufgaben"
+
+#: pensum/ui/backup_actions.py:69
+msgid "1 journey entry"
+msgstr "1 Reise-Eintrag"
+
+#: pensum/ui/backup_actions.py:70
+#, python-brace-format
+msgid "{count} journey entries"
+msgstr "{count} Reise-Einträge"
+
+#: pensum/ui/backup_actions.py:73
+msgid "Replace Other Data?"
+msgstr "Andere Daten ersetzen?"
+
+#: pensum/ui/backup_actions.py:74
+#, python-brace-format
+msgid "This file has none of the tasks on this device: {lost} would be lost."
+msgstr "Diese Datei enthält keine der Aufgaben auf diesem Gerät. Verloren ginge: {lost}."
+
+#: pensum/ui/backup_actions.py:77
+msgid "Import Older Data?"
+msgstr "Ältere Daten importieren?"
+
+#: pensum/ui/backup_actions.py:78
+#, python-brace-format
+msgid "This file is older than what is on this device: {lost} would be lost."
+msgstr "Diese Datei ist älter als der Stand auf diesem Gerät. Verloren ginge: {lost}."
+
+#: pensum/ui/backup_actions.py:81
+#, python-brace-format
+msgid "Among them is your journey's task, done on {days}."
+msgstr "Darunter ist die Aufgabe deiner Reise, erledigt: {days}."
+
+#: pensum/ui/backup_actions.py:108
+msgid "Backup imported"
+msgstr "Sicherung importiert"
+
+#: pensum/ui/backup_actions.py:112
+msgid "Import Anyway"
+msgstr "Trotzdem importieren"
+
+#: pensum/ui/backup_actions.py:112 pensum/ui/sync_page.py:241
+msgid "Replace"
+msgstr "Ersetzen"
+
+#: pensum/ui/backup_actions.py:117
+msgid "Export Backup"
+msgstr "Sicherung exportieren"
+
+#: pensum/ui/backup_actions.py:129 pensum/ui/journey/own_file.py:57
+#, python-brace-format
+msgid "Can't export: {reason}"
+msgstr "Export nicht möglich: {reason}"
+
+#: pensum/ui/backup_actions.py:131
+msgid "Backup exported"
+msgstr "Sicherung exportiert"
+
+#: pensum/ui/dialogs.py:10
+msgid "Name"
+msgstr "Name"
+
+#: pensum/ui/dialogs.py:12 pensum/ui/dialogs.py:35
+msgid "Cancel"
+msgstr "Abbrechen"
+
+#: pensum/ui/journey/art.py:229
+#, python-brace-format
+msgid "{title}, the lantern lit"
+msgstr "{title}, die Laterne brennt"
 
 #: pensum/ui/journey/banners.py:55
 msgid "Paused: the task's repeat is paused. Paused days don't count."
@@ -70,36 +521,36 @@ msgstr "Die Aufgabe hakst du wie gewohnt in deiner Aufgabenliste ab."
 msgid "Moment removed"
 msgstr "Moment entfernt"
 
-#: pensum/ui/journey/choose_page.py:30 pensum/ui/journey/choose_page.py:88
+#: pensum/ui/journey/choose_page.py:32 pensum/ui/journey/choose_page.py:92
 msgid "Your Own"
 msgstr "Deine eigenen"
 
-#: pensum/ui/journey/choose_page.py:34 pensum/ui/journey/quick_page.py:22
+#: pensum/ui/journey/choose_page.py:38 pensum/ui/journey/quick_page.py:22
 #: pensum/ui/journey/quick_preview.py:32
 msgid "Your Own Habit"
 msgstr "Eigene Gewohnheit"
 
-#: pensum/ui/journey/choose_page.py:34
+#: pensum/ui/journey/choose_page.py:38
 msgid "A few questions make a journey of your habit."
 msgstr "Ein paar Fragen machen aus deiner Gewohnheit eine Reise."
 
-#: pensum/ui/journey/choose_page.py:36 pensum/ui/journey/own_file.py:40
+#: pensum/ui/journey/choose_page.py:40 pensum/ui/journey/own_file.py:40
 msgid "Import a Journey File"
 msgstr "Reise-Datei importieren"
 
-#: pensum/ui/journey/choose_page.py:89
+#: pensum/ui/journey/choose_page.py:93
 msgid "Export as a File"
 msgstr "Als Datei exportieren"
 
-#: pensum/ui/journey/choose_page.py:91
+#: pensum/ui/journey/choose_page.py:95
 msgid "Remove This Journey"
 msgstr "Diese Reise entfernen"
 
-#: pensum/ui/journey/choose_page.py:108
+#: pensum/ui/journey/choose_page.py:112
 msgid "A journey you have walked stays."
 msgstr "Eine Reise, die du gegangen bist, bleibt."
 
-#: pensum/ui/journey/choose_page.py:113
+#: pensum/ui/journey/choose_page.py:117
 msgid "Journey removed"
 msgstr "Reise entfernt"
 
@@ -133,6 +584,15 @@ msgstr ""
 msgid "Open the Task"
 msgstr "Aufgabe öffnen"
 
+#: pensum/ui/journey/moment_page.py:24
+msgid "Save"
+msgstr "Speichern"
+
+#: pensum/ui/journey/moment_rows.py:34
+#, python-brace-format
+msgid "{when} (24 h, like 21:30)"
+msgstr "{when} (24 Stunden, z. B. 21:30)"
+
 #: pensum/ui/journey/own_file.py:12
 msgid "Journey Files"
 msgstr "Reise-Dateien"
@@ -144,11 +604,6 @@ msgstr "Diese Datei ist keine Reise."
 #: pensum/ui/journey/own_file.py:33
 msgid "Journey imported"
 msgstr "Reise importiert"
-
-#: pensum/ui/journey/own_file.py:57
-#, python-brace-format
-msgid "Can't export: {reason}"
-msgstr "Export nicht möglich: {reason}"
 
 #: pensum/ui/journey/own_file.py:59
 msgid "Journey exported"
@@ -180,8 +635,12 @@ msgid "What do you want to do?"
 msgstr "Was möchtest du tun?"
 
 #: pensum/ui/journey/quick_page.py:25
-msgid "In your own words. It completes “I will …”: read, stretch, write in my journal."
-msgstr "In deinen eigenen Worten, in der Grundform. Es ergänzt „Ich will …“: lesen, mich dehnen, Tagebuch schreiben."
+msgid ""
+"In your own words. It completes “I will …”: read, stretch, write in my "
+"journal."
+msgstr ""
+"In deinen eigenen Worten, in der Grundform. Es ergänzt „Ich will …“: lesen, "
+"mich dehnen, Tagebuch schreiben."
 
 #: pensum/ui/journey/quick_page.py:27
 msgid "I will …"
@@ -192,8 +651,12 @@ msgid "After what?"
 msgstr "Wonach?"
 
 #: pensum/ui/journey/quick_page.py:30
-msgid "A moment that already happens in your day. It completes “After …”: brushing my teeth."
-msgstr "Ein Moment, den es in deinem Tag schon gibt. Er ergänzt „Nach …“: dem Zähneputzen."
+msgid ""
+"A moment that already happens in your day. It completes “After …”: brushing "
+"my teeth."
+msgstr ""
+"Ein Moment, den es in deinem Tag schon gibt. Er ergänzt „Nach …“: dem "
+"Zähneputzen."
 
 #: pensum/ui/journey/quick_page.py:32
 msgid "After …"
@@ -227,7 +690,7 @@ msgstr "Beginne mit einem Schritt, der so klein ist, dass er immer geht."
 msgid "Counted in"
 msgstr "Gezählt in"
 
-#: pensum/ui/journey/quick_page.py:49
+#: pensum/ui/journey/quick_page.py:49 pensum/ui/time_picker.py:43
 msgid "Minutes"
 msgstr "Minuten"
 
@@ -263,7 +726,8 @@ msgstr "Wie oft?"
 msgid "Planned"
 msgstr "Geplant"
 
-#: pensum/ui/journey/quick_page.py:93
+#: pensum/ui/journey/quick_page.py:93 pensum/ui/repeat_page.py:21
+#: pensum/ui/repeat_page.py:37
 msgid "Every day"
 msgstr "Jeden Tag"
 
@@ -340,3 +804,839 @@ msgstr ""
 "Die Aufgabe des größeren Schritts bleibt, wie sie ist. Danach könntest du "
 "ihre Wiederholung auf ihrer Seite „Repeat“ pausieren oder beenden, damit du "
 "nicht beide behältst."
+
+#: pensum/ui/list_menu.py:25
+msgid "Add Section…"
+msgstr "Abschnitt hinzufügen…"
+
+#: pensum/ui/list_menu.py:28 pensum/ui/section_group.py:43
+msgid "Rename…"
+msgstr "Umbenennen…"
+
+#: pensum/ui/list_menu.py:31
+msgid "Unarchive Project"
+msgstr "Projekt wiederherstellen"
+
+#: pensum/ui/list_menu.py:31
+msgid "Archive Project"
+msgstr "Projekt archivieren"
+
+#: pensum/ui/list_menu.py:34 pensum/ui/section_group.py:44
+msgid "Delete"
+msgstr "Löschen"
+
+#: pensum/ui/list_menu.py:46
+msgid "Add Section"
+msgstr "Abschnitt hinzufügen"
+
+#: pensum/ui/list_menu.py:46
+msgid "Add"
+msgstr "Hinzufügen"
+
+#: pensum/ui/list_menu.py:57
+msgid "Rename Project"
+msgstr "Projekt umbenennen"
+
+#: pensum/ui/list_menu.py:57
+msgid "Rename Tag"
+msgstr "Schlagwort umbenennen"
+
+#: pensum/ui/list_menu.py:58 pensum/ui/section_group.py:85
+msgid "Rename"
+msgstr "Umbenennen"
+
+#: pensum/ui/list_menu.py:67
+msgid "Project archived"
+msgstr "Projekt archiviert"
+
+#: pensum/ui/list_menu.py:87 pensum/ui/task_page.py:433
+#, python-brace-format
+msgid "“{title}” deleted"
+msgstr "„{title}“ gelöscht"
+
+#: pensum/ui/notes_box.py:15 pensum/ui/notes_box.py:34
+msgid "Notes"
+msgstr "Notizen"
+
+#: pensum/ui/notes_box.py:89
+msgid "Edit"
+msgstr "Bearbeiten"
+
+#: pensum/ui/notes_box.py:90
+msgid "Show the Notes Formatted"
+msgstr "Notizen formatiert anzeigen"
+
+#: pensum/ui/notes_box.py:90
+msgid "Edit the Notes"
+msgstr "Notizen bearbeiten"
+
+#: pensum/ui/notes_view.py:58
+msgid "No notes"
+msgstr "Keine Notizen"
+
+#: pensum/ui/repeat_page.py:14
+msgid "Mon"
+msgstr "Mo"
+
+#: pensum/ui/repeat_page.py:14
+msgid "Tue"
+msgstr "Di"
+
+#: pensum/ui/repeat_page.py:14
+msgid "Wed"
+msgstr "Mi"
+
+#: pensum/ui/repeat_page.py:14
+msgid "Thu"
+msgstr "Do"
+
+#: pensum/ui/repeat_page.py:14
+msgid "Fri"
+msgstr "Fr"
+
+#: pensum/ui/repeat_page.py:14
+msgid "Sat"
+msgstr "Sa"
+
+#: pensum/ui/repeat_page.py:15
+msgid "Sun"
+msgstr "So"
+
+#: pensum/ui/repeat_page.py:16
+msgid "Every Monday"
+msgstr "Jeden Montag"
+
+#: pensum/ui/repeat_page.py:16
+msgid "Every Tuesday"
+msgstr "Jeden Dienstag"
+
+#: pensum/ui/repeat_page.py:16
+msgid "Every Wednesday"
+msgstr "Jeden Mittwoch"
+
+#: pensum/ui/repeat_page.py:17
+msgid "Every Thursday"
+msgstr "Jeden Donnerstag"
+
+#: pensum/ui/repeat_page.py:17
+msgid "Every Friday"
+msgstr "Jeden Freitag"
+
+#: pensum/ui/repeat_page.py:17
+msgid "Every Saturday"
+msgstr "Jeden Samstag"
+
+#: pensum/ui/repeat_page.py:18
+msgid "Every Sunday"
+msgstr "Jeden Sonntag"
+
+#: pensum/ui/repeat_page.py:19
+msgid "days"
+msgstr "Tage"
+
+#: pensum/ui/repeat_page.py:19
+msgid "weeks"
+msgstr "Wochen"
+
+#: pensum/ui/repeat_page.py:19
+msgid "months"
+msgstr "Monate"
+
+#: pensum/ui/repeat_page.py:20
+msgid "years"
+msgstr "Jahre"
+
+#: pensum/ui/repeat_page.py:21
+msgid "Every week"
+msgstr "Jede Woche"
+
+#: pensum/ui/repeat_page.py:22
+msgid "Every month"
+msgstr "Jeden Monat"
+
+#: pensum/ui/repeat_page.py:22
+msgid "Every year"
+msgstr "Jedes Jahr"
+
+#: pensum/ui/repeat_page.py:23
+#, python-brace-format
+msgid "Every {n} days"
+msgstr "Alle {n} Tage"
+
+#: pensum/ui/repeat_page.py:23
+#, python-brace-format
+msgid "Every {n} weeks"
+msgstr "Alle {n} Wochen"
+
+#: pensum/ui/repeat_page.py:24
+#, python-brace-format
+msgid "Every {n} months"
+msgstr "Alle {n} Monate"
+
+#: pensum/ui/repeat_page.py:24
+#, python-brace-format
+msgid "Every {n} years"
+msgstr "Alle {n} Jahre"
+
+#: pensum/ui/repeat_page.py:30 pensum/ui/repeat_page.py:31
+#, python-brace-format
+msgid "{n}th"
+msgstr "{n}."
+
+#: pensum/ui/repeat_page.py:31
+#, python-brace-format
+msgid "{n}st"
+msgstr "{n}."
+
+#: pensum/ui/repeat_page.py:31
+#, python-brace-format
+msgid "{n}nd"
+msgstr "{n}."
+
+#: pensum/ui/repeat_page.py:31
+#, python-brace-format
+msgid "{n}rd"
+msgstr "{n}."
+
+#: pensum/ui/repeat_page.py:41
+#, python-brace-format
+msgid "Every month on the {day}"
+msgstr "Jeden Monat am {day}"
+
+#: pensum/ui/repeat_page.py:43
+#, python-brace-format
+msgid "Every year on {date}"
+msgstr "Jedes Jahr am {date}"
+
+#: pensum/ui/repeat_page.py:44 pensum/ui/repeat_page.py:85
+msgid "Custom"
+msgstr "Eigene"
+
+#: pensum/ui/repeat_page.py:54
+msgid "no day"
+msgstr "kein Tag"
+
+#: pensum/ui/repeat_page.py:55
+#, python-brace-format
+msgid "Every {n} weeks: {days}"
+msgstr "Alle {n} Wochen: {days}"
+
+#: pensum/ui/repeat_page.py:61
+#, python-brace-format
+msgid "{rule} on the last day"
+msgstr "{rule} am letzten Tag"
+
+#: pensum/ui/repeat_page.py:62
+#, python-brace-format
+msgid "{rule} (paused)"
+msgstr "{rule} (pausiert)"
+
+#: pensum/ui/repeat_page.py:67 pensum/ui/repeat_page.py:80
+#: pensum/ui/task_page.py:130
+msgid "Repeat"
+msgstr "Wiederholung"
+
+#: pensum/ui/repeat_page.py:78
+msgid ""
+"A repeating task comes back on its days, the way Super Productivity creates "
+"it."
+msgstr "Eine wiederkehrende Aufgabe kommt an ihren Tagen wieder, so wie Super Productivity sie anlegt."
+
+#: pensum/ui/repeat_page.py:87
+msgid "Every"
+msgstr "Alle"
+
+#: pensum/ui/repeat_page.py:90
+msgid "Unit"
+msgstr "Einheit"
+
+#: pensum/ui/repeat_page.py:111
+msgid "Paused"
+msgstr "Pausiert"
+
+#: pensum/ui/repeat_page.py:112
+msgid "No new tasks while paused"
+msgstr "Keine neuen Aufgaben, solange pausiert"
+
+#: pensum/ui/repeat_page.py:116
+msgid "Time (like 14:30)"
+msgstr "Uhrzeit (z. B. 14:30)"
+
+#: pensum/ui/repeat_page.py:126
+msgid "Stop Repeating"
+msgstr "Wiederholung beenden"
+
+#: pensum/ui/repeat_page.py:156 pensum/ui/task_page.py:372
+msgid "Never"
+msgstr "Nie"
+
+#: pensum/ui/repeat_page.py:182 pensum/ui/task_page.py:208
+msgid "Set a time first"
+msgstr "Lege zuerst eine Uhrzeit fest"
+
+#: pensum/ui/repeat_page.py:244
+msgid "Write the time like 14:30"
+msgstr "Schreibe die Uhrzeit so: 14:30"
+
+#: pensum/ui/repeat_page.py:277
+msgid "Stopped repeating"
+msgstr "Wiederholung beendet"
+
+#: pensum/ui/repeat_page.py:277 pensum/window.py:209
+msgid "Undo"
+msgstr "Rückgängig"
+
+#: pensum/ui/search_page.py:12 pensum/ui/sidebar.py:46 pensum/ui/sidebar.py:48
+msgid "Search"
+msgstr "Suche"
+
+#: pensum/ui/search_page.py:16 pensum/ui/search_page.py:17
+#: pensum/ui/search_page.py:25 pensum/ui/search_page.py:63
+msgid "Search Tasks"
+msgstr "Aufgaben suchen"
+
+#: pensum/ui/search_page.py:26 pensum/ui/search_page.py:64
+msgid "Titles and notes, archive included."
+msgstr "Titel und Notizen, Archiv eingeschlossen."
+
+#: pensum/ui/search_page.py:47
+#, python-brace-format
+msgid "Archived, done {day}"
+msgstr "Archiviert, erledigt am {day}"
+
+#: pensum/ui/search_page.py:49
+msgid "Archived"
+msgstr "Archiviert"
+
+#: pensum/ui/search_page.py:60
+msgid "No Tasks Found"
+msgstr "Keine Aufgaben gefunden"
+
+#: pensum/ui/search_page.py:61
+msgid "Try other words."
+msgstr "Probiere andere Wörter."
+
+#: pensum/ui/section_group.py:34
+#, python-brace-format
+msgid "Collapse Section “{title}”"
+msgstr "Abschnitt „{title}“ einklappen"
+
+#: pensum/ui/section_group.py:35
+#, python-brace-format
+msgid "Expand Section “{title}”"
+msgstr "Abschnitt „{title}“ ausklappen"
+
+#: pensum/ui/section_group.py:52
+msgid "Section Menu"
+msgstr "Abschnittsmenü"
+
+#: pensum/ui/section_group.py:56
+#, python-brace-format
+msgid "Menu of Section “{title}”"
+msgstr "Menü des Abschnitts „{title}“"
+
+#: pensum/ui/section_group.py:84
+msgid "Rename Section"
+msgstr "Abschnitt umbenennen"
+
+#: pensum/ui/section_group.py:94
+#, python-brace-format
+msgid "Section “{title}” deleted"
+msgstr "Abschnitt „{title}“ gelöscht"
+
+#: pensum/ui/sidebar.py:13
+msgid "Import Backup…"
+msgstr "Sicherung importieren…"
+
+#: pensum/ui/sidebar.py:14
+msgid "Export Backup…"
+msgstr "Sicherung exportieren…"
+
+#: pensum/ui/sidebar.py:15
+msgid "Read Sync Folder…"
+msgstr "Sync-Ordner lesen…"
+
+#: pensum/ui/sidebar.py:20
+#, python-brace-format
+msgid "About {name}"
+msgstr "Über {name}"
+
+#: pensum/ui/sidebar.py:27
+msgid "New Project…"
+msgstr "Neues Projekt…"
+
+#: pensum/ui/sidebar.py:28
+msgid "New Tag…"
+msgstr "Neues Schlagwort…"
+
+#: pensum/ui/sidebar.py:40 pensum/ui/sidebar.py:41
+msgid "Main Menu"
+msgstr "Hauptmenü"
+
+#: pensum/ui/sidebar.py:51 pensum/ui/sidebar.py:52
+msgid "Add List"
+msgstr "Liste hinzufügen"
+
+#: pensum/ui/sidebar.py:71
+msgid "New Project"
+msgstr "Neues Projekt"
+
+#: pensum/ui/sidebar.py:71 pensum/ui/tags_dialog.py:32
+msgid "New Tag"
+msgstr "Neues Schlagwort"
+
+#: pensum/ui/sidebar.py:79
+msgid "Create"
+msgstr "Anlegen"
+
+#: pensum/ui/sidebar.py:95
+#, python-brace-format
+msgid "{title}, {count} open"
+msgstr "{title}, {count} offen"
+
+#: pensum/ui/sidebar.py:107 pensum/ui/sync_page.py:42
+msgid "Projects"
+msgstr "Projekte"
+
+#: pensum/ui/sidebar.py:107 pensum/ui/sync_page.py:43
+#: pensum/ui/tags_dialog.py:10 pensum/ui/task_page.py:126
+msgid "Tags"
+msgstr "Schlagwörter"
+
+#: pensum/ui/sync_page.py:22
+msgid "Sync Folder"
+msgstr "Sync-Ordner"
+
+#: pensum/ui/sync_page.py:34
+msgid ""
+"Only when encryption is switched on in Super Productivity's sync settings."
+msgstr "Nur nötig, wenn die Verschlüsselung in den Sync-Einstellungen von Super Productivity eingeschaltet ist."
+
+#: pensum/ui/sync_page.py:36
+msgid "Encryption Password"
+msgstr "Verschlüsselungspasswort"
+
+#: pensum/ui/sync_page.py:39
+msgid "In the Sync Folder"
+msgstr "Im Sync-Ordner"
+
+#: pensum/ui/sync_page.py:41
+msgid "Open Tasks"
+msgstr "Offene Aufgaben"
+
+#: pensum/ui/sync_page.py:41
+msgid "Done Tasks"
+msgstr "Erledigte Aufgaben"
+
+#: pensum/ui/sync_page.py:42
+msgid "Archived Tasks"
+msgstr "Archivierte Aufgaben"
+
+#: pensum/ui/sync_page.py:44
+msgid "Changes Since Last Read"
+msgstr "Änderungen seit dem letzten Lesen"
+
+#: pensum/ui/sync_page.py:61
+msgid ""
+"Read the tasks Super Productivity keeps in its sync folder. Day Planner only "
+"reads the folder and never changes it."
+msgstr "Liest die Aufgaben, die Super Productivity in seinem Sync-Ordner ablegt. Day Planner liest den Ordner nur und ändert ihn nie."
+
+#: pensum/ui/sync_page.py:65
+msgid "Kind"
+msgstr "Art"
+
+#: pensum/ui/sync_page.py:66
+msgid "WebDAV or Nextcloud"
+msgstr "WebDAV oder Nextcloud"
+
+#: pensum/ui/sync_page.py:66
+msgid "Folder on This Device"
+msgstr "Ordner auf diesem Gerät"
+
+#: pensum/ui/sync_page.py:70
+msgid "Server Address"
+msgstr "Serveradresse"
+
+#: pensum/ui/sync_page.py:72
+msgid "User Name"
+msgstr "Benutzername"
+
+#: pensum/ui/sync_page.py:73
+msgid "Password"
+msgstr "Passwort"
+
+#: pensum/ui/sync_page.py:74
+msgid "Folder on the Server"
+msgstr "Ordner auf dem Server"
+
+#: pensum/ui/sync_page.py:78
+msgid "Folder"
+msgstr "Ordner"
+
+#: pensum/ui/sync_page.py:79 pensum/ui/sync_page.py:124
+msgid "None chosen"
+msgstr "Nichts gewählt"
+
+#: pensum/ui/sync_page.py:80
+msgid "Choose…"
+msgstr "Wählen…"
+
+#: pensum/ui/sync_page.py:93
+msgid "Read Folder"
+msgstr "Ordner lesen"
+
+#: pensum/ui/sync_page.py:98
+msgid "Import…"
+msgstr "Importieren…"
+
+#: pensum/ui/sync_page.py:116
+msgid "Choose the Sync Folder"
+msgstr "Sync-Ordner wählen"
+
+#: pensum/ui/sync_page.py:138
+msgid "Choose the folder first."
+msgstr "Wähle zuerst den Ordner."
+
+#: pensum/ui/sync_page.py:146
+msgid "Enter the server address."
+msgstr "Gib die Serveradresse ein."
+
+#: pensum/ui/sync_page.py:219
+msgid "More than the folder keeps"
+msgstr "Mehr, als der Ordner aufbewahrt"
+
+#: pensum/ui/sync_page.py:226
+#, python-brace-format
+msgid "Last synced {stamp}."
+msgstr "Zuletzt synchronisiert: {stamp}."
+
+#: pensum/ui/sync_page.py:227
+msgid "Read only: the folder is not changed."
+msgstr "Nur gelesen: Der Ordner wird nicht verändert."
+
+#: pensum/ui/sync_page.py:238
+msgid ""
+"Your tasks, projects and tracked time are replaced by the ones in the sync "
+"folder. A copy of the current data is kept in the backups folder. The sync "
+"folder is not changed."
+msgstr "Deine Aufgaben, Projekte und erfasste Zeit werden durch die aus dem Sync-Ordner ersetzt. Eine Kopie der aktuellen Daten bleibt im Sicherungsordner erhalten. Der Sync-Ordner wird nicht verändert."
+
+#: pensum/ui/sync_page.py:251
+msgid "Sync folder imported"
+msgstr "Sync-Ordner importiert"
+
+#: pensum/ui/task_list.py:30 pensum/ui/task_list.py:31
+msgid "List Menu"
+msgstr "Listenmenü"
+
+#: pensum/ui/task_list.py:42 pensum/ui/task_list.py:43
+#: pensum/ui/task_list.py:46 pensum/ui/task_list.py:48
+msgid "Add Task"
+msgstr "Aufgabe hinzufügen"
+
+#: pensum/ui/task_list.py:60
+msgid "Move All to Today"
+msgstr "Alle auf Heute verschieben"
+
+#: pensum/ui/task_list.py:69
+msgid "No Open Tasks"
+msgstr "Keine offenen Aufgaben"
+
+#: pensum/ui/task_list.py:82 pensum/ui/task_list.py:217
+msgid "Finish Day"
+msgstr "Tag abschließen"
+
+#: pensum/ui/task_list.py:84
+msgid "Move the done tasks into the archive"
+msgstr "Erledigte Aufgaben ins Archiv verschieben"
+
+#: pensum/ui/task_list.py:133
+#, python-brace-format
+msgid "{count} done tasks archived"
+msgstr "{count} erledigte Aufgaben archiviert"
+
+#: pensum/ui/task_list.py:134
+msgid "1 done task archived"
+msgstr "1 erledigte Aufgabe archiviert"
+
+#: pensum/ui/task_list.py:166 pensum/ui/task_list.py:253
+#, python-brace-format
+msgid "{time} worked"
+msgstr "{time} gearbeitet"
+
+#: pensum/ui/task_list.py:174
+msgid "Add Task to Today"
+msgstr "Aufgabe für Heute hinzufügen"
+
+#: pensum/ui/task_list.py:175
+#, python-brace-format
+msgid "Add Task to {list}"
+msgstr "Aufgabe zu {list} hinzufügen"
+
+#: pensum/ui/task_list.py:190
+#, python-brace-format
+msgid "Overdue ({count})"
+msgstr "Überfällig ({count})"
+
+#: pensum/ui/task_list.py:211
+#, python-brace-format
+msgid "Backlog ({count})"
+msgstr "Backlog ({count})"
+
+#: pensum/ui/task_list.py:214
+msgid "Tasks you plan for today show here."
+msgstr "Aufgaben, die du für heute planst, erscheinen hier."
+
+#: pensum/ui/task_list.py:218
+msgid "Archive Done"
+msgstr "Erledigte archivieren"
+
+#: pensum/ui/task_list.py:219
+#, python-brace-format
+msgid "Done ({count})"
+msgstr "Erledigt ({count})"
+
+#: pensum/ui/task_page.py:17 pensum/ui/task_page.py:171
+msgid "Task"
+msgstr "Aufgabe"
+
+#: pensum/ui/task_page.py:44
+msgid "Title"
+msgstr "Titel"
+
+#: pensum/ui/task_page.py:49 pensum/ui/task_page.py:81
+#: pensum/ui/time_picker.py:38
+msgid "Time"
+msgstr "Zeit"
+
+#: pensum/ui/task_page.py:50 pensum/ui/time_dialog.py:14
+msgid "Time Spent"
+msgstr "Gearbeitete Zeit"
+
+#: pensum/ui/task_page.py:54
+msgid "Estimate (like 1h 30m)"
+msgstr "Schätzung (z. B. 1h 30m)"
+
+#: pensum/ui/task_page.py:60
+msgid "Planning"
+msgstr "Planung"
+
+#: pensum/ui/task_page.py:64
+msgid "Planned For"
+msgstr "Geplant für"
+
+#: pensum/ui/task_page.py:70 pensum/ui/task_page.py:72
+msgid "Choose Day"
+msgstr "Tag wählen"
+
+#: pensum/ui/task_page.py:74 pensum/ui/task_page.py:76
+msgid "Unplan"
+msgstr "Planung aufheben"
+
+#: pensum/ui/task_page.py:84 pensum/ui/task_page.py:86
+msgid "Remove Time"
+msgstr "Zeit entfernen"
+
+#: pensum/ui/task_page.py:96
+msgid "Deadline"
+msgstr "Frist"
+
+#: pensum/ui/task_page.py:102 pensum/ui/task_page.py:104
+msgid "Choose Deadline"
+msgstr "Frist wählen"
+
+#: pensum/ui/task_page.py:107 pensum/ui/task_page.py:110
+msgid "Remove Deadline"
+msgstr "Frist entfernen"
+
+#: pensum/ui/task_page.py:115
+msgid "Priority"
+msgstr "Priorität"
+
+#: pensum/ui/task_page.py:116 pensum/ui/task_page.py:215
+#: pensum/ui/task_page.py:234
+msgid "None"
+msgstr "Keine"
+
+#: pensum/ui/task_page.py:116
+msgid "Low"
+msgstr "Niedrig"
+
+#: pensum/ui/task_page.py:116
+msgid "Medium"
+msgstr "Mittel"
+
+#: pensum/ui/task_page.py:116
+msgid "High"
+msgstr "Hoch"
+
+#: pensum/ui/task_page.py:120
+msgid "Project"
+msgstr "Projekt"
+
+#: pensum/ui/task_page.py:139
+msgid "Subtasks"
+msgstr "Unteraufgaben"
+
+#: pensum/ui/task_page.py:143
+msgid "Add Subtask"
+msgstr "Unteraufgabe hinzufügen"
+
+#: pensum/ui/task_page.py:149
+msgid "Delete Task"
+msgstr "Aufgabe löschen"
+
+#: pensum/ui/task_page.py:175
+msgid "Mark as Done"
+msgstr "Als erledigt markieren"
+
+#: pensum/ui/task_page.py:195
+msgid "Not planned"
+msgstr "Nicht geplant"
+
+#: pensum/ui/task_page.py:199
+msgid "No time"
+msgstr "Keine Zeit"
+
+#: pensum/ui/task_page.py:209 pensum/ui/task_row.py:25
+#, python-brace-format
+msgid "At {time}"
+msgstr "Um {time}"
+
+#: pensum/ui/task_page.py:262
+#, python-brace-format
+msgid "{total} in total, {today} today"
+msgstr "{total} insgesamt, {today} heute"
+
+#: pensum/ui/task_page.py:266 pensum/ui/task_row.py:233
+#: pensum/ui/tracker_bar.py:29 pensum/ui/tracker_bar.py:32
+msgid "Stop Timer"
+msgstr "Timer stoppen"
+
+#: pensum/ui/task_page.py:266 pensum/ui/task_row.py:233
+msgid "Start Timer"
+msgstr "Timer starten"
+
+#: pensum/ui/task_page.py:280
+msgid "Tomorrow"
+msgstr "Morgen"
+
+#: pensum/ui/task_page.py:285
+#, python-brace-format
+msgid "{day} (overdue)"
+msgstr "{day} (überfällig)"
+
+#: pensum/ui/task_page.py:315
+msgid "A parent's time is the sum of its subtasks'"
+msgstr "Die Zeit einer Aufgabe mit Unteraufgaben ist die Summe ihrer Unteraufgaben"
+
+#: pensum/ui/task_page.py:323
+msgid "Write the estimate like 1h 30m or 45m"
+msgstr "Schreibe die Schätzung so: 1h 30m oder 45m"
+
+#: pensum/ui/task_row.py:12
+msgid "Low priority"
+msgstr "Niedrige Priorität"
+
+#: pensum/ui/task_row.py:12
+msgid "Medium priority"
+msgstr "Mittlere Priorität"
+
+#: pensum/ui/task_row.py:12
+msgid "High priority"
+msgstr "Hohe Priorität"
+
+#: pensum/ui/task_row.py:28
+#, python-brace-format
+msgid "Planned {date}"
+msgstr "Geplant {date}"
+
+#: pensum/ui/task_row.py:34
+msgid "Deadline passed"
+msgstr "Frist verstrichen"
+
+#: pensum/ui/task_row.py:36
+msgid "Deadline today"
+msgstr "Frist heute"
+
+#: pensum/ui/task_row.py:38
+#, python-brace-format
+msgid "Deadline {date}"
+msgstr "Frist {date}"
+
+#: pensum/ui/task_row.py:47
+#, python-brace-format
+msgid "{time} estimated"
+msgstr "{time} geschätzt"
+
+#: pensum/ui/task_row.py:51
+#, python-brace-format
+msgid "{done} of {total} subtasks"
+msgstr "{done} von {total} Unteraufgaben"
+
+#: pensum/ui/task_row.py:55
+msgid "Move to Top"
+msgstr "Ganz nach oben"
+
+#: pensum/ui/task_row.py:55
+msgid "Move Up"
+msgstr "Nach oben"
+
+#: pensum/ui/task_row.py:56
+msgid "Move Down"
+msgstr "Nach unten"
+
+#: pensum/ui/task_row.py:56
+msgid "Move to Bottom"
+msgstr "Ganz nach unten"
+
+#: pensum/ui/task_row.py:101
+msgid "Move to Backlog / List"
+msgstr "In Backlog / Liste verschieben"
+
+#: pensum/ui/task_row.py:143
+msgid "No Section"
+msgstr "Kein Abschnitt"
+
+#: pensum/ui/task_row.py:148
+msgid "Move to Section"
+msgstr "In Abschnitt verschieben"
+
+#: pensum/ui/task_row.py:227
+#, python-brace-format
+msgid "Mark “{title}” as done"
+msgstr "„{title}“ als erledigt markieren"
+
+#: pensum/ui/time_dialog.py:21 pensum/ui/time_dialog.py:23
+msgid "Add Day"
+msgstr "Tag hinzufügen"
+
+#: pensum/ui/time_dialog.py:41
+msgid "Write the time like 1h 30m; empty or 0 removes the day."
+msgstr "Schreibe die Zeit so: 1h 30m; leer oder 0 entfernt den Tag."
+
+#: pensum/ui/time_dialog.py:56
+msgid "Write the time like 1h 30m or 45m"
+msgstr "Schreibe die Zeit so: 1h 30m oder 45m"
+
+#: pensum/ui/time_picker.py:42
+msgid "Hours"
+msgstr "Stunden"
+
+#: pensum/ui/time_picker.py:56
+msgid "Set Time"
+msgstr "Uhrzeit festlegen"
+
+#: pensum/ui/tracker_bar.py:25
+msgid "Open Running Task"
+msgstr "Laufende Aufgabe öffnen"
+
+#: pensum/ui/tracker_bar.py:51
+#, python-brace-format
+msgid "{time} today"
+msgstr "{time} heute"
+
+#: pensum/window.py:108
+msgid "Can't save the tasks"
+msgstr "Die Aufgaben können nicht gespeichert werden"

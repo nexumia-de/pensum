@@ -5,6 +5,7 @@ nothing is saved."""
 from gi.repository import Adw
 
 from pensum.game.content import t
+from pensum.i18n import _
 from pensum.ui.journey.base import JourneySubpage
 from pensum.ui.journey.moment_rows import MAX_WORDS, MomentRows, limit
 
@@ -20,7 +21,7 @@ class MomentPage(JourneySubpage):
         self.name_row = limit(Adw.EntryRow(title=t("ui.moment.name"), text=name), MAX_WORDS)
         naming.add(self.name_row)
         self.text(t("ui.moment.tasks"), "dimmed", "caption")
-        self.set_main("Save", self._save)
+        self.set_main(_("Save"), self._save)
 
     def _save(self):
         anchor = self.rows.anchor()

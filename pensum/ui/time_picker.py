@@ -1,6 +1,7 @@
 """Choose a time of day by touch: hours and minutes with large plus and
 minus buttons; the numbers can also be typed."""
 from gi.repository import Adw, Gtk
+from pensum.i18n import _
 
 
 def _spin(upper, step, value, label):
@@ -34,12 +35,12 @@ class TimePicker(Adw.Dialog):
     """`on_set(hours, minutes)` runs when Set Time is pressed."""
 
     def __init__(self, hours, minutes, on_set):
-        super().__init__(title="Time", content_width=360)
+        super().__init__(title=_("Time"), content_width=360)
         self.on_set = on_set
         toolbar = Adw.ToolbarView()
         toolbar.add_top_bar(Adw.HeaderBar())
-        self.hours = _spin(23, 1, hours, "Hours")
-        self.minutes = _spin(59, 5, minutes, "Minutes")
+        self.hours = _spin(23, 1, hours, _("Hours"))
+        self.minutes = _spin(59, 5, minutes, _("Minutes"))
         colon = Gtk.Label(label=":")
         colon.add_css_class("title-1")
         clock = Gtk.Box(spacing=12, halign=Gtk.Align.CENTER,
@@ -52,7 +53,7 @@ class TimePicker(Adw.Dialog):
         toolbar.set_content(Gtk.ScrolledWindow(
             child=clock, hscrollbar_policy=Gtk.PolicyType.NEVER,
             propagate_natural_height=True))
-        self.apply = Gtk.Button(label="Set Time", margin_top=6, margin_bottom=12,
+        self.apply = Gtk.Button(label=_("Set Time"), margin_top=6, margin_bottom=12,
                                 margin_start=12, margin_end=12)
         self.apply.add_css_class("suggested-action")
         self.apply.add_css_class("pensum-bar-button")

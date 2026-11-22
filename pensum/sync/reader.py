@@ -13,6 +13,7 @@ import json
 import logging
 from dataclasses import dataclass, field
 
+from pensum.i18n import _
 from pensum.store import backup
 from pensum.sync import SyncError, crypto, envelope, replay
 
@@ -50,16 +51,17 @@ def read(source, password=None):
     text = source.read(SYNC_FILE)
     if text is None:
         if source.read(LEGACY_META_FILE) is not None:
-            raise SyncError("The folder was written by Super Productivity 16 "
-                            "or older. Sync it with a current Super "
-                            "Productivity first.")
-        raise SyncError("No Super Productivity sync files in this folder.")
-    payload, _ = decode(text)
+            raise SyncError(_("The folder was written by Super Productivity 16 "
+                              "or older. Sync it with a current Super "
+                              "Productivity first."))
+        raise SyncError(_("No Super Productivity sync files in this folder."))
+    payload, _version = decode(text)
     if payload.get("version") == 3 and payload.get("format") == "split":
-        raise SyncError("The folder uses Surgical sync, but its operations "
-                        "file is missing.")
+        raise SyncError(_("The folder uses Surgical sync, but its operations "
+                          "file is missing."))
     if payload.get("version") != 2:
-        raise SyncError(f"Unknown sync file version {payload.get('version')!r}.")
+        raise SyncError(_("Unknown sync file version {version}.").format(
+            version=repr(payload.get("version"))))
     snapshot = _snapshot("v2", payload, payload)
     log.info("read sync v2: syncVersion %s, %d tasks, %d recent ops",
              snapshot.sync_version, len(snapshot.data["task"]["ids"]),
@@ -68,10 +70,10 @@ def read(source, password=None):
 
 
 def _read_split(source, ops_text, decode):
-    ops_file, _ = decode(ops_text)
+    ops_file, _version = decode(ops_text)
     ref = ops_file.get("snapshotRef")
     if ops_file.get("version") != 3 or not isinstance(ref, dict):
-        raise SyncError("The Surgical sync operations file is damaged.")
+        raise SyncError(_("The Surgical sync operations file is damaged."))
     names = [n for n in (ref.get("file"), STATE_FILE, STATE_BACKUP_FILE) if n]
     state_file = None
     for name in names:
@@ -79,7 +81,7 @@ def _read_split(source, ops_text, decode):
         if text is None:
             continue
         try:
-            candidate, _ = decode(text)
+            candidate, _version = decode(text)
         except (envelope.NeedsPassword, crypto.WrongPassword):
             raise
         except SyncError:
@@ -89,7 +91,7 @@ def _read_split(source, ops_text, decode):
             state_file = candidate
             break
     if state_file is None:
-        raise SyncError("The Surgical sync snapshot is missing.")
+        raise SyncError(_("The Surgical sync snapshot is missing."))
     newer = [op for op in ops_file.get("recentOps") or []
              if (op.get("sv") or 0) > ref["syncVersion"]]
     snapshot = _snapshot("v3", ops_file, state_file)
@@ -106,7 +108,7 @@ def _read_split(source, ops_text, decode):
 def _snapshot(fmt, head, holder):
     state = holder.get("state")
     if not isinstance(state, dict):
-        raise SyncError("The sync file holds no data.")
+        raise SyncError(_("The sync file holds no data."))
     state = dict(state)
     # Older versions keep the archives next to `state`, 20.0 inside it.
     for name in ("archiveYoung", "archiveOld"):
@@ -115,7 +117,8 @@ def _snapshot(fmt, head, holder):
     try:
         data = backup.parse(json.dumps(state))
     except backup.BackupError as error:
-        raise SyncError(f"The synced data can't be opened: {error}") from error
+        raise SyncError(_("The synced data can't be opened: {reason}").format(
+            reason=error)) from error
     ops = head.get("recentOps")
     return Snapshot(format=fmt,
                     sync_version=int(head.get("syncVersion") or 0),

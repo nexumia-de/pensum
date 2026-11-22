@@ -22,6 +22,7 @@ import hashlib
 import re
 from functools import lru_cache
 
+from pensum.i18n import _
 from pensum.sync import SyncError
 
 SALT_LENGTH = 16
@@ -50,14 +51,14 @@ def b64decode(text):
     try:
         return base64.b64decode(cleaned)
     except binascii.Error as error:
-        raise SyncError("A sync file is damaged (base64).") from error
+        raise SyncError(_("A sync file is damaged (base64).")) from error
 
 
 def decompress(text):
     try:
         return gzip.decompress(b64decode(text)).decode("utf-8")
     except (OSError, EOFError, UnicodeDecodeError) as error:
-        raise SyncError("A sync file is damaged (gzip).") from error
+        raise SyncError(_("A sync file is damaged (gzip).")) from error
 
 
 def decrypt(text, password, cache=None):
@@ -81,15 +82,15 @@ def decrypt(text, password, cache=None):
         plain = aes_gcm_decrypt(key, data[:IV_LENGTH], data[IV_LENGTH:])
         if plain is not None:
             return _text(plain)
-        raise WrongPassword("The encryption password is wrong.")
-    raise SyncError("A sync file is damaged (too short to be encrypted).")
+        raise WrongPassword(_("The encryption password is wrong."))
+    raise SyncError(_("A sync file is damaged (too short to be encrypted)."))
 
 
 def _text(plain):
     try:
         return plain.decode("utf-8")
     except UnicodeDecodeError as error:
-        raise SyncError("A sync file is damaged (not text).") from error
+        raise SyncError(_("A sync file is damaged (not text).")) from error
 
 
 # --- Argon2id ---------------------------------------------------------------
@@ -98,15 +99,15 @@ def argon2id(secret, salt):
     try:
         from _argon2_cffi_bindings import ffi, lib
     except ImportError as error:
-        raise SyncError("Encrypted sync files need the Argon2 module, which "
-                        "is missing.") from error
+        raise SyncError(_("Encrypted sync files need the Argon2 module, which "
+                          "is missing.")) from error
     out = ffi.new("uint8_t[]", KEY_LENGTH)
     result = lib.argon2_hash(ARGON2_PASSES, ARGON2_MEMORY_KIB, ARGON2_LANES,
                              secret, len(secret), salt, len(salt), out, KEY_LENGTH,
                              ffi.NULL, 0, lib.Argon2_id, lib.ARGON2_VERSION_13)
     if result != lib.ARGON2_OK:
-        raise SyncError("The encryption key can't be derived "
-                        f"(Argon2 error {result}).")
+        raise SyncError(_("The encryption key can't be derived "
+                          "(Argon2 error {code}).").format(code=result))
     return bytes(ffi.buffer(out, KEY_LENGTH))
 
 
@@ -138,7 +139,7 @@ def _libcrypto():
         lib.EVP_DecryptFinal_ex.argtypes = [ctypes.c_void_p, ctypes.c_void_p,
                                             ctypes.POINTER(ctypes.c_int)]
         return lib
-    raise SyncError("Encrypted sync files need OpenSSL, which is missing.")
+    raise SyncError(_("Encrypted sync files need OpenSSL, which is missing."))
 
 
 def aes_gcm_decrypt(key, iv, sealed):
@@ -149,7 +150,7 @@ def aes_gcm_decrypt(key, iv, sealed):
     body, tag = sealed[:-TAG_LENGTH], sealed[-TAG_LENGTH:]
     ctx = lib.EVP_CIPHER_CTX_new()
     if not ctx:
-        raise SyncError("OpenSSL failed.")
+        raise SyncError(_("OpenSSL failed."))
     try:
         out = ctypes.create_string_buffer(len(body) + 16)
         length = ctypes.c_int(0)
@@ -159,10 +160,10 @@ def aes_gcm_decrypt(key, iv, sealed):
               and lib.EVP_DecryptInit_ex(ctx, None, None, key, iv) == 1
               and lib.EVP_DecryptUpdate(ctx, out, ctypes.byref(length), body, len(body)) == 1)
         if not ok:
-            raise SyncError("OpenSSL failed.")
+            raise SyncError(_("OpenSSL failed."))
         written = length.value
         if lib.EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_TAG, TAG_LENGTH, tag_buffer) != 1:
-            raise SyncError("OpenSSL failed.")
+            raise SyncError(_("OpenSSL failed."))
         rest = ctypes.c_int(0)
         if lib.EVP_DecryptFinal_ex(ctx, ctypes.addressof(out) + written,
                                    ctypes.byref(rest)) != 1:

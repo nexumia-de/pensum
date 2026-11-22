@@ -13,6 +13,7 @@ import logging
 from gi.repository import Adw, Gio, GLib, Gtk
 
 from pensum import NAME
+from pensum.i18n import _
 from pensum.store.dataset import Context
 
 log = logging.getLogger("pensum.window")
@@ -104,7 +105,7 @@ class Window(Adw.ApplicationWindow):
             self.files.save(self.ds)
         except OSError as error:
             log.warning("saving failed: %s", error)
-            self.toast("Can't save the tasks")
+            self.toast(_("Can't save the tasks"))
         return GLib.SOURCE_REMOVE
 
     def flush(self):
@@ -205,7 +206,7 @@ class Window(Adw.ApplicationWindow):
         before = copy.deepcopy(self.ds.data)
         change()
         self.changed()
-        toast = Adw.Toast(title=GLib.markup_escape_text(message), button_label="Undo",
+        toast = Adw.Toast(title=GLib.markup_escape_text(message), button_label=_("Undo"),
                           priority=Adw.ToastPriority.HIGH)
 
         def undo(*_):
