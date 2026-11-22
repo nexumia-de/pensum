@@ -27,6 +27,7 @@ Change history is in [log.md](log.md).
 
 * [Focus mode](focus-mode.md) - Pomodoro, Flowtime and countdown for the running task, breaks that pause tracking, sessions in `metric.focusSessions`.
 * [Break reminder](breaks.md) - The calm reminder after an hour of tracked work, snooze, breaks counted in `timeTracking` `b`/`bt`.
+* [Worklog](worklog.md) - Time per day of a list for a week or a month, the CSV time sheet with the list's export settings.
 * [Daily summary](daily-summary.md) - The day's work, breaks and focus sessions and the evaluation in `metric`.
 
 # Reminders

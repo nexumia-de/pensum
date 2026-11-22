@@ -59,6 +59,7 @@ python.install_sources(
   'pensum/store/tasks.py',
   'pensum/store/tracking.py',
   'pensum/store/validate.py',
+  'pensum/store/worklog.py',
   subdir: 'pensum' / 'store',
 )
 python.install_sources(
@@ -171,6 +172,7 @@ python.install_sources(
   'pensum/ui/task_page.py',
   'pensum/ui/task_row.py',
   'pensum/ui/tracker_bar.py',
+  'pensum/ui/worklog_page.py',
   subdir: 'pensum' / 'ui',
 )
 # Loaded next to the Python files, also from the source tree.

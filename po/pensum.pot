@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pensum\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-22 05:57+0000\n"
+"POT-Creation-Date: 2026-11-22 05:58+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -417,7 +417,7 @@ msgstr ""
 msgid "Unarchive"
 msgstr ""
 
-#: pensum/ui/archived_page.py:54 pensum/ui/list_menu.py:70
+#: pensum/ui/archived_page.py:54 pensum/ui/list_menu.py:80
 msgid "Project back in the sidebar"
 msgstr ""
 
@@ -513,6 +513,7 @@ msgid "Export Backup"
 msgstr ""
 
 #: pensum/ui/backup_actions.py:129 pensum/ui/journey/own_file.py:57
+#: pensum/ui/worklog_page.py:119
 #, python-brace-format
 msgid "Can't export: {reason}"
 msgstr ""
@@ -882,51 +883,55 @@ msgid ""
 "end its repeat on its Repeat page so you don't keep both."
 msgstr ""
 
-#: pensum/ui/list_menu.py:25
+#: pensum/ui/list_menu.py:29
 msgid "Add Section…"
 msgstr ""
 
-#: pensum/ui/list_menu.py:28 pensum/ui/section_group.py:43
+#: pensum/ui/list_menu.py:30 pensum/ui/worklog_page.py:35
+msgid "Worklog"
+msgstr ""
+
+#: pensum/ui/list_menu.py:33 pensum/ui/section_group.py:43
 msgid "Rename…"
 msgstr ""
 
-#: pensum/ui/list_menu.py:31
+#: pensum/ui/list_menu.py:36
 msgid "Unarchive Project"
 msgstr ""
 
-#: pensum/ui/list_menu.py:31
+#: pensum/ui/list_menu.py:36
 msgid "Archive Project"
 msgstr ""
 
-#: pensum/ui/list_menu.py:34 pensum/ui/section_group.py:44
+#: pensum/ui/list_menu.py:39 pensum/ui/section_group.py:44
 msgid "Delete"
 msgstr ""
 
-#: pensum/ui/list_menu.py:46
+#: pensum/ui/list_menu.py:56
 msgid "Add Section"
 msgstr ""
 
-#: pensum/ui/list_menu.py:46
+#: pensum/ui/list_menu.py:56
 msgid "Add"
 msgstr ""
 
-#: pensum/ui/list_menu.py:57
+#: pensum/ui/list_menu.py:67
 msgid "Rename Project"
 msgstr ""
 
-#: pensum/ui/list_menu.py:57
+#: pensum/ui/list_menu.py:67
 msgid "Rename Tag"
 msgstr ""
 
-#: pensum/ui/list_menu.py:58 pensum/ui/section_group.py:85
+#: pensum/ui/list_menu.py:68 pensum/ui/section_group.py:85
 msgid "Rename"
 msgstr ""
 
-#: pensum/ui/list_menu.py:67
+#: pensum/ui/list_menu.py:77
 msgid "Project archived"
 msgstr ""
 
-#: pensum/ui/list_menu.py:87 pensum/ui/task_page.py:439
+#: pensum/ui/list_menu.py:97 pensum/ui/task_page.py:439
 #, python-brace-format
 msgid "“{title}” deleted"
 msgstr ""
@@ -1707,6 +1712,40 @@ msgstr ""
 #: pensum/ui/tracker_bar.py:51
 #, python-brace-format
 msgid "{time} today"
+msgstr ""
+
+#: pensum/ui/worklog_page.py:42 pensum/ui/worklog_page.py:43
+#: pensum/ui/worklog_page.py:107
+msgid "Export Time Sheet"
+msgstr ""
+
+#: pensum/ui/worklog_page.py:51
+msgid "Week"
+msgstr ""
+
+#: pensum/ui/worklog_page.py:52
+msgid "Month"
+msgstr ""
+
+#: pensum/ui/worklog_page.py:58
+msgid "Earlier"
+msgstr ""
+
+#: pensum/ui/worklog_page.py:59
+msgid "Later"
+msgstr ""
+
+#: pensum/ui/worklog_page.py:91
+#, python-brace-format
+msgid "{list}: {time} on {days} days"
+msgstr ""
+
+#: pensum/ui/worklog_page.py:102
+msgid "No time tracked"
+msgstr ""
+
+#: pensum/ui/worklog_page.py:121
+msgid "Time sheet exported"
 msgstr ""
 
 #: pensum/window.py:110

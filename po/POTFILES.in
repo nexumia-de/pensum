@@ -10,6 +10,7 @@ pensum/store/dataset.py
 pensum/store/focus.py
 pensum/store/metric.py
 pensum/store/reminders.py
+pensum/store/worklog.py
 pensum/sync/crypto.py
 pensum/sync/envelope.py
 pensum/sync/local.py
@@ -52,4 +53,5 @@ pensum/ui/task_row.py
 pensum/ui/time_dialog.py
 pensum/ui/time_picker.py
 pensum/ui/tracker_bar.py
+pensum/ui/worklog_page.py
 pensum/window.py
