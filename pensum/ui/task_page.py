@@ -141,6 +141,9 @@ class TaskPage(Adw.NavigationPage):
 
         self.notes = NotesBox(window, task_id)
         page.add(self.notes)
+        from pensum.ui.attachments_group import AttachmentsGroup
+        self.attachments = AttachmentsGroup(window, task_id)
+        page.add(self.attachments)
 
         self.subs = Adw.PreferencesGroup(title=_("Subtasks"))
         self.sub_list = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
@@ -172,6 +175,7 @@ class TaskPage(Adw.NavigationPage):
         if task is None:
             return
         ds = self.window.ds
+        self.attachments.refresh()
         if initial or not self.title_row.has_focus():
             self.title_row.set_text(task.get("title") or "")
         self.set_title(task.get("title") or _("Task"))

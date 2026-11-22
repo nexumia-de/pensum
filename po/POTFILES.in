@@ -4,6 +4,7 @@ pensum/game/sentences.py
 pensum/main.py
 pensum/preferences.py
 pensum/reminder_watch.py
+pensum/store/attachments.py
 pensum/store/backup.py
 pensum/store/breaks.py
 pensum/store/dataset.py
@@ -20,6 +21,7 @@ pensum/sync/replay/__init__.py
 pensum/sync/replay/ops.py
 pensum/sync/webdav.py
 pensum/ui/archived_page.py
+pensum/ui/attachments_group.py
 pensum/ui/backup_actions.py
 pensum/ui/dialogs.py
 pensum/ui/focus_page.py

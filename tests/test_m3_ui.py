@@ -133,3 +133,18 @@ def test_worklog_and_summary(window):
     assert (found["impactOfWork"], found["energyCheckin"]) == (3, 2)
     assert found["reflections"][0]["text"] == "Good day"
     valid(window)
+
+
+def test_attachments_on_the_task_page(window):
+    from pensum.ui.attachments_group import AttachmentsGroup
+    task = tasks.add_task(window.ds, "Write", Context.today())
+    task["attachments"] = [{"id": "c", "type": "COMMAND", "path": "ls"}]
+    group = AttachmentsGroup(window, task["id"])
+    group.entry.set_text("example.com")
+    group._on_add(group.entry)
+    iterate()
+    assert [a["path"] for a in task["attachments"]] == ["ls", "http://example.com"]
+    assert "A command; Day Planner does not run commands." in labels(group)
+    group._remove(task["attachments"][1]["id"])
+    assert len(task["attachments"]) == 1
+    valid(window)

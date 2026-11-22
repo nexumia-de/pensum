@@ -44,7 +44,7 @@ lost when the same backup goes back to Super Productivity.
 | Search | titles and notes, archive included | **M2, done** (#15) |
 | Finish day: archive done tasks | `archiveYoung`, `archiveOld`, `task` | **M2, done** (#16) |
 | Project notes | `note`, `project.noteIds` | **M3, done** (#24, [notes](project-notes.md)): list, edit, pin to Today, remove with Undo; pinned notes on Today |
-| Attachments and project bookmarks | `task.attachments` | M3 (show and open links) |
+| Attachments and project bookmarks | `task.attachments` | **M3, done** (#25, [attachments](attachments.md)): shown, opened through the portal, links added and removed; commands never run; project bookmarks not built |
 | Menu folders for projects and tags | `menuTree` folders | M3 (shown; editing later) |
 | Hide subtasks, task view customiser | `_hideSubTasksMode` | backlog |
 | Multi-select of tasks | – | backlog |

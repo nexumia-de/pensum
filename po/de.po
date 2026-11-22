@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pensum\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-22 06:00+0000\n"
+"POT-Creation-Date: 2026-11-22 06:01+0000\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -170,7 +170,7 @@ msgstr "Geplant um {time}"
 
 #: pensum/reminder_watch.py:119 pensum/ui/notes_box.py:89
 #: pensum/ui/search_page.py:51 pensum/ui/summary_page.py:72
-#: pensum/ui/task_page.py:181
+#: pensum/ui/task_page.py:185
 msgid "Done"
 msgstr "Erledigt"
 
@@ -230,7 +230,7 @@ msgstr "Die Datei kann nicht gelesen werden: {reason}"
 
 #: pensum/store/dataset.py:80 pensum/ui/sidebar.py:123
 #: pensum/ui/task_list.py:21 pensum/ui/task_page.py:67
-#: pensum/ui/task_page.py:284 pensum/ui/time_dialog.py:45
+#: pensum/ui/task_page.py:288 pensum/ui/time_dialog.py:45
 msgid "Today"
 msgstr "Heute"
 
@@ -416,8 +416,8 @@ msgstr "Archiviere ein Projekt über das Menü seiner Liste."
 #: pensum/ui/archived_page.py:37 pensum/ui/search_page.py:52
 #: pensum/ui/section_group.py:17 pensum/ui/section_group.py:93
 #: pensum/ui/sidebar.py:130 pensum/ui/sidebar.py:132
-#: pensum/ui/tags_dialog.py:28 pensum/ui/task_page.py:228
-#: pensum/ui/task_page.py:238 pensum/ui/task_page.py:437
+#: pensum/ui/tags_dialog.py:28 pensum/ui/task_page.py:232
+#: pensum/ui/task_page.py:242 pensum/ui/task_page.py:441
 #: pensum/ui/task_row.py:144 pensum/ui/task_row.py:211
 #: pensum/ui/task_row.py:225 pensum/ui/tracker_bar.py:49
 msgid "Untitled"
@@ -439,6 +439,34 @@ msgstr "Wiederherstellen"
 #: pensum/ui/archived_page.py:54 pensum/ui/list_menu.py:91
 msgid "Project back in the sidebar"
 msgstr "Projekt wieder in der Seitenleiste"
+
+#: pensum/ui/attachments_group.py:17
+msgid "Attachments"
+msgstr "Anhänge"
+
+#
+#: pensum/ui/attachments_group.py:20
+msgid "Add Link"
+msgstr "Link hinzufügen"
+
+#: pensum/ui/attachments_group.py:38
+msgid "A command; Day Planner does not run commands."
+msgstr "Ein Befehl; Day Planner führt keine Befehle aus."
+
+#
+#: pensum/ui/attachments_group.py:42 pensum/ui/attachments_group.py:43
+msgid "Remove Attachment"
+msgstr "Anhang entfernen"
+
+#
+#: pensum/ui/attachments_group.py:55
+msgid "Attachment removed"
+msgstr "Anhang entfernt"
+
+#
+#: pensum/ui/attachments_group.py:69
+msgid "Can't open the attachment"
+msgstr "Der Anhang kann nicht geöffnet werden"
 
 #: pensum/ui/backup_actions.py:19
 msgid "Super Productivity Backups"
@@ -989,7 +1017,7 @@ msgstr "Umbenennen"
 msgid "Project archived"
 msgstr "Projekt archiviert"
 
-#: pensum/ui/list_menu.py:108 pensum/ui/task_page.py:439
+#: pensum/ui/list_menu.py:108 pensum/ui/task_page.py:443
 #, python-brace-format
 msgid "“{title}” deleted"
 msgstr "„{title}“ gelöscht"
@@ -1257,11 +1285,11 @@ msgstr "Uhrzeit (z. B. 14:30)"
 msgid "Stop Repeating"
 msgstr "Wiederholung beenden"
 
-#: pensum/ui/repeat_page.py:156 pensum/ui/task_page.py:378
+#: pensum/ui/repeat_page.py:156 pensum/ui/task_page.py:382
 msgid "Never"
 msgstr "Nie"
 
-#: pensum/ui/repeat_page.py:182 pensum/ui/task_page.py:214
+#: pensum/ui/repeat_page.py:182 pensum/ui/task_page.py:218
 msgid "Set a time first"
 msgstr "Lege zuerst eine Uhrzeit fest"
 
@@ -1658,7 +1686,7 @@ msgstr "Erledigte archivieren"
 msgid "Done ({count})"
 msgstr "Erledigt ({count})"
 
-#: pensum/ui/task_page.py:17 pensum/ui/task_page.py:177
+#: pensum/ui/task_page.py:17 pensum/ui/task_page.py:181
 msgid "Task"
 msgstr "Aufgabe"
 
@@ -1710,8 +1738,8 @@ msgstr "Frist entfernen"
 msgid "Priority"
 msgstr "Priorität"
 
-#: pensum/ui/task_page.py:122 pensum/ui/task_page.py:221
-#: pensum/ui/task_page.py:240
+#: pensum/ui/task_page.py:122 pensum/ui/task_page.py:225
+#: pensum/ui/task_page.py:244
 msgid "None"
 msgstr "Keine"
 
@@ -1731,64 +1759,64 @@ msgstr "Hoch"
 msgid "Project"
 msgstr "Projekt"
 
-#: pensum/ui/task_page.py:145
+#: pensum/ui/task_page.py:148
 msgid "Subtasks"
 msgstr "Unteraufgaben"
 
-#: pensum/ui/task_page.py:149
+#: pensum/ui/task_page.py:152
 msgid "Add Subtask"
 msgstr "Unteraufgabe hinzufügen"
 
-#: pensum/ui/task_page.py:155
+#: pensum/ui/task_page.py:158
 msgid "Delete Task"
 msgstr "Aufgabe löschen"
 
-#: pensum/ui/task_page.py:181
+#: pensum/ui/task_page.py:185
 msgid "Mark as Done"
 msgstr "Als erledigt markieren"
 
-#: pensum/ui/task_page.py:201
+#: pensum/ui/task_page.py:205
 msgid "Not planned"
 msgstr "Nicht geplant"
 
-#: pensum/ui/task_page.py:205
+#: pensum/ui/task_page.py:209
 msgid "No time"
 msgstr "Keine Zeit"
 
-#: pensum/ui/task_page.py:215 pensum/ui/task_row.py:25
+#: pensum/ui/task_page.py:219 pensum/ui/task_row.py:25
 #, python-brace-format
 msgid "At {time}"
 msgstr "Um {time}"
 
-#: pensum/ui/task_page.py:268
+#: pensum/ui/task_page.py:272
 #, python-brace-format
 msgid "{total} in total, {today} today"
 msgstr "{total} insgesamt, {today} heute"
 
-#: pensum/ui/task_page.py:272 pensum/ui/task_row.py:233
+#: pensum/ui/task_page.py:276 pensum/ui/task_row.py:233
 #: pensum/ui/tracker_bar.py:29 pensum/ui/tracker_bar.py:32
 msgid "Stop Timer"
 msgstr "Timer stoppen"
 
-#: pensum/ui/task_page.py:272 pensum/ui/task_row.py:233
+#: pensum/ui/task_page.py:276 pensum/ui/task_row.py:233
 msgid "Start Timer"
 msgstr "Timer starten"
 
-#: pensum/ui/task_page.py:286
+#: pensum/ui/task_page.py:290
 msgid "Tomorrow"
 msgstr "Morgen"
 
-#: pensum/ui/task_page.py:291
+#: pensum/ui/task_page.py:295
 #, python-brace-format
 msgid "{day} (overdue)"
 msgstr "{day} (überfällig)"
 
-#: pensum/ui/task_page.py:321
+#: pensum/ui/task_page.py:325
 msgid "A parent's time is the sum of its subtasks'"
 msgstr ""
 "Die Zeit einer Aufgabe mit Unteraufgaben ist die Summe ihrer Unteraufgaben"
 
-#: pensum/ui/task_page.py:329
+#: pensum/ui/task_page.py:333
 msgid "Write the estimate like 1h 30m or 45m"
 msgstr "Schreibe die Schätzung so: 1h 30m oder 45m"
 

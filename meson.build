@@ -37,6 +37,7 @@ python.install_sources(
 python.install_sources(
   'pensum/store/__init__.py',
   'pensum/store/archive.py',
+  'pensum/store/attachments.py',
   'pensum/store/autobackup.py',
   'pensum/store/backup.py',
   'pensum/store/breaks.py',
@@ -153,6 +154,7 @@ python.install_sources(
 python.install_sources(
   'pensum/ui/__init__.py',
   'pensum/ui/archived_page.py',
+  'pensum/ui/attachments_group.py',
   'pensum/ui/backup_actions.py',
   'pensum/ui/dialogs.py',
   'pensum/ui/focus_page.py',

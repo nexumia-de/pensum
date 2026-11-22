@@ -30,6 +30,7 @@ Change history is in [log.md](log.md).
 * [Worklog](worklog.md) - Time per day of a list for a week or a month, the CSV time sheet with the list's export settings.
 * [Daily summary](daily-summary.md) - The day's work, breaks and focus sessions and the evaluation in `metric`.
 * [Project notes](project-notes.md) - A project's notes in `note`, pinned to Today, the reducers' order rules.
+* [Task attachments](attachments.md) - `task.attachments` on the task page; links and files open through the portal, commands never run.
 
 # Reminders
 

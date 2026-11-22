@@ -1,6 +1,7 @@
 # Directory Update Log
 
 ## 2026-11-22
+* **New** [task attachments](attachments.md) (#25): `pensum/store/attachments.py`, `pensum/ui/attachments_group.py` on the task page; commands are never run, only `http`, `https`, `mailto` and `file` links open.
 * **New** [project notes](project-notes.md) (#24): `pensum/store/notes.py` (the note and project reducers' rules at `9980fd76`), `pensum/ui/notes_page.py`, `pensum/ui/pinned_notes.py` on Today, Notes in a project's menu.
 * **New** [daily summary](daily-summary.md) (#23): `pensum/ui/summary_page.py`, the evaluation in `pensum/store/metric.py` (impact, energy, reflection as `metric.model.ts`, the evaluation sheet and the reflection note write them at `9980fd76`); Daily Summary in the main menu and after Finish Day.
 * **New** [worklog](worklog.md) (#22): `pensum/store/worklog.py` (tasks of a list in a range, per-day totals, the CSV of `worklog-export.util.ts` at `9980fd76`), `pensum/ui/worklog_page.py` (week and month, Export Time Sheet), Worklog in a list's menu.
