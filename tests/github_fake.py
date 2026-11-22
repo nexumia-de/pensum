@@ -1,5 +1,6 @@
 """A stand-in for the part of GitHub's REST API that pensum.sync.github
-uses (refs, compare, commits, trees, blobs), on a real bare repository
+uses (refs, compare, commits, trees, blobs, and /user/repos for the
+guided setup), on a real bare repository
 through git plumbing, so tests and the sync test (run_sync.sh, scenario
 git) need no GitHub account. Answers like GitHub for the cases Day
 Planner relies on: 404 for a missing ref, 409 for an empty repository,
@@ -64,6 +65,10 @@ def handler(repo, token, prefix):
             if self.headers.get("Authorization") != f"Bearer {token}":
                 return self.reply(401, {"message": "Bad credentials"})
             path = urlsplit(self.path).path
+            if path == "/user/repos" and method == "GET":
+                # The guided setup's list: the one repository, writable.
+                return self.reply(200, [{"full_name": prefix.strip("/").split("/", 1)[1],
+                                         "private": True, "permissions": {"push": True}}])
             if not path.startswith(prefix):
                 return self.reply(404)
             parts = path[len(prefix):].strip("/").split("/")

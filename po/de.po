@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pensum\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-22 18:12+0000\n"
+"POT-Creation-Date: 2026-11-22 18:38+0000\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -330,12 +330,12 @@ msgstr "Eine Sync-Datei ist beschädigt (kein JSON)."
 msgid "A sync file is damaged."
 msgstr "Eine Sync-Datei ist beschädigt."
 
-#: pensum/sync/github.py:49
 #
+#: pensum/sync/github.py:49
 msgid "Enter the repository as owner/name."
 msgstr "Gib das Repository als Besitzer/Name ein."
 
-#: pensum/sync/github.py:87
+#: pensum/sync/github.py:87 pensum/sync/github.py:225
 msgid "GitHub refused the token."
 msgstr "GitHub hat das Token abgelehnt."
 
@@ -343,14 +343,16 @@ msgstr "GitHub hat das Token abgelehnt."
 msgid ""
 "The token may not do this in the repository (contents: read and write "
 "needed)."
-msgstr "Das Token darf das in diesem Repository nicht (nötig: Inhalte lesen und schreiben)."
+msgstr ""
+"Das Token darf das in diesem Repository nicht (nötig: Inhalte lesen und "
+"schreiben)."
 
 #: pensum/sync/github.py:92 pensum/sync/github.py:173 pensum/sync/github.py:190
 #: pensum/sync/local.py:27 pensum/sync/webdav.py:74 pensum/sync/webdav.py:86
 msgid "The sync folder changed while sending. Try again."
 msgstr "Der Sync-Ordner hat sich beim Senden geändert. Versuch es noch einmal."
 
-#: pensum/sync/github.py:94
+#: pensum/sync/github.py:94 pensum/sync/github.py:226
 #, python-brace-format
 msgid "GitHub answered {code}."
 msgstr "GitHub hat mit {code} geantwortet."
@@ -359,18 +361,20 @@ msgstr "GitHub hat mit {code} geantwortet."
 msgid "The server's certificate is not trusted."
 msgstr "Dem Zertifikat des Servers wird nicht vertraut."
 
-#: pensum/sync/github.py:98
 #
+#: pensum/sync/github.py:98 pensum/sync/github.py:228
 msgid "Can't reach GitHub."
 msgstr "GitHub ist nicht erreichbar."
 
-#: pensum/sync/github.py:100
+#: pensum/sync/github.py:100 pensum/sync/github.py:230
+#: pensum/sync/github.py:232
 msgid "GitHub sent an answer Day Planner can't read."
 msgstr "GitHub hat eine Antwort geschickt, die Day Planner nicht lesen kann."
 
 #: pensum/sync/github.py:139
 msgid "The repository holds too many files; keep only the sync folder in it."
-msgstr "Das Repository enthält zu viele Dateien; lege nur den Sync-Ordner darin ab."
+msgstr ""
+"Das Repository enthält zu viele Dateien; lege nur den Sync-Ordner darin ab."
 
 #: pensum/sync/local.py:34
 #, python-brace-format
@@ -1711,7 +1715,9 @@ msgstr "Importieren…"
 msgid ""
 "Your last sent changes did not reach Super Productivity. Send Changes sends "
 "them again."
-msgstr "Deine zuletzt gesendeten Änderungen sind nicht bei Super Productivity angekommen. „Änderungen senden“ schickt sie noch einmal."
+msgstr ""
+"Deine zuletzt gesendeten Änderungen sind nicht bei Super Productivity "
+"angekommen. „Änderungen senden“ schickt sie noch einmal."
 
 #: pensum/ui/sync_page.py:160
 msgid "More than the folder keeps"
@@ -1740,6 +1746,56 @@ msgstr ""
 msgid "Sync folder imported"
 msgstr "Sync-Ordner importiert"
 
+#: pensum/ui/sync_github_setup.py:35
+#
+msgid "Create Repository"
+msgstr "Repository anlegen"
+
+#: pensum/ui/sync_github_setup.py:36
+msgid "Opens GitHub's form filled in: a private repository named sp-sync"
+msgstr "Öffnet das ausgefüllte Formular auf GitHub: ein privates Repository namens sp-sync"
+
+#: pensum/ui/sync_github_setup.py:39
+#
+msgid "Create Token"
+msgstr "Token anlegen"
+
+#: pensum/ui/sync_github_setup.py:40
+msgid ""
+"Opens GitHub's form filled in; under Repository access choose Only select "
+"repositories and the sync repository"
+msgstr "Öffnet das ausgefüllte Formular auf GitHub; wähle unter „Repository access“ „Only select repositories“ und das Sync-Repository"
+
+#: pensum/ui/sync_github_setup.py:44 pensum/ui/sync_github_setup.py:45
+#
+msgid "Find Repositories"
+msgstr "Repositorys suchen"
+
+#
+#: pensum/ui/sync_github_setup.py:56 pensum/ui/sync_source.py:120
+msgid "Enter the access token."
+msgstr "Gib das Zugriffstoken ein."
+
+#: pensum/ui/sync_github_setup.py:84
+#
+msgid "The token reaches no repository it may write to."
+msgstr "Mit diesem Token kann Day Planner in kein Repository schreiben."
+
+#
+#: pensum/ui/sync_github_setup.py:90
+#
+msgid "Choose the Repository"
+msgstr "Repository wählen"
+
+#: pensum/ui/sync_github_setup.py:97
+msgid "Public: everyone can read it"
+msgstr "Öffentlich: alle können es lesen"
+
+#: pensum/ui/sync_github_setup.py:113
+msgid ""
+"This repository is public: everyone can read your tasks. Use a private one."
+msgstr "Dieses Repository ist öffentlich: alle können deine Aufgaben lesen. Nimm ein privates."
+
 #: pensum/ui/sync_send.py:38
 msgid "Read the folder and import it once before sending changes."
 msgstr "Lies und importiere den Ordner einmal, bevor du Änderungen sendest."
@@ -1757,92 +1813,93 @@ msgstr "1 Änderung gesendet"
 msgid "{count} changes sent"
 msgstr "{count} Änderungen gesendet"
 
-#: pensum/ui/sync_source.py:20
 #
+#: pensum/ui/sync_source.py:21
 msgid ""
 "Read the tasks Super Productivity keeps in its sync folder. Reading never "
 "changes the folder; Send Changes adds Day Planner's edits."
-msgstr "Liest die Aufgaben, die Super Productivity in seinem Sync-Ordner ablegt. Lesen ändert den Ordner nie; „Änderungen senden“ fügt die Änderungen aus Day Planner hinzu."
+msgstr ""
+"Liest die Aufgaben, die Super Productivity in seinem Sync-Ordner ablegt. "
+"Lesen ändert den Ordner nie; „Änderungen senden“ fügt die Änderungen aus Day "
+"Planner hinzu."
 
-#: pensum/ui/sync_source.py:24
+#: pensum/ui/sync_source.py:25
 msgid "Kind"
 msgstr "Art"
 
-#: pensum/ui/sync_source.py:25
+#: pensum/ui/sync_source.py:26
 msgid "WebDAV or Nextcloud"
 msgstr "WebDAV oder Nextcloud"
 
-#: pensum/ui/sync_source.py:25
+#: pensum/ui/sync_source.py:26
 msgid "Folder on This Device"
 msgstr "Ordner auf diesem Gerät"
 
-#: pensum/ui/sync_source.py:25
+#: pensum/ui/sync_source.py:26
 msgid "GitHub Repository"
 msgstr "GitHub-Repository"
 
-#: pensum/ui/sync_source.py:30
+#: pensum/ui/sync_source.py:31
 msgid "Server Address"
 msgstr "Serveradresse"
 
-#: pensum/ui/sync_source.py:32
+#: pensum/ui/sync_source.py:33
 msgid "User Name"
 msgstr "Benutzername"
 
-#: pensum/ui/sync_source.py:33
+#: pensum/ui/sync_source.py:34
 msgid "Password"
 msgstr "Passwort"
 
-#: pensum/ui/sync_source.py:34
+#: pensum/ui/sync_source.py:35
 msgid "Folder on the Server"
 msgstr "Ordner auf dem Server"
 
-#: pensum/ui/sync_source.py:37
+#: pensum/ui/sync_source.py:38
 msgid "Folder"
 msgstr "Ordner"
 
-#: pensum/ui/sync_source.py:38 pensum/ui/sync_source.py:97
+#: pensum/ui/sync_source.py:39 pensum/ui/sync_source.py:99
 msgid "None chosen"
 msgstr "Nichts gewählt"
 
-#: pensum/ui/sync_source.py:39
+#: pensum/ui/sync_source.py:40
 msgid "Choose…"
 msgstr "Wählen…"
 
-#: pensum/ui/sync_source.py:43
+#: pensum/ui/sync_source.py:44
 msgid "Repository (owner/name)"
 msgstr "Repository (Besitzer/Name)"
 
-#: pensum/ui/sync_source.py:44
+#: pensum/ui/sync_source.py:45
 msgid "Access Token"
 msgstr "Zugriffstoken"
 
-#: pensum/ui/sync_source.py:45
 #
+#: pensum/ui/sync_source.py:46
 msgid "Folder in the Repository"
 msgstr "Ordner im Repository"
 
-#: pensum/ui/sync_source.py:48
+#: pensum/ui/sync_source.py:49
 msgid "How to Set Up Git Sync"
 msgstr "So richtest du Git Sync ein"
 
-#: pensum/ui/sync_source.py:49
-msgid "The Git Sync plugin keeps Super Productivity's folder in the repository"
-msgstr "Das Plugin Git Sync legt den Ordner von Super Productivity im Repository ab"
+#: pensum/ui/sync_source.py:50
+#
+msgid ""
+"On the desktop the Git Sync plugin keeps Super Productivity's folder in the "
+"repository"
+msgstr "Auf dem Computer legt das Plugin Git Sync den Ordner von Super Productivity im Repository ab"
 
-#: pensum/ui/sync_source.py:89
+#: pensum/ui/sync_source.py:91
 msgid "Choose the Sync Folder"
 msgstr "Sync-Ordner wählen"
 
-#: pensum/ui/sync_source.py:110
+#: pensum/ui/sync_source.py:112
 msgid "Choose the folder first."
 msgstr "Wähle zuerst den Ordner."
 
-#: pensum/ui/sync_source.py:118
-#
-msgid "Enter the access token."
-msgstr "Gib das Zugriffstoken ein."
-
-#: pensum/ui/sync_source.py:128
+#: pensum/ui/sync_source.py:130
 msgid "Enter the server address."
 msgstr "Gib die Serveradresse ein."
 
