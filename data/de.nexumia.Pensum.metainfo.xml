@@ -52,46 +52,53 @@
   <screenshots>
     <screenshot type="default">
       <caption>Today's tasks with their time and estimates</caption>
-      <image>https://github.com/nexumia-de/pensum/releases/download/v0.5.1/today-phone-light.png</image>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.6.0/today-phone-light.png</image>
     </screenshot>
     <screenshot>
       <caption>Today's tasks with their time and estimates</caption>
-      <image>https://github.com/nexumia-de/pensum/releases/download/v0.5.1/today-desktop-light.png</image>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.6.0/today-desktop-light.png</image>
     </screenshot>
     <screenshot>
       <caption>A task with its timer running</caption>
-      <image>https://github.com/nexumia-de/pensum/releases/download/v0.5.1/task-phone-light.png</image>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.6.0/task-phone-light.png</image>
     </screenshot>
     <screenshot>
       <caption>A task with its timer running</caption>
-      <image>https://github.com/nexumia-de/pensum/releases/download/v0.5.1/task-desktop-light.png</image>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.6.0/task-desktop-light.png</image>
     </screenshot>
     <screenshot>
       <caption>Projects and tags</caption>
-      <image>https://github.com/nexumia-de/pensum/releases/download/v0.5.1/lists-phone-light.png</image>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.6.0/lists-phone-light.png</image>
     </screenshot>
     <screenshot>
       <caption>Projects and tags</caption>
-      <image>https://github.com/nexumia-de/pensum/releases/download/v0.5.1/lists-desktop-light.png</image>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.6.0/lists-desktop-light.png</image>
     </screenshot>
     <screenshot>
       <caption>A project's tasks</caption>
-      <image>https://github.com/nexumia-de/pensum/releases/download/v0.5.1/project-phone-light.png</image>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.6.0/project-phone-light.png</image>
     </screenshot>
     <screenshot>
       <caption>A project's tasks</caption>
-      <image>https://github.com/nexumia-de/pensum/releases/download/v0.5.1/project-desktop-light.png</image>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.6.0/project-desktop-light.png</image>
     </screenshot>
     <screenshot>
       <caption>A habit journey: what it builds and its current station</caption>
-      <image>https://github.com/nexumia-de/pensum/releases/download/v0.5.1/journey-phone-light.png</image>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.6.0/journey-phone-light.png</image>
     </screenshot>
     <screenshot>
       <caption>A habit journey: what it builds and its current station</caption>
-      <image>https://github.com/nexumia-de/pensum/releases/download/v0.5.1/journey-desktop-light.png</image>
+      <image>https://github.com/nexumia-de/pensum/releases/download/v0.6.0/journey-desktop-light.png</image>
     </screenshot>
   </screenshots>
   <releases>
+    <release version="0.6.0" date="2026-11-23">
+      <description>
+        <ul>
+          <li>Report a problem or an idea from the main menu: **Report a Problem…** creates the issue with your own GitHub token, or opens GitHub's issue form with the version filled in.</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.5.1" date="2026-11-22">
       <description>
         <ul>
