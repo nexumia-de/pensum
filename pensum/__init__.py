@@ -6,7 +6,7 @@ try:
 except ImportError:  # run from the source tree, config.py is not built
     APP_ID = "de.nexumia.Pensum"
     BUILD_LABEL = ""
-VERSION = "0.5.1"
+VERSION = "0.6.0"
 # The nightly app is built from every push to main.
 NIGHTLY = APP_ID.endswith(".Devel")
 NAME = "Day Planner (Nightly)" if NIGHTLY else "Day Planner"
