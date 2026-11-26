@@ -1,5 +1,5 @@
 # The WebDAV test server of the sync test (run_sync.sh); CI only.
-wsgidav==4.4.0
+wsgidav==4.4.1
 cheroot==11.1.2
 defusedxml==0.7.1
 jaraco.functools==4.6.0
